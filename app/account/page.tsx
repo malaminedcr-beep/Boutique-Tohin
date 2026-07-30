@@ -1,34 +1,128 @@
-import Header from '../../components/Header';
+'use client';
+
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { supabase } from '../../lib/supabase';
+import type { User } from '@supabase/supabase-js';
 
 export default function AccountPage() {
-  return (
-    <main className="min-h-screen bg-background text-text">
-      <Header />
-      <section className="mx-auto max-w-5xl px-6 py-20 md:px-8">
-        <div className="rounded-[2.5rem] border border-charcoal/10 bg-white p-10 shadow-soft">
-          <div className="space-y-6 text-center">
-            <p className="text-xs uppercase tracking-[0.35em] text-charcoal/60">Compte</p>
-            <h1 className="text-4xl font-semibold text-black">Mon compte</h1>
-            <p className="max-w-2xl mx-auto text-base leading-7 text-charcoal/80">
-              Connectez-vous pour suivre vos commandes, gérer vos adresses et accéder à votre historique d'achats.
+  const router = useRouter();
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      setUser(data.user);
+      setLoading(false);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/');
+  };
+
+  if (loading) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-canvas">
+        <div className="h-7 w-7 animate-spin rounded-full border-2 border-ink border-t-transparent" />
+      </main>
+    );
+  }
+
+  if (!user) {
+    return (
+      <main className="min-h-screen bg-canvas text-ink">
+        <section className="mx-auto max-w-lg px-6 py-24 md:px-8">
+          <div className="rounded-2xl border border-hairline bg-white p-10 shadow-card text-center space-y-6">
+            <div>
+              <p className="mb-2 text-[10px] uppercase tracking-[0.35em] text-muted">Espace client</p>
+              <h1 className="font-serif text-3xl uppercase tracking-widest text-ink">Mon compte</h1>
+            </div>
+            <p className="text-sm text-muted">
+              Connectez-vous pour suivre vos commandes et accéder à votre historique d'achats.
             </p>
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="flex flex-col gap-3 sm:flex-row">
               <Link
                 href="/account/login"
-                className="inline-flex items-center justify-center rounded-full border border-charcoal/10 bg-white px-8 py-3 text-sm font-semibold text-black transition hover:border-black"
+                className="flex-1 border border-hairline bg-white px-6 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-ink transition-colors hover:border-ink"
               >
                 Se connecter
               </Link>
               <Link
                 href="/account/register"
-                className="inline-flex items-center justify-center rounded-full bg-black px-8 py-3 text-sm font-semibold text-white transition hover:bg-charcoal/90"
+                className="flex-1 border border-ink bg-ink px-6 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-white transition-colors hover:bg-accent hover:border-accent"
               >
                 Créer un compte
               </Link>
             </div>
           </div>
+        </section>
+      </main>
+    );
+  }
+
+  const displayName = (user.user_metadata?.full_name as string) || user.email?.split('@')[0] || 'Client';
+  const memberSince = new Date(user.created_at).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+
+  return (
+    <main className="min-h-screen bg-canvas text-ink">
+      <section className="mx-auto max-w-3xl px-6 py-20 md:px-8 space-y-6">
+
+        {/* Header */}
+        <div className="rounded-2xl border border-hairline bg-white p-8 shadow-card">
+          <div className="flex items-start justify-between gap-4">
+            <div>
+              <p className="mb-1 text-[10px] uppercase tracking-[0.35em] text-muted">Espace client</p>
+              <h1 className="font-serif text-2xl uppercase tracking-widest text-ink">{displayName}</h1>
+              <p className="mt-1 text-sm text-muted">{user.email}</p>
+            </div>
+            <button
+              onClick={handleLogout}
+              className="shrink-0 border border-hairline px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.15em] text-muted transition-colors hover:border-ink hover:text-ink"
+            >
+              Déconnexion
+            </button>
+          </div>
+
+          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+            <div className="rounded-lg border border-hairline bg-surface p-4">
+              <p className="text-[10px] uppercase tracking-[0.25em] text-muted">Email</p>
+              <p className="mt-1 text-sm font-medium text-ink">{user.email}</p>
+            </div>
+            <div className="rounded-lg border border-hairline bg-surface p-4">
+              <p className="text-[10px] uppercase tracking-[0.25em] text-muted">Membre depuis</p>
+              <p className="mt-1 text-sm font-medium text-ink capitalize">{memberSince}</p>
+            </div>
+          </div>
         </div>
+
+        {/* Commandes */}
+        <div className="rounded-2xl border border-hairline bg-white p-8 shadow-card">
+          <h2 className="mb-4 text-[11px] font-semibold uppercase tracking-[0.2em] text-muted">
+            Mes commandes
+          </h2>
+          <div className="rounded-lg border border-hairline bg-surface p-8 text-center">
+            <p className="text-sm text-muted">Historique de commandes — bientôt disponible</p>
+            <Link
+              href="/shop"
+              className="mt-4 inline-flex items-center gap-2 text-[11px] font-semibold uppercase tracking-[0.2em] text-accent hover:underline"
+            >
+              Découvrir la boutique
+              <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
+          </div>
+        </div>
+
       </section>
     </main>
   );
