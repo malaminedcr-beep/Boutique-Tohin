@@ -1,0 +1,574 @@
+[
+  {
+    "id": 1,
+    "sku": "CV-001",
+    "name": "Facial Moisturizing Lotion",
+    "brand": "CeraVe",
+    "category": "face-care",
+    "volume": "177 ml",
+    "priceEur": 18,
+    "priceBdt": 1980,
+    "image": "/images/moisturising-lotion-icon-fr-lg.webp",
+    "badge": "bestseller"
+  },
+  {
+    "id": 2,
+    "sku": "CV-002",
+    "name": "Hydrating Cream",
+    "brand": "CeraVe",
+    "category": "face-care",
+    "volume": "50 ml",
+    "priceEur": 24,
+    "priceBdt": 2640,
+    "image": "/images/hydrating-face-cream-spf50-packshot-front.webp",
+    "gallery": [
+      "/images/hydrating-face-cream-spf50-packshot-front.webp",
+      "/images/hydrating-face-cream-spf50-packshot-back.webp",
+      "/images/hydrating-face-cream-spf50-3-benefits.webp"
+    ],
+    "badge": "new"
+  },
+  {
+    "id": 3,
+    "sku": "CV-003",
+    "name": "Foaming Facial Cleanser",
+    "brand": "CeraVe",
+    "category": "face-care",
+    "volume": "237 ml",
+    "priceEur": 16,
+    "priceBdt": 1760,
+    "image": "/images/foaming-cleanser-icon-fr-lg.webp",
+    "badge": null
+  },
+  {
+    "id": 4,
+    "sku": "CV-004",
+    "name": "SA Smoothing Body Cream",
+    "brand": "CeraVe",
+    "category": "body-care",
+    "volume": "354 ml",
+    "priceEur": 22,
+    "priceBdt": 2420,
+    "image": "/images/hydrating-milk-473ml-packshot-back.webp",
+    "gallery": [
+      "/images/hydrating-milk-473ml-packshot-back.webp",
+      "/images/hydrating-milk-473ml-3-benefits.webp",
+      "/images/hydrating-milk-473ml-texture-benefits.webp"
+    ],
+    "badge": "bestseller"
+  },
+  {
+    "id": 5,
+    "sku": "CV-005",
+    "name": "Renewing SA Cleanser",
+    "brand": "CeraVe",
+    "category": "body-care",
+    "volume": "236 ml",
+    "priceEur": 20,
+    "priceBdt": 2200,
+    "image": "/images/foaming-gel-473ml-packshot-back.webp",
+    "gallery": [
+      "/images/foaming-gel-473ml-packshot-back.webp",
+      "/images/foaming-gel-3-benefits.webp",
+      "/images/foaming-gel-texture-benefits-700x785-1.webp"
+    ],
+    "badge": null
+  },
+  {
+    "id": 6,
+    "sku": "CV-006",
+    "name": "Skin Renew Serum",
+    "brand": "CeraVe",
+    "category": "face-care",
+    "volume": "30 ml",
+    "priceEur": 28,
+    "priceBdt": 3080,
+    "image": "/images/retinol-serum-anti-marks-packshot-front.webp",
+    "gallery": [
+      "/images/retinol-serum-anti-marks-packshot-front.webp",
+      "/images/retinol-serum-anti-marks-packshot-back.webp",
+      "/images/retinol-serum-anti-marks-3-benefits.webp",
+      "/images/retinol-serum-anti-marks-application-face-1.webp"
+    ],
+    "badge": null
+  },
+  {
+    "id": 7,
+    "sku": "CV-007",
+    "name": "Moisturizing Cream",
+    "brand": "CeraVe",
+    "category": "face-care",
+    "volume": "48 g",
+    "priceEur": 20,
+    "priceBdt": 2200,
+    "image": "/images/oil-control-fr-1-lg.webp",
+    "gallery": [
+      "/images/oil-control-fr-1-lg.webp",
+      "/images/oil-control-fr-2-lg.webp",
+      "/images/oil-control-3-lg.webp",
+      "/images/oil-control-fr-5-lg.webp"
+    ],
+    "badge": null
+  },
+  {
+    "id": 8,
+    "sku": "CV-008",
+    "name": "Daily Facial Cleanser",
+    "brand": "CeraVe",
+    "category": "face-care",
+    "volume": "236 ml",
+    "priceEur": 18,
+    "priceBdt": 1980,
+    "image": "/images/foaming-gel-anti-blemish-with-logo.webp",
+    "gallery": [
+      "/images/foaming-gel-anti-blemish-with-logo.webp",
+      "/images/foaming-gel-anti-blemish-packshot-back.webp",
+      "/images/foaming-gel-anti-blemish-3-benefits.webp"
+    ],
+    "badge": null
+  },
+  {
+    "id": 9,
+    "sku": "CV-009",
+    "name": "Hyaluronic Acid Serum",
+    "brand": "CeraVe",
+    "category": "face-care",
+    "volume": "30 ml",
+    "priceEur": 32,
+    "priceBdt": 3520,
+    "image": "/images/vitamin-c-1-lg.webp",
+    "gallery": [
+      "/images/vitamin-c-1-lg.webp",
+      "/images/vitamin-c-2-lg.webp",
+      "/images/vitamin-c-4-lg.webp",
+      "/images/vitamin-c-6-lg.webp"
+    ],
+    "badge": "bestseller"
+  },
+  {
+    "id": 10,
+    "sku": "CV-010",
+    "name": "Soin Concentré Anti-Imperfections",
+    "brand": "CeraVe",
+    "category": "face-care",
+    "volume": "56 g",
+    "priceEur": 19,
+    "priceBdt": 2090,
+    "image": "/images/concentrated-anti-blemish-care-with-logo-lg.webp",
+    "gallery": [
+      "/images/concentrated-anti-blemish-care-with-logo-lg.webp",
+      "/images/concentrated-anti-blemish-care-packshot-back.webp",
+      "/images/concentrated-anti-blemish-care-3-benefits.webp",
+      "/images/concentrated-anti-blemish-care-application-face-1.webp"
+    ],
+    "badge": null
+  },
+  {
+    "id": 11,
+    "sku": "CV-011",
+    "name": "Fragrance-Free Body Lotion",
+    "brand": "CeraVe",
+    "category": "body-care",
+    "volume": "354 ml",
+    "priceEur": 23,
+    "priceBdt": 2530,
+    "image": "/images/dry-fluid-3-lg.webp",
+    "gallery": [
+      "/images/dry-fluid-3-lg.webp",
+      "/images/dry-fluid-5-lg.webp"
+    ],
+    "badge": null
+  },
+  {
+    "id": 12,
+    "sku": "YR-001",
+    "name": "Pure Menthe Purifying Cleansing Gel",
+    "brand": "Yves Rocher",
+    "category": "face-care",
+    "volume": "125 ml",
+    "priceEur": 14,
+    "priceBdt": 1540,
+    "image": "/images/yr-pure-menthe-packshot.webp",
+    "gallery": [
+      "/images/yr-pure-menthe-packshot.webp",
+      "/images/yr-pure-menthe-ingredient.webp",
+      "/images/yr-pure-menthe-texture.webp"
+    ],
+    "badge": null
+  },
+  {
+    "id": 13,
+    "sku": "YR-002",
+    "name": "Sebo Active Clear Gel-Crème",
+    "brand": "Yves Rocher",
+    "category": "face-care",
+    "volume": "50 ml",
+    "priceEur": 18,
+    "priceBdt": 1980,
+    "image": "/images/yr-sebo-gel-creme-packshot.webp",
+    "gallery": [
+      "/images/yr-sebo-gel-creme-packshot.webp",
+      "/images/yr-sebo-gel-creme-2.webp",
+      "/images/yr-sebo-gel-creme-3.webp",
+      "/images/yr-sebo-gel-creme-4.webp"
+    ],
+    "badge": "bestseller"
+  },
+  {
+    "id": 14,
+    "sku": "YR-003",
+    "name": "Sebo Active Clear Anti-Blemish Serum",
+    "brand": "Yves Rocher",
+    "category": "face-care",
+    "volume": "30 ml",
+    "priceEur": 26,
+    "priceBdt": 2860,
+    "image": "/images/yr-sebo-serum-packshot.webp",
+    "gallery": [
+      "/images/yr-sebo-serum-packshot.webp",
+      "/images/yr-sebo-serum-2.webp",
+      "/images/yr-sebo-serum-3.webp",
+      "/images/yr-sebo-serum-4.webp"
+    ],
+    "badge": null
+  },
+  {
+    "id": 15,
+    "sku": "YR-004",
+    "name": "Réparation Nourishing Body Milk",
+    "brand": "Yves Rocher",
+    "category": "body-care",
+    "volume": "390 ml",
+    "priceEur": 21,
+    "priceBdt": 2310,
+    "image": "/images/yr-reparation-body-milk-packshot.webp",
+    "gallery": [
+      "/images/yr-reparation-body-milk-packshot.webp",
+      "/images/yr-reparation-collection.webp",
+      "/images/yr-reparation-texture.webp"
+    ],
+    "badge": "new"
+  },
+  {
+    "id": 16,
+    "sku": "YR-005",
+    "name": "Monoï Nourishing Body Milk",
+    "brand": "Yves Rocher",
+    "category": "body-care",
+    "volume": "390 ml",
+    "priceEur": 17,
+    "priceBdt": 1870,
+    "image": "/images/yr-monoi-body-milk-packshot.webp",
+    "gallery": [
+      "/images/yr-monoi-body-milk-packshot.webp",
+      "/images/yr-monoi-body-milk-2.webp",
+      "/images/yr-monoi-body-milk-3.webp",
+      "/images/yr-monoi-collection.webp",
+      "/images/yr-monoi-foam.webp"
+    ],
+    "badge": null
+  },
+  {
+    "id": 17,
+    "sku": "YR-006",
+    "name": "Douceur Gentle Nourishing Shampoo",
+    "brand": "Yves Rocher",
+    "category": "hair-care",
+    "volume": "300 ml",
+    "priceEur": 19,
+    "priceBdt": 2090,
+    "image": "/images/yr-douceur-lifestyle.webp",
+    "gallery": [
+      "/images/yr-douceur-lifestyle.webp",
+      "/images/yr-douceur-packshot.webp"
+    ],
+    "badge": null
+  },
+  {
+    "id": 18,
+    "sku": "YR-007",
+    "name": "Hair Care Conditioner",
+    "brand": "Yves Rocher",
+    "category": "hair-care",
+    "volume": "200 ml",
+    "priceEur": 19,
+    "priceBdt": 2090,
+    "image": "/images/Après-Shampooing Reconstituant Réparation.webp",
+    "badge": null,
+    "gallery": [
+      "/images/Après-Shampooing Reconstituant Réparation.webp",
+      "/images/Après-Shampooing Reconstituant Réparation 2.webp",
+      "/images/Après-Shampooing Reconstituant Réparation 3.webp"
+    ]
+  },
+  {
+    "id": 19,
+    "sku": "YR-008",
+    "name": "Fragrance Gardenia",
+    "brand": "Yves Rocher",
+    "category": "mens-fragrance",
+    "volume": "50 ml",
+    "priceEur": 38,
+    "priceBdt": 4180,
+    "image": "/images/Garden Party - Eau de Parfum.webp",
+    "badge": null,
+    "gallery": [
+      "/images/Garden Party - Eau de Parfum.webp",
+      "/images/Garden Party - Eau de Parfum 2.webp",
+      "/images/Garden Party - Eau de Parfum 3.webp"
+    ]
+  },
+  {
+    "id": 20,
+    "sku": "YR-009",
+    "name": "Oud Intense",
+    "brand": "Yves Rocher",
+    "category": "mens-fragrance",
+    "volume": "50 ml",
+    "priceEur": 42,
+    "priceBdt": 4620,
+    "image": "placeholder",
+    "badge": null
+  },
+  {
+    "id": 21,
+    "sku": "YR-010",
+    "name": "Vanilla Musk",
+    "brand": "Yves Rocher",
+    "category": "musc",
+    "volume": "50 ml",
+    "priceEur": 36,
+    "priceBdt": 3960,
+    "image": "placeholder",
+    "badge": "bestseller"
+  },
+  {
+    "id": 22,
+    "sku": "YR-011",
+    "name": "Rose Signature",
+    "brand": "Yves Rocher",
+    "category": "musc",
+    "volume": "50 ml",
+    "priceEur": 34,
+    "priceBdt": 3740,
+    "image": "placeholder",
+    "badge": null
+  },
+  {
+    "id": 23,
+    "sku": "YR-012",
+    "name": "Argan & Pétales de Rose Shower Gel",
+    "brand": "Yves Rocher",
+    "category": "body-care",
+    "volume": "400 ml",
+    "priceEur": 16,
+    "priceBdt": 1760,
+    "image": "/images/yr-argan-rose-packshot.webp",
+    "gallery": [
+      "/images/yr-argan-rose-packshot.webp",
+      "/images/yr-argan-rose-foam.webp",
+      "/images/yr-shower-gel-range.webp"
+    ],
+    "badge": null
+  },
+  {
+    "id": 24,
+    "sku": "YR-013",
+    "name": "Revitalizing Hair Oil",
+    "brand": "Yves Rocher",
+    "category": "hair-care",
+    "volume": "100 ml",
+    "priceEur": 24,
+    "priceBdt": 2640,
+    "image": "placeholder",
+    "badge": null
+  },
+  {
+    "id": 25,
+    "sku": "YR-014",
+    "name": "Citrus Deodorant Spray",
+    "brand": "Yves Rocher",
+    "category": "deodorants",
+    "volume": "75 ml",
+    "priceEur": 14,
+    "priceBdt": 1540,
+    "image": "placeholder",
+    "badge": null
+  },
+  {
+    "id": 26,
+    "sku": "YR-015",
+    "name": "Soft Touch Deodorant",
+    "brand": "Yves Rocher",
+    "category": "deodorants",
+    "volume": "50 ml",
+    "priceEur": 15,
+    "priceBdt": 1650,
+    "image": "placeholder",
+    "badge": null
+  },
+  {
+    "id": 27,
+    "sku": "YR-016",
+    "name": "Sebo Active Clear Charcoal Mask",
+    "brand": "Yves Rocher",
+    "category": "face-care",
+    "volume": "75 ml",
+    "priceEur": 30,
+    "priceBdt": 3300,
+    "image": "/images/yr-sebo-mask-packshot.webp",
+    "gallery": [
+      "/images/yr-sebo-mask-packshot.webp",
+      "/images/yr-sebo-range.webp",
+      "/images/yr-sebo-mask-3.webp",
+      "/images/yr-sebo-mask-4.webp"
+    ],
+    "badge": null
+  },
+  {
+    "id": 28,
+    "sku": "YR-017",
+    "name": "Vanille Bourbon Shower Gel",
+    "brand": "Yves Rocher",
+    "category": "body-care",
+    "volume": "400 ml",
+    "priceEur": 17,
+    "priceBdt": 1870,
+    "image": "/images/yr-vanille-bourbon-packshot.webp",
+    "gallery": [
+      "/images/yr-vanille-bourbon-packshot.webp",
+      "/images/yr-vanille-bourbon-2.webp",
+      "/images/yr-vanille-bourbon-3.webp"
+    ],
+    "badge": "new"
+  },
+  {
+    "id": 29,
+    "sku": "YR-018",
+    "name": "Gentle Cleansing Foam",
+    "brand": "Yves Rocher",
+    "category": "face-care",
+    "volume": "150 ml",
+    "priceEur": 16,
+    "priceBdt": 1760,
+    "image": "placeholder",
+    "badge": null
+  },
+  {
+    "id": 30,
+    "sku": "VY-001",
+    "name": "Mineral 89 Serum",
+    "brand": "Vichy",
+    "category": "face-care",
+    "volume": "50 ml",
+    "priceEur": 32,
+    "priceBdt": 3520,
+    "image": "/images/vichy-mineral-89.jpg",
+    "badge": "bestseller"
+  },
+  {
+    "id": 31,
+    "sku": "VY-002",
+    "name": "Aqualia Thermal Cream",
+    "brand": "Vichy",
+    "category": "face-care",
+    "volume": "50 ml",
+    "priceEur": 29,
+    "priceBdt": 3190,
+    "image": "/images/VICHY_AQUALIA_THERMAL_CREME_RICHE.png",
+    "badge": null,
+    "gallery": [
+      "/images/VICHY_AQUALIA_THERMAL_CREME_RICHE.png",
+      "/images/aqualia-cream-rich-pack2.jpg",
+      "/images/aqualia-cream-rich-pack3.jpg",
+      "/images/aqualia-cream-rich-pack4.jpg"
+    ]
+  },
+  {
+    "id": 32,
+    "sku": "VY-003",
+    "name": "LiftActiv Night Cream",
+    "brand": "Vichy",
+    "category": "face-care",
+    "volume": "50 ml",
+    "priceEur": 34,
+    "priceBdt": 3740,
+    "image": "/images/vichy-liftactiv-night.png",
+    "badge": null,
+    "gallery": [
+      "/images/vichy-liftactiv-night.png",
+      "/images/2-creme de nuit.png",
+      "/images/3-creme de nuit.png",
+      "/images/4-creme de nuit.png"
+    ]
+  },
+  {
+    "id": 33,
+    "sku": "VY-004",
+    "name": "Normaderm Acne Care",
+    "brand": "Vichy",
+    "category": "face-care",
+    "volume": "40 ml",
+    "priceEur": 25,
+    "priceBdt": 2750,
+    "image": "/images/normaderm-phytosolution-pack1.jpg",
+    "badge": null,
+    "gallery": [
+      "/images/normaderm-phytosolution-pack1.jpg",
+      "/images/normaderm-phytosolution-pack3.jpg",
+      "/images/normaderm-phytosolution-pack5.jpg"
+    ]
+  },
+  {
+    "id": 34,
+    "sku": "VY-005",
+    "name": "Anti-Dandruff Shampoo",
+    "brand": "Vichy",
+    "category": "hair-care",
+    "volume": "200 ml",
+    "priceEur": 20,
+    "priceBdt": 2200,
+    "image": "/images/DERCOS.png",
+    "badge": null,
+    "gallery": [
+      "/images/DERCOS.png",
+      "/images/DERCOS2.png"
+    ]
+  },
+  {
+    "id": 35,
+    "sku": "VY-006",
+    "name": "Homme Deodorant Spray",
+    "brand": "Vichy",
+    "category": "deodorants",
+    "volume": "150 ml",
+    "priceEur": 18,
+    "priceBdt": 1980,
+    "image": "/images/VICHY_DEO_MEN_48H_ANTI_STAINS.jpg",
+    "badge": null
+  },
+  {
+    "id": 36,
+    "sku": "VY-007",
+    "name": "Eau Thermale Perfume",
+    "brand": "Vichy",
+    "category": "mens-fragrance",
+    "volume": "75 ml",
+    "priceEur": 44,
+    "priceBdt": 4840,
+    "image": "placeholder",
+    "badge": null
+  },
+  {
+    "id": 37,
+    "sku": "VY-008",
+    "name": "Elegant Musk",
+    "brand": "Vichy",
+    "category": "musc",
+    "volume": "50 ml",
+    "priceEur": 33,
+    "priceBdt": 3630,
+    "image": "placeholder",
+    "badge": null
+  }
+]
