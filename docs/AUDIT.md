@@ -21,13 +21,13 @@ Chaque lot a été validé par `npm run build`.
 
 **Problèmes trouvés**
 - `orders` / `order_items` étaient **lisibles et insérables par n'importe qui** (policies RLS `USING (true)` / `WITH CHECK (true)`) → fuite des noms, téléphones, adresses clients + commandes falsifiables.
-- Back-office (`/admin`, `/gestion`) **sans aucune garde serveur** (clé anon, pas de vérification de session).
+- Back-office `/admin` **sans aucune garde serveur** (clé anon, pas de vérification de session).
 - Checkout **envoyait le prix et le total depuis le navigateur** (falsifiable).
 - Auth Supabase en `localStorage` → illisible côté serveur (garde impossible).
 
 **Corrections**
 - Migration auth vers cookies (`@supabase/ssr`) ; clients séparés `lib/supabase/{client,server,admin}.ts`.
-- `middleware.ts` + `app/admin/layout.tsx` + `app/gestion/layout.tsx` : session + `profiles.role='admin'`, sinon **404**.
+- `middleware.ts` + `app/admin/layout.tsx` : session + `profiles.role='admin'`, sinon **404**.
 - `app/api/orders/route.ts` : reçoit `[{sku, quantity}]`, **recalcule prix/total depuis Supabase**, insère en `service_role`. Le checkout n'insère plus rien en direct.
 - Lecture admin (liste + slip) via `service_role` derrière la garde (`GET /api/admin/orders/[id]`).
 - `supabase/policies.sql` (**à exécuter manuellement**) : suppression des policies permissives, lecture « sa propre commande », lecture publique `products`, colonne `profiles.role`.
@@ -62,7 +62,6 @@ Chaque lot a été validé par `npm run build`.
 - Chaînes structurées centralisées dans `lib/i18n/strings.ts` (descriptions produits, statuts, paiements) — seam pour un futur bengali.
 - **Allégations cosmétiques prudentes** : « renforce la barrière » → *helps strengthen* ; jamais *repairs/treats* ; « Traitement acné » → *Blemish-prone skin* ; « Anti-inflammatoire » → *Soothing*.
 - 6 noms produits FR anglicisés (`Soin Concentré Anti-Imperfections` → *Blemish Control Gel*…). Ingrédient « Monoï » conservé.
-- **`/gestion` laissé en français** (outil interne, autre business — décision validée).
 
 ---
 
@@ -71,7 +70,7 @@ Chaque lot a été validé par `npm run build`.
 - `lib/seo.ts` + `metadataBase` (via `NEXT_PUBLIC_SITE_URL`), template de titre, OG/Twitter par défaut, `Organization` JSON-LD.
 - `generateMetadata()` par page : produit (`{name} {volume} — {brand}` + OG image produit), shop (titre dérivé du filtre), about, brands, confirmation (`noindex`).
 - **JSON-LD `Product`** sur la fiche (sku, brand, image, offers price/BDT/availability/url).
-- `app/sitemap.ts` (routes statiques + 37 produits) + `app/robots.ts` (disallow `/account /cart /checkout /admin /gestion /api`).
+- `app/sitemap.ts` (routes statiques + 37 produits) + `app/robots.ts` (disallow `/account /cart /checkout /admin /api`).
 - `product/[id]`, `shop`, `brands` restructurés en **page serveur + composant client** pour metadata/JSON-LD SSR.
 
 ---
@@ -112,4 +111,4 @@ Chaque lot a été validé par `npm run build`.
 - Intégration paiements bKash / Nagad réels
 - Webhook partenaire BD
 - Table `reservations` ouverte en anon (autre app sur le même projet Supabase) — signalée, non modifiée
-- `/gestion` (outil interne) laissé en français
+- `app/gestion/**` (outil interne « Nour Gestion », autre business) **supprimé** du repo

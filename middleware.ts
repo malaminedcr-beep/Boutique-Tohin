@@ -3,7 +3,7 @@ import { createServerClient } from '@supabase/ssr';
 
 /**
  * Server-side guard for the back-office.
- * Refreshes the Supabase session and blocks any request to /admin or /gestion
+ * Refreshes the Supabase session and blocks any request to /admin
  * that is not an authenticated admin (profiles.role = 'admin').
  * Unauthorized -> 404 (we do not reveal that the route exists).
  */
@@ -51,5 +51,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/gestion/:path*'],
+  matcher: ['/admin/:path*'],
 };
