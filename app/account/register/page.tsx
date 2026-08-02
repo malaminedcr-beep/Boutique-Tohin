@@ -42,19 +42,19 @@ export default function RegisterPage() {
               </svg>
             </div>
             <div>
-              <p className="mb-1 text-[10px] uppercase tracking-[0.35em] text-muted">Inscription réussie</p>
-              <h1 className="font-serif text-3xl uppercase tracking-widest text-ink">Compte créé !</h1>
+              <p className="mb-1 text-[10px] uppercase tracking-[0.35em] text-muted">Registration successful</p>
+              <h1 className="font-serif text-3xl uppercase tracking-widest text-ink">Account created!</h1>
             </div>
             <p className="text-sm text-muted">
-              Un email de confirmation a été envoyé à{' '}
+              A confirmation email has been sent to{' '}
               <span className="font-semibold text-ink">{email}</span>.<br />
-              Cliquez sur le lien pour activer votre compte.
+              Click the link to activate your account.
             </p>
             <Link
               href="/account/login"
               className="inline-flex items-center justify-center border border-ink bg-ink px-8 py-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-white transition-colors hover:bg-accent hover:border-accent"
             >
-              Se connecter
+              Sign in
             </Link>
           </div>
         </section>
@@ -68,8 +68,8 @@ export default function RegisterPage() {
         <div className="rounded-2xl border border-hairline bg-white p-10 shadow-card">
 
           <div className="mb-8 text-center">
-            <p className="mb-2 text-[10px] uppercase tracking-[0.35em] text-muted">Mon compte</p>
-            <h1 className="font-serif text-3xl uppercase tracking-widest text-ink">Inscription</h1>
+            <p className="mb-2 text-[10px] uppercase tracking-[0.35em] text-muted">My account</p>
+            <h1 className="font-serif text-3xl uppercase tracking-widest text-ink">Sign up</h1>
           </div>
 
           {error && (
@@ -81,14 +81,14 @@ export default function RegisterPage() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.15em] text-muted">
-                Nom complet
+                Full name
               </label>
               <input
                 type="text"
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 required
-                placeholder="Votre nom"
+                placeholder="Your name"
                 className="w-full border border-hairline bg-surface px-4 py-3 text-sm text-ink placeholder:text-muted/40 outline-none focus:border-accent transition-colors"
               />
             </div>
@@ -107,7 +107,7 @@ export default function RegisterPage() {
             </div>
             <div>
               <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.15em] text-muted">
-                Mot de passe
+                Password
               </label>
               <input
                 type="password"
@@ -115,7 +115,7 @@ export default function RegisterPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                placeholder="••••••••  (6 caractères min.)"
+                placeholder="••••••••  (min. 6 characters)"
                 className="w-full border border-hairline bg-surface px-4 py-3 text-sm text-ink placeholder:text-muted/40 outline-none focus:border-accent transition-colors"
               />
             </div>
@@ -124,14 +124,14 @@ export default function RegisterPage() {
               disabled={loading}
               className="w-full border border-ink bg-ink px-6 py-3.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-white transition-colors hover:bg-accent hover:border-accent disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Création…' : 'Créer mon compte'}
+              {loading ? 'Creating…' : 'Create my account'}
             </button>
           </form>
 
           <p className="mt-8 text-center text-[12px] text-muted">
-            Déjà inscrit ?{' '}
+            Already have an account?{' '}
             <Link href="/account/login" className="font-semibold text-ink hover:text-accent transition-colors">
-              Se connecter
+              Sign in
             </Link>
           </p>
         </div>

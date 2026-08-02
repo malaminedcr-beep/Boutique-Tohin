@@ -1,6 +1,8 @@
 import Link from 'next/link';
 import type { Order } from '../../../lib/types/orders';
 import { createAdminClient } from '../../../lib/supabase/admin';
+import { ORDER_STATUS_LABELS } from '../../../lib/i18n/strings';
+import { formatBdt as fmt, formatDate } from '../../../lib/format';
 
 const STATUS_STYLES: Record<string, string> = {
   pending:   'bg-amber-50 text-amber-700 border-amber-200',
@@ -10,24 +12,11 @@ const STATUS_STYLES: Record<string, string> = {
   cancelled: 'bg-red-50 text-red-700 border-red-200',
 };
 
-const STATUS_LABELS: Record<string, string> = {
-  pending:   'En attente',
-  confirmed: 'Confirmée',
-  shipped:   'Expédiée',
-  delivered: 'Livrée',
-  cancelled: 'Annulée',
-};
-
 const PAYMENT_STYLES: Record<string, string> = {
   cod:   'bg-stone-100 text-stone-700',
   bkash: 'bg-pink-100 text-pink-700',
   nagad: 'bg-orange-100 text-orange-700',
 };
-
-const fmt = (n: number) => `৳${n.toLocaleString('en-US')}`;
-
-const formatDate = (iso: string) =>
-  new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
 
 export const dynamic = 'force-dynamic';
 
@@ -51,27 +40,27 @@ export default async function AdminOrdersPage() {
               French Beauty BD
             </p>
             <h1 className="mt-1 font-serif text-3xl font-semibold text-ink">
-              Commandes
+              Orders
             </h1>
             <p className="mt-1 text-sm text-muted">
-              {orders.length} commande{orders.length !== 1 ? 's' : ''} au total
+              {orders.length} order{orders.length !== 1 ? 's' : ''} total
             </p>
           </div>
           <div className="flex items-center gap-2 rounded-full border border-hairline bg-surface px-4 py-2 text-xs text-muted shadow-card">
             <span className="inline-block h-2 w-2 rounded-full bg-green-400" />
-            Supabase connectée
+            Supabase connected
           </div>
         </div>
 
         {error && (
           <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
-            Erreur de chargement : {error.message}
+            Loading error: {error.message}
           </div>
         )}
 
         {orders.length === 0 && !error && (
           <div className="rounded-2xl border border-hairline bg-surface py-16 text-center shadow-card">
-            <p className="text-muted">Aucune commande pour l&apos;instant.</p>
+            <p className="text-muted">No orders yet.</p>
           </div>
         )}
 
@@ -81,22 +70,22 @@ export default async function AdminOrdersPage() {
               <thead>
                 <tr className="border-b border-hairline bg-canvas">
                   <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-muted">
-                    Commande
+                    Order
                   </th>
                   <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-muted">
-                    Client
+                    Customer
                   </th>
                   <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-muted">
-                    Produits
+                    Products
                   </th>
                   <th className="px-5 py-3.5 text-right text-xs font-semibold uppercase tracking-wider text-muted">
                     Total
                   </th>
                   <th className="px-5 py-3.5 text-center text-xs font-semibold uppercase tracking-wider text-muted">
-                    Paiement
+                    Payment
                   </th>
                   <th className="px-5 py-3.5 text-center text-xs font-semibold uppercase tracking-wider text-muted">
-                    Statut
+                    Status
                   </th>
                   <th className="px-5 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-muted">
                     Date
@@ -135,7 +124,7 @@ export default async function AdminOrdersPage() {
                       <td className="max-w-[220px] px-5 py-4">
                         <p className="truncate text-xs text-muted">{productSummary || '—'}</p>
                         <p className="mt-0.5 text-xs text-muted/60">
-                          {items.length} article{items.length !== 1 ? 's' : ''}
+                          {items.length} item{items.length !== 1 ? 's' : ''}
                         </p>
                       </td>
 
@@ -158,7 +147,7 @@ export default async function AdminOrdersPage() {
                         <span
                           className={`inline-block rounded-full border px-2.5 py-0.5 text-xs font-medium ${STATUS_STYLES[order.status] ?? 'bg-gray-50 text-gray-600 border-gray-200'}`}
                         >
-                          {STATUS_LABELS[order.status] ?? order.status}
+                          {ORDER_STATUS_LABELS[order.status] ?? order.status}
                         </span>
                       </td>
 
@@ -188,7 +177,7 @@ export default async function AdminOrdersPage() {
                               d="M17 17H17.01M6 17h5m6 0v-5a2 2 0 00-2-2H7a2 2 0 00-2 2v5m14 0a2 2 0 01-2 2H5a2 2 0 01-2-2m14 0H5M9 11V7a3 3 0 016 0v4"
                             />
                           </svg>
-                          Imprimer bon
+                          Print slip
                         </Link>
                       </td>
                     </tr>

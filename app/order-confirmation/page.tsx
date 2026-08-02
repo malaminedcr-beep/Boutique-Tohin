@@ -18,45 +18,45 @@ export default function OrderConfirmationPage() {
             </div>
 
             <div className="space-y-2">
-              <p className="text-xs uppercase tracking-[0.35em] text-charcoal/60">Commande confirmée</p>
-              <h1 className="text-4xl font-semibold text-black">Merci pour votre commande !</h1>
-              <p className="text-lg text-charcoal/70">Numéro de commande: <span className="font-semibold text-black">{orderNumber}</span></p>
+              <p className="text-xs uppercase tracking-[0.35em] text-charcoal/60">Order confirmed</p>
+              <h1 className="text-4xl font-semibold text-black">Thank you for your order!</h1>
+              <p className="text-lg text-charcoal/70">Order number: <span className="font-semibold text-black">{orderNumber}</span></p>
             </div>
 
             <div className="max-w-2xl mx-auto space-y-4 text-left bg-cream rounded-2xl p-6">
-              <h2 className="text-lg font-semibold text-black">Que se passe-t-il ensuite ?</h2>
+              <h2 className="text-lg font-semibold text-black">What happens next?</h2>
               <div className="space-y-3 text-sm text-charcoal/80">
                 <div className="flex items-start gap-3">
                   <div className="w-6 h-6 bg-black rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                     <span className="text-white text-xs font-bold">1</span>
                   </div>
-                  <p>Vous recevrez un email de confirmation avec les détails de votre commande.</p>
+                  <p>You will receive a confirmation email with your order details.</p>
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="w-6 h-6 bg-black rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                     <span className="text-white text-xs font-bold">2</span>
                   </div>
-                  <p>Votre commande sera préparée avec soin dans nos entrepôts français.</p>
+                  <p>Your order will be carefully prepared in our French warehouses.</p>
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="w-6 h-6 bg-black rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                     <span className="text-white text-xs font-bold">3</span>
                   </div>
-                  <p>Expédition sous 2-3 jours ouvrés avec suivi en temps réel.</p>
+                  <p>Shipped within 2-3 business days with real-time tracking.</p>
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="w-6 h-6 bg-black rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                     <span className="text-white text-xs font-bold">4</span>
                   </div>
-                  <p>Livraison à votre porte sous 7-10 jours ouvrés au Bangladesh.</p>
+                  <p>Delivered to your door within 7-10 business days in Bangladesh.</p>
                 </div>
               </div>
             </div>
 
             <div className="space-y-4">
               <p className="text-base leading-7 text-charcoal/80 max-w-2xl mx-auto">
-                Votre commande de produits de beauté français authentiques est maintenant en cours de traitement.
-                Nous vous tiendrons informé de chaque étape du processus.
+                Your order of authentic French beauty products is now being processed.
+                We will keep you informed at every step of the way.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -64,20 +64,20 @@ export default function OrderConfirmationPage() {
                   href="/shop"
                   className="inline-flex items-center justify-center rounded-full bg-black px-8 py-3 text-sm font-semibold text-white transition hover:bg-charcoal/90"
                 >
-                  Continuer mes achats
+                  Continue shopping
                 </Link>
                 <Link
                   href="/account"
                   className="inline-flex items-center justify-center rounded-full border border-charcoal/10 bg-white px-8 py-3 text-sm font-semibold text-black transition hover:border-black hover:bg-cream"
                 >
-                  Voir mes commandes
+                  View my orders
                 </Link>
               </div>
             </div>
 
             <div className="pt-6 border-t border-charcoal/10">
               <p className="text-sm text-charcoal/60">
-                Des questions ? Contactez notre service client au <a href={`tel:${whatsappTel}`} className="text-black hover:text-gold transition-colors">{CONTACT.whatsapp}</a>
+                Questions? Contact our customer service at <a href={`tel:${whatsappTel}`} className="text-black hover:text-gold transition-colors">{CONTACT.whatsapp}</a>
               </p>
             </div>
           </div>

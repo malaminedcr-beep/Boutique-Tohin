@@ -6,20 +6,16 @@ import { notFound } from 'next/navigation';
 import { getProductById, Product } from '../../../lib/commerce/mock';
 import { useCart } from '../../../lib/cart-context';
 import { useState, useEffect, useCallback } from 'react';
+import { formatBdt } from '../../../lib/format';
+import {
+  PRODUCT_CATEGORY_DESCRIPTIONS,
+  PRODUCT_DESCRIPTION_FALLBACK,
+} from '../../../lib/i18n/strings';
 
-const formatPrice = (value: number) => `৳${value.toLocaleString('en-US')}`;
-
-const getDescription = (product: Product) => {
-  const categoryDescription = {
-    'face-care': 'Formule douce et hydratante conçue pour renforcer la barrière cutanée et apaiser la peau.',
-    'body-care': 'Soin corporel riche pour nourrir et restaurer l’hydratation sur l’ensemble du corps.',
-    'hair-care': 'Produit capillaire élaboré pour protéger et sublimer la fibre du cheveu.',
-    'deodorants': 'Déodorant efficace offrant protection et confort durable.',
-    'mens-fragrance': 'Parfum masculin inspiré par des notes élégantes et affirmées.',
-    'musc': 'Essence musquée pour une signature olfactive profonde et durable.',
-  };
-  return product.name + ' - ' + (categoryDescription[product.category as keyof typeof categoryDescription] || 'Produit soigneusement sélectionné pour une routine de beauté raffinée.');
-};
+const getDescription = (product: Product) =>
+  product.name +
+  ' - ' +
+  (PRODUCT_CATEGORY_DESCRIPTIONS[product.category] ?? PRODUCT_DESCRIPTION_FALLBACK);
 
 export default function ProductPage({ params }: { params: { id: string } }) {
   const product = getProductById(Number(params.id));
@@ -141,7 +137,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                           onClick={() => setActiveIndex(i)}
                           className={`overflow-hidden rounded-xl border-2 p-0.5 transition ${activeIndex === i ? 'border-black' : 'border-transparent hover:border-charcoal/30'}`}
                         >
-                          <img src={img} alt={`${product.name} vue ${i + 1}`} className="h-14 w-14 rounded-lg object-cover" />
+                          <img src={img} alt={`${product.name} view ${i + 1}`} className="h-14 w-14 rounded-lg object-cover" />
                         </button>
                       ))}
                     </div>
@@ -155,15 +151,15 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                     <p className="text-sm uppercase tracking-[0.3em] text-charcoal/70">{product.volume}</p>
                   </div>
                   <div className="space-y-2">
-                    <p className="text-3xl font-semibold text-black">{formatPrice(product.priceBdt)}</p>
+                    <p className="text-3xl font-semibold text-black">{formatBdt(product.priceBdt)}</p>
                     <p className="text-sm leading-7 text-charcoal/75">{getDescription(product)}</p>
                   </div>
                   <div className="space-y-3">
-                    <p className="text-sm font-semibold uppercase tracking-[0.3em] text-charcoal/70">Caractéristiques</p>
+                    <p className="text-sm font-semibold uppercase tracking-[0.3em] text-charcoal/70">Details</p>
                     <ul className="space-y-2 text-sm leading-7 text-charcoal/75">
-                      <li>Catégorie: {product.category.replace('-', ' ')}</li>
-                      <li>Référence produit: {product.sku}</li>
-                      <li>Marque: {product.brand}</li>
+                      <li>Category: {product.category.replace('-', ' ')}</li>
+                      <li>Product reference: {product.sku}</li>
+                      <li>Brand: {product.brand}</li>
                       <li>Volume: {product.volume}</li>
                     </ul>
                   </div>
@@ -176,7 +172,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                 href="/shop"
                 className="inline-flex items-center justify-center rounded-full border border-charcoal/10 bg-white px-6 py-3 text-center text-sm font-semibold text-black transition hover:border-black hover:bg-cream"
               >
-                Retour à la boutique
+                Back to shop
               </Link>
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-2">
@@ -200,7 +196,7 @@ export default function ProductPage({ params }: { params: { id: string } }) {
                     addedToCart ? 'bg-green-600 text-white' : 'bg-black text-white hover:bg-charcoal/90'
                   }`}
                 >
-                  {addedToCart ? 'Ajouté !' : 'Ajouter au panier'}
+                  {addedToCart ? 'Added!' : 'Add to Cart'}
                 </button>
               </div>
             </div>
@@ -208,17 +204,17 @@ export default function ProductPage({ params }: { params: { id: string } }) {
 
           <aside className="space-y-6 rounded-[2.5rem] border border-charcoal/10 bg-white p-8 shadow-sm">
             <div>
-              <h2 className="text-lg font-semibold text-black">Détails complémentaires</h2>
+              <h2 className="text-lg font-semibold text-black">Additional details</h2>
               <p className="mt-3 text-sm leading-7 text-charcoal/75">
-                Chaque produit est sélectionné pour offrir une expérience cosmétique haut de gamme, adaptée aux besoins spécifiques du Bangladesh.
+                Every product is selected to offer a premium cosmetic experience, tailored to the specific needs of Bangladesh.
               </p>
             </div>
             <div className="space-y-4 rounded-3xl bg-cream p-6">
               <p className="text-xs uppercase tracking-[0.3em] text-charcoal/60">Service</p>
               <ul className="space-y-3 text-sm leading-7 text-charcoal/75">
-                <li>Livraison sécurisée et rapide.</li>
-                <li>Assistance après-vente disponible.</li>
-                <li>Retour simple en cas de besoin.</li>
+                <li>Secure and fast delivery.</li>
+                <li>After-sales support available.</li>
+                <li>Easy returns if needed.</li>
               </ul>
             </div>
           </aside>

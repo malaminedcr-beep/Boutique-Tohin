@@ -84,7 +84,7 @@ export default function Footer() {
       <div className="border-t border-hairline">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-10 py-5">
           <p className="text-[11px] uppercase tracking-[0.2em] text-muted">
-            © French Beauty BD 2026 — Tous droits réservés
+            © French Beauty BD 2026 — All rights reserved
           </p>
           <div className="flex items-center gap-4 text-[11px] uppercase tracking-[0.2em] text-muted">
             <Link href="/legal/terms" className="transition-colors hover:text-ink">Terms</Link>

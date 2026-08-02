@@ -40,13 +40,13 @@ export default function ForgotPasswordPage() {
               </svg>
             </div>
             <div>
-              <p className="mb-1 text-[10px] uppercase tracking-[0.35em] text-muted">Email envoyé</p>
-              <h1 className="font-serif text-3xl uppercase tracking-widest text-ink">Vérifiez votre boîte mail</h1>
+              <p className="mb-1 text-[10px] uppercase tracking-[0.35em] text-muted">Email sent</p>
+              <h1 className="font-serif text-3xl uppercase tracking-widest text-ink">Check your inbox</h1>
             </div>
             <p className="text-sm text-muted leading-relaxed">
-              Un lien de réinitialisation a été envoyé à{' '}
+              A reset link has been sent to{' '}
               <span className="font-semibold text-ink">{email}</span>.<br />
-              Le lien expire dans 1 heure.
+              The link expires in 1 hour.
             </p>
             <Link
               href="/account/login"
@@ -55,7 +55,7 @@ export default function ForgotPasswordPage() {
               <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
-              Retour à la connexion
+              Back to sign in
             </Link>
           </div>
         </section>
@@ -69,10 +69,10 @@ export default function ForgotPasswordPage() {
         <div className="rounded-2xl border border-hairline bg-white p-10 shadow-card">
 
           <div className="mb-8 text-center">
-            <p className="mb-2 text-[10px] uppercase tracking-[0.35em] text-muted">Mon compte</p>
-            <h1 className="font-serif text-3xl uppercase tracking-widest text-ink">Mot de passe oublié</h1>
+            <p className="mb-2 text-[10px] uppercase tracking-[0.35em] text-muted">My account</p>
+            <h1 className="font-serif text-3xl uppercase tracking-widest text-ink">Forgot password</h1>
             <p className="mt-3 text-sm text-muted">
-              Entrez votre email pour recevoir un lien de réinitialisation.
+              Enter your email to receive a reset link.
             </p>
           </div>
 
@@ -101,7 +101,7 @@ export default function ForgotPasswordPage() {
               disabled={loading}
               className="w-full border border-ink bg-ink px-6 py-3.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-white transition-colors hover:bg-accent hover:border-accent disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Envoi…' : 'Envoyer le lien'}
+              {loading ? 'Sending…' : 'Send link'}
             </button>
           </form>
 
@@ -113,7 +113,7 @@ export default function ForgotPasswordPage() {
               <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
-              Retour à la connexion
+              Back to sign in
             </Link>
           </p>
         </div>

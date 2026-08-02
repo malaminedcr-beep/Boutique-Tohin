@@ -19,30 +19,30 @@ const brands: Brand[] = [
   {
     id: 'cerave',
     name: 'CeraVe',
-    description: 'Soins dermatologiques testés pour les peaux sensibles.',
-    fullDescription: 'CeraVe est une marque dermatologique pionnière qui combine la science et les soins de la peau. Développée avec des dermatologues, elle se concentre sur la réparation et la protection de la barrière cutanée en utilisant des céramides et des ingrédients naturels.',
-    expertise: ['Peaux sensibles', 'Hydratation', 'Dermatologie', 'Anti-inflammatoire'],
-    heritage: 'Créée en collaboration avec la Société Nationale de Dermatologie, CeraVe s\'est imposée comme une référence en soins dermatologiques cliniquement prouvés.',
+    description: 'Dermatologist-tested skincare for sensitive skin.',
+    fullDescription: 'CeraVe is a dermatological brand that combines science and skincare. Developed with dermatologists, it focuses on helping to support and protect the skin barrier using ceramides and gentle ingredients.',
+    expertise: ['Sensitive skin', 'Hydration', 'Dermatology', 'Soothing'],
+    heritage: 'Developed with dermatologists, CeraVe has become a reference in clinically tested skincare.',
     image: '/images/cerave.jpg',
     foundedYear: 2005,
   },
   {
     id: 'yves-rocher',
     name: 'Yves Rocher',
-    description: 'Cosmétiques naturels inspirés par la botanique française.',
-    fullDescription: 'Yves Rocher est une marque française de beauté fondée en Bretagne, pionnière en phytocosmétique. Elle allie la puissance des plantes avec une approche respectueuse de l\'environnement et du bien-être animal.',
-    expertise: ['Phytocosmétique', 'Beauté bio', 'Soins naturels', 'Durabilité'],
-    heritage: 'Depuis 1968, Yves Rocher défend la beauté naturelle. Chaque produit est formulé à partir d\'extraits botaniques provenant de ses propres jardins de Bretagne.',
+    description: 'Natural cosmetics inspired by French botany.',
+    fullDescription: 'Yves Rocher is a French beauty brand founded in Brittany, a pioneer in plant-based cosmetics. It combines the power of plants with a respectful approach to the environment and animal welfare.',
+    expertise: ['Plant-based cosmetics', 'Organic beauty', 'Natural care', 'Sustainability'],
+    heritage: 'Since 1968, Yves Rocher has championed natural beauty. Each product is formulated with botanical extracts from its own gardens in Brittany.',
     image: '/images/yves-rocher.jpg',
     foundedYear: 1968,
   },
   {
     id: 'vichy',
     name: 'Vichy',
-    description: 'Formules actives enrichies en eau thermale.',
-    fullDescription: 'Vichy est une marque dermatologique française reconnue pour ses formules basées sur l\'eau thermale de Vichy. Ses produits sont développés scientifiquement pour traiter les problèmes de peau spécifiques et renforcer la barrière cutanée.',
-    expertise: ['Eau thermale', 'Traitement acné', 'Anti-âge', 'Sensibilités'],
-    heritage: 'Depuis 1931, Vichy exploite l\'eau thermale riche en minéraux de la source de Vichy en France. Cette eau unique est au cœur de tous les produits.',
+    description: 'Active formulas enriched with thermal spa water.',
+    fullDescription: 'Vichy is a French dermatological brand known for formulas based on Vichy thermal spa water. Its products are developed to target specific skin concerns and help strengthen the skin barrier.',
+    expertise: ['Thermal water', 'Blemish-prone skin', 'Anti-ageing', 'Sensitive skin'],
+    heritage: 'Since 1931, Vichy has drawn on the mineral-rich thermal water from the Vichy spring in France. This unique water is at the heart of every product.',
     image: '/images/vichy.jpg',
     foundedYear: 1931,
   },
@@ -63,10 +63,10 @@ export default function BrandsPage() {
       <section className="mx-auto max-w-7xl px-6 py-20 md:px-8">
         <div className="space-y-8">
           <div className="space-y-4">
-            <p className="text-xs uppercase tracking-[0.35em] text-charcoal/60">Marques</p>
-            <h1 className="text-4xl font-semibold text-black md:text-5xl">Nos partenaires français</h1>
+            <p className="text-xs uppercase tracking-[0.35em] text-charcoal/60">Brands</p>
+            <h1 className="text-4xl font-semibold text-black md:text-5xl">Our French partners</h1>
             <p className="max-w-3xl text-base leading-8 text-charcoal/80">
-              Découvrez les marques sélectionnées par French Beauty BD pour leur expertise cosmétique, leur engagement qualité et leur héritage français authentique.
+              Discover the brands selected by French Beauty BD for their cosmetic expertise, their commitment to quality and their authentic French heritage.
             </p>
           </div>
 
@@ -103,9 +103,9 @@ export default function BrandsPage() {
                 </div>
 
                 <div className="mt-6 flex items-center justify-between">
-                  <p className="text-xs text-charcoal/60">Depuis {brand.foundedYear}</p>
+                  <p className="text-xs text-charcoal/60">Since {brand.foundedYear}</p>
                   <span className="text-xs font-semibold text-gold group-hover:translate-x-1 transition-transform">
-                    En savoir plus →
+                    Learn more →
                   </span>
                 </div>
               </button>

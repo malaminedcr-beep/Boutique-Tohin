@@ -27,7 +27,7 @@ export default function ResetPasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirm) {
-      setError('Les mots de passe ne correspondent pas.');
+      setError('Passwords do not match.');
       return;
     }
     setLoading(true);
@@ -55,8 +55,8 @@ export default function ResetPasswordPage() {
               </svg>
             </div>
             <div>
-              <h1 className="font-serif text-3xl uppercase tracking-widest text-ink">Mot de passe mis à jour</h1>
-              <p className="mt-3 text-sm text-muted">Redirection vers votre compte…</p>
+              <h1 className="font-serif text-3xl uppercase tracking-widest text-ink">Password updated</h1>
+              <p className="mt-3 text-sm text-muted">Redirecting to your account…</p>
             </div>
           </div>
         </section>
@@ -70,11 +70,11 @@ export default function ResetPasswordPage() {
         <section className="mx-auto max-w-lg px-6 py-24 md:px-8">
           <div className="rounded-2xl border border-hairline bg-white p-10 shadow-card text-center space-y-6">
             <div className="mx-auto h-7 w-7 animate-spin rounded-full border-2 border-ink border-t-transparent" />
-            <p className="text-sm text-muted">Vérification du lien en cours…</p>
+            <p className="text-sm text-muted">Verifying the link…</p>
             <p className="text-xs text-muted/60">
-              Si rien ne se passe,{' '}
+              If nothing happens,{' '}
               <Link href="/account/forgot-password" className="underline hover:text-ink">
-                demandez un nouveau lien
+                request a new link
               </Link>
               .
             </p>
@@ -90,8 +90,8 @@ export default function ResetPasswordPage() {
         <div className="rounded-2xl border border-hairline bg-white p-10 shadow-card">
 
           <div className="mb-8 text-center">
-            <p className="mb-2 text-[10px] uppercase tracking-[0.35em] text-muted">Mon compte</p>
-            <h1 className="font-serif text-3xl uppercase tracking-widest text-ink">Nouveau mot de passe</h1>
+            <p className="mb-2 text-[10px] uppercase tracking-[0.35em] text-muted">My account</p>
+            <h1 className="font-serif text-3xl uppercase tracking-widest text-ink">New password</h1>
           </div>
 
           {error && (
@@ -103,7 +103,7 @@ export default function ResetPasswordPage() {
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.15em] text-muted">
-                Nouveau mot de passe
+                New password
               </label>
               <input
                 type="password"
@@ -111,13 +111,13 @@ export default function ResetPasswordPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={6}
-                placeholder="••••••••  (6 caractères min.)"
+                placeholder="••••••••  (min. 6 characters)"
                 className="w-full border border-hairline bg-surface px-4 py-3 text-sm text-ink placeholder:text-muted/40 outline-none focus:border-accent transition-colors"
               />
             </div>
             <div>
               <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.15em] text-muted">
-                Confirmer le mot de passe
+                Confirm password
               </label>
               <input
                 type="password"
@@ -134,7 +134,7 @@ export default function ResetPasswordPage() {
               disabled={loading}
               className="w-full border border-ink bg-ink px-6 py-3.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-white transition-colors hover:bg-accent hover:border-accent disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Mise à jour…' : 'Mettre à jour le mot de passe'}
+              {loading ? 'Updating…' : 'Update password'}
             </button>
           </form>
         </div>

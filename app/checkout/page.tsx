@@ -4,8 +4,7 @@ import Header from '../../components/Header';
 import Link from 'next/link';
 import { useCart } from '../../lib/cart-context';
 import { useState } from 'react';
-
-const fmt = (v: number) => `৳${v.toLocaleString('en-US')}`;
+import { formatBdt as fmt } from '../../lib/format';
 
 type PaymentMethod = 'cod' | 'bkash' | 'nagad';
 
@@ -31,12 +30,12 @@ export default function CheckoutPage() {
         <section className="mx-auto max-w-5xl px-6 py-20 md:px-8">
           <div className="rounded-[2.5rem] border border-charcoal/10 bg-white p-10 shadow-soft text-center space-y-6">
             <p className="text-xs uppercase tracking-[0.35em] text-charcoal/60">Checkout</p>
-            <h1 className="text-4xl font-semibold text-black">Votre panier est vide</h1>
+            <h1 className="text-4xl font-semibold text-black">Your cart is empty</h1>
             <Link
               href="/shop"
               className="inline-flex items-center justify-center rounded-full bg-black px-8 py-3 text-sm font-semibold text-white transition hover:bg-charcoal/90"
             >
-              Aller à la boutique
+              Go to shop
             </Link>
           </div>
         </section>
@@ -68,21 +67,21 @@ export default function CheckoutPage() {
       });
 
       const result = await res.json();
-      if (!res.ok) throw new Error(result?.error ?? 'Une erreur est survenue. Réessayez.');
+      if (!res.ok) throw new Error(result?.error ?? 'Something went wrong. Please try again.');
 
       clearCart();
       window.location.href = `/order-confirmation?order=${result.orderId}`;
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Une erreur est survenue. Réessayez.');
+      setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
       setIsProcessing(false);
     }
   };
 
   const btnLabel = () => {
-    if (isProcessing) return 'Traitement…';
-    if (paymentMethod === 'cod') return `Commander — ${fmt(state.total)}`;
-    if (paymentMethod === 'bkash') return `Payer avec bKash — ${fmt(state.total)}`;
-    return `Payer avec Nagad — ${fmt(state.total)}`;
+    if (isProcessing) return 'Processing…';
+    if (paymentMethod === 'cod') return `Place order — ${fmt(state.total)}`;
+    if (paymentMethod === 'bkash') return `Pay with bKash — ${fmt(state.total)}`;
+    return `Pay with Nagad — ${fmt(state.total)}`;
   };
 
   const btnClass = () => {
@@ -99,7 +98,7 @@ export default function CheckoutPage() {
         <div className="space-y-8">
           <div className="text-center">
             <p className="text-xs uppercase tracking-[0.35em] text-charcoal/60">Checkout</p>
-            <h1 className="text-4xl font-semibold text-black">Finaliser ma commande</h1>
+            <h1 className="text-4xl font-semibold text-black">Complete your order</h1>
           </div>
 
           {error && (
@@ -113,15 +112,15 @@ export default function CheckoutPage() {
             {/* ── Livraison ── */}
             <div className="space-y-6">
               <div className="rounded-[2rem] border border-charcoal/10 bg-white p-6 shadow-soft">
-                <h2 className="text-lg font-semibold text-black mb-6">Informations de livraison</h2>
+                <h2 className="text-lg font-semibold text-black mb-6">Shipping information</h2>
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium text-charcoal/70 mb-2">Prénom</label>
+                    <label className="block text-sm font-medium text-charcoal/70 mb-2">First name</label>
                     <input type="text" name="firstName" value={formData.firstName} onChange={handleInputChange} required
                       className="w-full rounded-lg border border-charcoal/20 px-4 py-3 text-sm focus:border-black focus:outline-none" />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-charcoal/70 mb-2">Nom</label>
+                    <label className="block text-sm font-medium text-charcoal/70 mb-2">Last name</label>
                     <input type="text" name="lastName" value={formData.lastName} onChange={handleInputChange} required
                       className="w-full rounded-lg border border-charcoal/20 px-4 py-3 text-sm focus:border-black focus:outline-none" />
                   </div>
@@ -132,24 +131,24 @@ export default function CheckoutPage() {
                     className="w-full rounded-lg border border-charcoal/20 px-4 py-3 text-sm focus:border-black focus:outline-none" />
                 </div>
                 <div className="mt-4">
-                  <label className="block text-sm font-medium text-charcoal/70 mb-2">Téléphone</label>
+                  <label className="block text-sm font-medium text-charcoal/70 mb-2">Phone</label>
                   <input type="tel" name="phone" value={formData.phone} onChange={handleInputChange} required
                     placeholder="+880 1XX XXX XXXX"
                     className="w-full rounded-lg border border-charcoal/20 px-4 py-3 text-sm focus:border-black focus:outline-none" />
                 </div>
                 <div className="mt-4">
-                  <label className="block text-sm font-medium text-charcoal/70 mb-2">Adresse</label>
+                  <label className="block text-sm font-medium text-charcoal/70 mb-2">Address</label>
                   <textarea name="address" value={formData.address} onChange={handleInputChange} required rows={3}
                     className="w-full rounded-lg border border-charcoal/20 px-4 py-3 text-sm focus:border-black focus:outline-none" />
                 </div>
                 <div className="mt-4 grid gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium text-charcoal/70 mb-2">Ville</label>
+                    <label className="block text-sm font-medium text-charcoal/70 mb-2">City</label>
                     <input type="text" name="city" value={formData.city} onChange={handleInputChange} required
                       className="w-full rounded-lg border border-charcoal/20 px-4 py-3 text-sm focus:border-black focus:outline-none" />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-charcoal/70 mb-2">Code postal</label>
+                    <label className="block text-sm font-medium text-charcoal/70 mb-2">Postal code</label>
                     <input type="text" name="postalCode" value={formData.postalCode} onChange={handleInputChange} required
                       className="w-full rounded-lg border border-charcoal/20 px-4 py-3 text-sm focus:border-black focus:outline-none" />
                   </div>
@@ -158,7 +157,7 @@ export default function CheckoutPage() {
 
               {/* ── Paiement ── */}
               <div className="rounded-[2rem] border border-charcoal/10 bg-white p-6 shadow-soft">
-                <h2 className="text-lg font-semibold text-black mb-6">Paiement</h2>
+                <h2 className="text-lg font-semibold text-black mb-6">Payment</h2>
                 <div className="space-y-3">
 
                   {/* COD */}
@@ -167,7 +166,7 @@ export default function CheckoutPage() {
                     <div className="flex h-8 w-8 items-center justify-center rounded bg-stone-800 text-xs font-bold text-white">৳</div>
                     <div>
                       <div className="font-medium text-black">Cash on Delivery (COD)</div>
-                      <div className="text-xs text-charcoal/60">Payez à la livraison</div>
+                      <div className="text-xs text-charcoal/60">Pay on delivery</div>
                     </div>
                   </label>
 
@@ -197,7 +196,7 @@ export default function CheckoutPage() {
             {/* ── Récapitulatif ── */}
             <div className="space-y-6">
               <div className="rounded-[2rem] border border-charcoal/10 bg-white p-6 shadow-soft">
-                <h2 className="text-lg font-semibold text-black mb-4">Récapitulatif</h2>
+                <h2 className="text-lg font-semibold text-black mb-4">Order Summary</h2>
                 <div className="space-y-3 mb-4">
                   {state.items.map((item) => (
                     <div key={item.id} className="flex justify-between text-sm">
@@ -208,12 +207,12 @@ export default function CheckoutPage() {
                 </div>
                 <div className="border-t border-charcoal/10 pt-3 space-y-2">
                   <div className="flex justify-between text-sm">
-                    <span className="text-charcoal/70">Sous-total</span>
+                    <span className="text-charcoal/70">Subtotal</span>
                     <span className="font-medium text-black">{fmt(state.total)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-charcoal/70">Livraison</span>
-                    <span className="font-medium text-black">Gratuite</span>
+                    <span className="text-charcoal/70">Delivery</span>
+                    <span className="font-medium text-black">Free</span>
                   </div>
                   <div className="border-t border-charcoal/10 pt-2 flex justify-between text-lg font-semibold">
                     <span className="text-black">Total</span>
@@ -230,7 +229,7 @@ export default function CheckoutPage() {
                 {isProcessing ? (
                   <span className="flex items-center justify-center gap-2">
                     <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                    Traitement…
+                    Processing…
                   </span>
                 ) : btnLabel()}
               </button>
@@ -239,7 +238,7 @@ export default function CheckoutPage() {
                 href="/cart"
                 className="block w-full rounded-full border border-charcoal/10 bg-white px-6 py-4 text-center text-sm font-semibold text-black transition hover:border-black hover:bg-cream"
               >
-                Retour au panier
+                Back to cart
               </Link>
             </div>
           </form>

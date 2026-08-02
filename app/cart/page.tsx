@@ -3,8 +3,7 @@
 import Header from '../../components/Header';
 import Link from 'next/link';
 import { useCart } from '../../lib/cart-context';
-
-const formatPrice = (value: number) => `৳${value.toLocaleString('en-US')}`;
+import { formatBdt as formatPrice } from '../../lib/format';
 
 export default function CartPage() {
   const { state, removeItem, updateQuantity, clearCart } = useCart();
@@ -16,16 +15,16 @@ export default function CartPage() {
         <section className="mx-auto max-w-5xl px-6 py-20 md:px-8">
           <div className="rounded-[2.5rem] border border-charcoal/10 bg-white p-10 shadow-soft">
             <div className="space-y-6 text-center">
-              <p className="text-xs uppercase tracking-[0.35em] text-charcoal/60">Panier</p>
-              <h1 className="text-4xl font-semibold text-black">Votre panier est vide</h1>
+              <p className="text-xs uppercase tracking-[0.35em] text-charcoal/60">Cart</p>
+              <h1 className="text-4xl font-semibold text-black">Your cart is empty</h1>
               <p className="max-w-2xl mx-auto text-base leading-7 text-charcoal/80">
-                Ajoutez un produit à votre panier pour voir votre sélection ici. La boutique propose des soins visage, corps et parfums authentiques importés de France.
+                Add a product to your cart to see your selection here. The shop offers authentic face care, body care and fragrances imported from France.
               </p>
               <Link
                 href="/shop"
                 className="inline-flex items-center justify-center rounded-full bg-black px-8 py-3 text-sm font-semibold text-white transition hover:bg-charcoal/90"
               >
-                Continuer mes achats
+                Continue shopping
               </Link>
             </div>
           </div>
@@ -40,8 +39,8 @@ export default function CartPage() {
       <section className="mx-auto max-w-6xl px-6 py-20 md:px-8">
         <div className="space-y-8">
           <div className="text-center">
-            <p className="text-xs uppercase tracking-[0.35em] text-charcoal/60">Panier</p>
-            <h1 className="text-4xl font-semibold text-black">Votre sélection</h1>
+            <p className="text-xs uppercase tracking-[0.35em] text-charcoal/60">Cart</p>
+            <h1 className="text-4xl font-semibold text-black">Your selection</h1>
           </div>
 
           <div className="grid gap-8 lg:grid-cols-[1.5fr_0.5fr]">
@@ -98,15 +97,15 @@ export default function CartPage() {
             {/* Order Summary */}
             <div className="space-y-6">
               <div className="rounded-[2rem] border border-charcoal/10 bg-white p-6 shadow-soft">
-                <h2 className="text-lg font-semibold text-black mb-4">Récapitulatif</h2>
+                <h2 className="text-lg font-semibold text-black mb-4">Order Summary</h2>
                 <div className="space-y-3">
                   <div className="flex justify-between text-sm">
-                    <span className="text-charcoal/70">Sous-total ({state.itemCount} article{state.itemCount > 1 ? 's' : ''})</span>
+                    <span className="text-charcoal/70">Subtotal ({state.itemCount} item{state.itemCount > 1 ? 's' : ''})</span>
                     <span className="font-medium text-black">{formatPrice(state.total)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-charcoal/70">Livraison</span>
-                    <span className="font-medium text-black">Gratuite</span>
+                    <span className="text-charcoal/70">Delivery</span>
+                    <span className="font-medium text-black">Free</span>
                   </div>
                   <div className="border-t border-charcoal/10 pt-3">
                     <div className="flex justify-between text-lg font-semibold">
@@ -122,19 +121,19 @@ export default function CartPage() {
                   href="/checkout"
                   className="block w-full rounded-full bg-black px-6 py-4 text-center text-sm font-semibold text-white transition hover:bg-charcoal/90"
                 >
-                  Procéder au paiement
+                  Proceed to checkout
                 </Link>
                 <Link
                   href="/shop"
                   className="block w-full rounded-full border border-charcoal/10 bg-white px-6 py-4 text-center text-sm font-semibold text-black transition hover:border-black hover:bg-cream"
                 >
-                  Continuer mes achats
+                  Continue shopping
                 </Link>
                 <button
                   onClick={clearCart}
                   className="block w-full rounded-full border border-red-200 bg-white px-6 py-4 text-center text-sm font-semibold text-red-600 transition hover:border-red-300 hover:bg-red-50"
                 >
-                  Vider le panier
+                  Clear cart
                 </button>
               </div>
             </div>

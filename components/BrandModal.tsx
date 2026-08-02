@@ -41,22 +41,22 @@ export function BrandModal({ brand, isOpen, onClose }: { brand: Brand | null; is
 
           {/* Description */}
           <div className="space-y-3">
-            <p className="text-xs uppercase tracking-[0.35em] text-charcoal/60">À propos</p>
+            <p className="text-xs uppercase tracking-[0.35em] text-charcoal/60">About</p>
             <p className="text-base leading-7 text-charcoal/80">{brand.fullDescription}</p>
           </div>
 
           {/* Heritage */}
           <div className="space-y-3 rounded-2xl bg-cream p-4 md:p-6">
-            <p className="text-xs uppercase tracking-[0.35em] text-charcoal/60">Héritage</p>
+            <p className="text-xs uppercase tracking-[0.35em] text-charcoal/60">Heritage</p>
             <p className="text-sm leading-6 text-charcoal/75">
               {brand.heritage}
             </p>
-            <p className="text-xs font-semibold text-charcoal/60">Fondée en {brand.foundedYear}</p>
+            <p className="text-xs font-semibold text-charcoal/60">Founded in {brand.foundedYear}</p>
           </div>
 
           {/* Expertise */}
           <div className="space-y-3">
-            <p className="text-xs uppercase tracking-[0.35em] text-charcoal/60">Domaines d'expertise</p>
+            <p className="text-xs uppercase tracking-[0.35em] text-charcoal/60">Areas of expertise</p>
             <div className="flex flex-wrap gap-2">
               {brand.expertise.map((exp) => (
                 <span
@@ -75,7 +75,7 @@ export function BrandModal({ brand, isOpen, onClose }: { brand: Brand | null; is
               href={`/shop?brand=${brand.name}`}
               className="block w-full rounded-full bg-black px-6 py-4 text-center text-sm font-semibold text-white transition hover:bg-charcoal/90"
             >
-              Découvrir les produits {brand.name}
+              Discover {brand.name} products
             </a>
           </div>
         </div>

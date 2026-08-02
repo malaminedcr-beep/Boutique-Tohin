@@ -45,9 +45,9 @@ export default function Hero() {
             className="font-serif text-ink"
             style={{ fontSize: 'clamp(2.6rem, 5vw, 4.4rem)', lineHeight: 1.08, letterSpacing: '-0.01em' }}
           >
-            La beauté française,{' '}
+            French Beauty,{' '}
             <em className="text-accent" style={{ fontStyle: 'italic' }}>
-              livrée chez vous
+              Delivered to Your Door
             </em>
           </h1>
 

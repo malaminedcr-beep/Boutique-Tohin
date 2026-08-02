@@ -234,14 +234,14 @@ const fmt = (n: number) => `৳${n.toLocaleString('en-US')}`;
 const SHORT_ID = (id: string) => id.split('-')[0].toUpperCase();
 
 const FORMAT_DATE = (iso: string) =>
-  new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+  new Date(iso).toLocaleDateString('en-US', { day: '2-digit', month: 'long', year: 'numeric' });
 
 const STATUS_LABELS: Record<string, string> = {
-  pending: 'En attente',
-  confirmed: 'Confirmée',
-  shipped: 'Expédiée',
-  delivered: 'Livrée',
-  cancelled: 'Annulée',
+  pending: 'Pending',
+  confirmed: 'Confirmed',
+  shipped: 'Shipped',
+  delivered: 'Delivered',
+  cancelled: 'Cancelled',
 };
 
 const PAYMENT_LABELS: Record<string, string> = {
@@ -257,7 +257,7 @@ export default function OrderSlipPDF({ order }: { order: Order }) {
 
   return (
     <Document
-      title={`Bon-${SHORT_ID(order.id)}`}
+      title={`Slip-${SHORT_ID(order.id)}`}
       author="French Beauty BD"
     >
       <Page size="A6" style={s.page}>
@@ -266,10 +266,10 @@ export default function OrderSlipPDF({ order }: { order: Order }) {
         <View style={s.header}>
           <View>
             <Text style={s.brandName}>FRENCH BEAUTY BD</Text>
-            <Text style={s.brandSub}>Cosmétiques français · Bangladesh</Text>
+            <Text style={s.brandSub}>French cosmetics · Bangladesh</Text>
           </View>
           <View style={s.orderMeta}>
-            <Text style={s.orderLabel}>BON DE COMMANDE</Text>
+            <Text style={s.orderLabel}>ORDER SLIP</Text>
             <Text style={s.orderNum}>#{SHORT_ID(order.id)}</Text>
             <Text style={s.orderDate}>{FORMAT_DATE(order.created_at)}</Text>
           </View>
@@ -277,7 +277,7 @@ export default function OrderSlipPDF({ order }: { order: Order }) {
 
         {/* ── ADRESSE LIVRAISON ── */}
         <View style={s.section}>
-          <Text style={s.sectionLabel}>LIVRER À</Text>
+          <Text style={s.sectionLabel}>SHIP TO</Text>
           <Text style={s.customerName}>{addr.firstName} {addr.lastName}</Text>
           <Text style={s.detail}>{addr.phone}</Text>
           <Text style={s.detail}>{addr.address}</Text>
@@ -287,12 +287,12 @@ export default function OrderSlipPDF({ order }: { order: Order }) {
 
         {/* ── TABLE PRODUITS ── */}
         <View>
-          <Text style={s.sectionLabel}>PRODUITS</Text>
+          <Text style={s.sectionLabel}>PRODUCTS</Text>
           <View style={s.tableHeader}>
-            <Text style={[s.thText, s.colProduct]}>Produit</Text>
-            <Text style={[s.thText, s.colQty]}>Qté</Text>
-            <Text style={[s.thText, s.colPrice]}>Prix unit.</Text>
-            <Text style={[s.thText, s.colTotal]}>Sous-total</Text>
+            <Text style={[s.thText, s.colProduct]}>Product</Text>
+            <Text style={[s.thText, s.colQty]}>Qty</Text>
+            <Text style={[s.thText, s.colPrice]}>Unit price</Text>
+            <Text style={[s.thText, s.colTotal]}>Subtotal</Text>
           </View>
           {items.map((item, idx) => (
             <View key={item.id} style={idx % 2 === 1 ? s.tableRowAlt : s.tableRow}>
@@ -311,12 +311,12 @@ export default function OrderSlipPDF({ order }: { order: Order }) {
         <View style={s.totalBlock}>
           <View style={s.totalInner}>
             <View style={s.totalRow}>
-              <Text style={s.totalLabel}>Sous-total</Text>
+              <Text style={s.totalLabel}>Subtotal</Text>
               <Text style={s.totalValue}>{fmt(subtotal)}</Text>
             </View>
             <View style={s.totalRow}>
-              <Text style={s.totalLabel}>Livraison</Text>
-              <Text style={s.totalValue}>Gratuite</Text>
+              <Text style={s.totalLabel}>Delivery</Text>
+              <Text style={s.totalValue}>Free</Text>
             </View>
             <View style={s.totalFinalRow}>
               <Text style={s.totalFinalLabel}>TOTAL</Text>
@@ -338,7 +338,7 @@ export default function OrderSlipPDF({ order }: { order: Order }) {
         {/* ── FOOTER ── */}
         <View style={s.footer}>
           <Text style={s.footerBold}>frenchbeautybd.com</Text>
-          <Text style={s.footerText}>Cosmétiques authentiques • Livraison Bangladesh</Text>
+          <Text style={s.footerText}>Authentic cosmetics • Delivered across Bangladesh</Text>
           <Text style={s.footerText}>ID: {order.id.substring(0, 8)}</Text>
         </View>
 

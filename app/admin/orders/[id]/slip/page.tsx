@@ -2,29 +2,19 @@
 
 import { useEffect, useState } from 'react';
 import type { Order } from '../../../../../lib/types/orders';
+import { formatBdt as fmt } from '../../../../../lib/format';
+import {
+  ORDER_STATUS_LABELS as STATUS_LABEL,
+  PAYMENT_METHOD_LABELS as PAYMENT_LABEL,
+} from '../../../../../lib/i18n/strings';
 
-const fmt = (n: number) => `৳${n.toLocaleString('en-US')}`;
 const SHORT_ID = (id: string) => id.split('-')[0].toUpperCase();
 const FORMAT_DATE = (iso: string) =>
-  new Date(iso).toLocaleDateString('fr-FR', {
+  new Date(iso).toLocaleDateString('en-US', {
     day: '2-digit',
     month: 'long',
     year: 'numeric',
   });
-
-const PAYMENT_LABEL: Record<string, string> = {
-  cod: 'COD — Cash on Delivery',
-  bkash: 'bKash',
-  nagad: 'Nagad',
-};
-
-const STATUS_LABEL: Record<string, string> = {
-  pending: 'En attente',
-  confirmed: 'Confirmée',
-  shipped: 'Expédiée',
-  delivered: 'Livrée',
-  cancelled: 'Annulée',
-};
 
 export default function SlipPage({ params }: { params: { id: string } }) {
   const [order, setOrder] = useState<Order | null>(null);
@@ -47,7 +37,7 @@ export default function SlipPage({ params }: { params: { id: string } }) {
   if (error) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-canvas text-sm text-red-600">
-        Commande introuvable : {error}
+        Order not found: {error}
       </div>
     );
   }
@@ -57,7 +47,7 @@ export default function SlipPage({ params }: { params: { id: string } }) {
       <div className="flex min-h-screen items-center justify-center bg-canvas">
         <div className="flex flex-col items-center gap-3">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent border-t-transparent" />
-          <span className="text-sm text-muted">Génération du bon…</span>
+          <span className="text-sm text-muted">Generating slip…</span>
         </div>
       </div>
     );
@@ -112,13 +102,13 @@ export default function SlipPage({ params }: { params: { id: string } }) {
           onClick={() => window.print()}
           className="rounded-full bg-accent px-6 py-2.5 text-sm font-semibold text-white shadow-soft hover:bg-accent/90 transition"
         >
-          Imprimer / Enregistrer PDF
+          Print / Save PDF
         </button>
         <button
           onClick={() => window.close()}
           className="rounded-full border border-hairline bg-surface px-6 py-2.5 text-sm font-medium text-muted hover:text-ink transition"
         >
-          Fermer
+          Close
         </button>
       </div>
 
@@ -145,12 +135,12 @@ export default function SlipPage({ params }: { params: { id: string } }) {
               FRENCH BEAUTY BD
             </div>
             <div style={{ fontFamily: 'Arial, sans-serif', fontSize: '7pt', color: '#7A7068', marginTop: '2pt' }}>
-              Cosmétiques français · Bangladesh
+              French cosmetics · Bangladesh
             </div>
           </div>
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontFamily: 'Arial, sans-serif', fontSize: '6pt', color: '#7A7068', fontWeight: 700, letterSpacing: '0.08em', marginBottom: '2pt' }}>
-              BON DE COMMANDE
+              ORDER SLIP
             </div>
             <div style={{ fontFamily: 'Arial, sans-serif', fontSize: '10pt', fontWeight: 700, color: '#1A1614' }}>
               #{SHORT_ID(order.id)}
@@ -164,7 +154,7 @@ export default function SlipPage({ params }: { params: { id: string } }) {
         {/* Adresse */}
         <div style={{ marginBottom: '8pt', paddingBottom: '8pt', borderBottom: '0.5pt solid #E8E2D9' }}>
           <div style={{ fontFamily: 'Arial, sans-serif', fontSize: '6pt', fontWeight: 700, color: '#7A7068', letterSpacing: '0.1em', marginBottom: '4pt' }}>
-            LIVRER À
+            SHIP TO
           </div>
           <div style={{ fontFamily: 'Arial, sans-serif', fontSize: '10pt', fontWeight: 700, color: '#1A1614', marginBottom: '3pt' }}>
             {addr.firstName} {addr.lastName}
@@ -184,14 +174,14 @@ export default function SlipPage({ params }: { params: { id: string } }) {
         {/* Produits */}
         <div style={{ marginBottom: '8pt' }}>
           <div style={{ fontFamily: 'Arial, sans-serif', fontSize: '6pt', fontWeight: 700, color: '#7A7068', letterSpacing: '0.1em', marginBottom: '4pt' }}>
-            PRODUITS
+            PRODUCTS
           </div>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: 'Arial, sans-serif', fontSize: '8pt' }}>
             <thead>
               <tr style={{ background: '#FBF8F5', borderTop: '0.5pt solid #E8E2D9', borderBottom: '0.5pt solid #E8E2D9' }}>
-                <th style={{ textAlign: 'left', padding: '4pt 4pt 4pt 4pt', fontSize: '6.5pt', color: '#7A7068', fontWeight: 700 }}>Produit</th>
-                <th style={{ textAlign: 'center', padding: '4pt', fontSize: '6.5pt', color: '#7A7068', fontWeight: 700, width: '18pt' }}>Qté</th>
-                <th style={{ textAlign: 'right', padding: '4pt', fontSize: '6.5pt', color: '#7A7068', fontWeight: 700, width: '38pt' }}>Unit.</th>
+                <th style={{ textAlign: 'left', padding: '4pt 4pt 4pt 4pt', fontSize: '6.5pt', color: '#7A7068', fontWeight: 700 }}>Product</th>
+                <th style={{ textAlign: 'center', padding: '4pt', fontSize: '6.5pt', color: '#7A7068', fontWeight: 700, width: '18pt' }}>Qty</th>
+                <th style={{ textAlign: 'right', padding: '4pt', fontSize: '6.5pt', color: '#7A7068', fontWeight: 700, width: '38pt' }}>Unit</th>
                 <th style={{ textAlign: 'right', padding: '4pt 4pt 4pt 4pt', fontSize: '6.5pt', color: '#7A7068', fontWeight: 700, width: '38pt' }}>Total</th>
               </tr>
             </thead>
@@ -215,10 +205,10 @@ export default function SlipPage({ params }: { params: { id: string } }) {
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8pt' }}>
           <div style={{ width: '120pt', fontFamily: 'Arial, sans-serif' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '7.5pt', color: '#7A7068', marginBottom: '2pt' }}>
-              <span>Sous-total</span><span>{fmt(subtotal)}</span>
+              <span>Subtotal</span><span>{fmt(subtotal)}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '7.5pt', color: '#7A7068', marginBottom: '4pt' }}>
-              <span>Livraison</span><span>Gratuite</span>
+              <span>Delivery</span><span>Free</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', background: '#1A1614', color: 'white', padding: '5pt 8pt', borderRadius: '3pt' }}>
               <span style={{ fontWeight: 700, fontSize: '9pt' }}>TOTAL</span>
@@ -240,7 +230,7 @@ export default function SlipPage({ params }: { params: { id: string } }) {
         {/* Footer */}
         <div style={{ borderTop: '0.5pt solid #E8E2D9', paddingTop: '6pt', display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontFamily: 'Arial, sans-serif', fontSize: '6pt', color: '#7A7068' }}>
           <span style={{ fontWeight: 700 }}>frenchbeautybd.com</span>
-          <span>Cosmétiques authentiques · BD</span>
+          <span>Authentic cosmetics · BD</span>
           <span>ID: {order.id.substring(0, 8)}</span>
         </div>
       </div>

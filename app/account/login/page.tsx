@@ -33,8 +33,8 @@ export default function LoginPage() {
         <div className="rounded-2xl border border-hairline bg-white p-10 shadow-card">
 
           <div className="mb-8 text-center">
-            <p className="mb-2 text-[10px] uppercase tracking-[0.35em] text-muted">Mon compte</p>
-            <h1 className="font-serif text-3xl uppercase tracking-widest text-ink">Connexion</h1>
+            <p className="mb-2 text-[10px] uppercase tracking-[0.35em] text-muted">My account</p>
+            <h1 className="font-serif text-3xl uppercase tracking-widest text-ink">Sign in</h1>
           </div>
 
           {error && (
@@ -60,13 +60,13 @@ export default function LoginPage() {
             <div>
               <div className="mb-1.5 flex items-center justify-between">
                 <label className="text-[11px] font-semibold uppercase tracking-[0.15em] text-muted">
-                  Mot de passe
+                  Password
                 </label>
                 <Link
                   href="/account/forgot-password"
                   className="text-[11px] text-muted hover:text-accent transition-colors"
                 >
-                  Mot de passe oublié ?
+                  Forgot password?
                 </Link>
               </div>
               <input
@@ -83,14 +83,14 @@ export default function LoginPage() {
               disabled={loading}
               className="w-full border border-ink bg-ink px-6 py-3.5 text-[11px] font-semibold uppercase tracking-[0.2em] text-white transition-colors hover:bg-accent hover:border-accent disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Connexion…' : 'Se connecter'}
+              {loading ? 'Signing in…' : 'Sign in'}
             </button>
           </form>
 
           <p className="mt-8 text-center text-[12px] text-muted">
-            Pas encore de compte ?{' '}
+            Don&apos;t have an account yet?{' '}
             <Link href="/account/register" className="font-semibold text-ink hover:text-accent transition-colors">
-              Créer un compte
+              Create account
             </Link>
           </p>
         </div>

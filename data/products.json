@@ -148,7 +148,7 @@
   {
     "id": 10,
     "sku": "CV-010",
-    "name": "Soin Concentré Anti-Imperfections",
+    "name": "Blemish Control Gel",
     "brand": "CeraVe",
     "category": "face-care",
     "volume": "56 g",
@@ -199,7 +199,7 @@
   {
     "id": 13,
     "sku": "YR-002",
-    "name": "Sebo Active Clear Gel-Crème",
+    "name": "Sebo Active Clear Gel-Cream",
     "brand": "Yves Rocher",
     "category": "face-care",
     "volume": "50 ml",
@@ -235,7 +235,7 @@
   {
     "id": 15,
     "sku": "YR-004",
-    "name": "Réparation Nourishing Body Milk",
+    "name": "Restoring Nourishing Body Milk",
     "brand": "Yves Rocher",
     "category": "body-care",
     "volume": "390 ml",
@@ -271,7 +271,7 @@
   {
     "id": 17,
     "sku": "YR-006",
-    "name": "Douceur Gentle Nourishing Shampoo",
+    "name": "Gentle Nourishing Shampoo",
     "brand": "Yves Rocher",
     "category": "hair-care",
     "volume": "300 ml",
@@ -357,7 +357,7 @@
   {
     "id": 23,
     "sku": "YR-012",
-    "name": "Argan & Pétales de Rose Shower Gel",
+    "name": "Argan & Rose Petals Shower Gel",
     "brand": "Yves Rocher",
     "category": "body-care",
     "volume": "400 ml",

@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { useCart } from '../../lib/cart-context';
 import { categoryLabel } from '../../lib/categories';
+import { formatBdt } from '../../lib/format';
 
 type Product = {
   id: number;
@@ -19,7 +20,6 @@ type Product = {
   badge: string | null;
 };
 
-const fmt = (v: number) => `৳${v.toLocaleString('en-US')}`;
 
 export default function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart();
@@ -111,7 +111,7 @@ export default function ProductCard({ product }: { product: Product }) {
         </div>
 
         <p className="text-[13px] font-semibold" style={{ color: '#C9513A' }}>
-          {fmt(product.priceBdt)}
+          {formatBdt(product.priceBdt)}
         </p>
 
         <button

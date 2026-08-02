@@ -27,7 +27,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="fr">
+    <html lang="en">
       <body className={`${serif.variable} ${sans.variable} bg-canvas text-ink antialiased`} style={{ cursor: 'none' }}>
         <CustomCursor />
         <CartProvider>
