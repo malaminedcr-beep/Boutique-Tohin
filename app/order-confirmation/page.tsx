@@ -1,5 +1,6 @@
 import Header from '../../components/Header';
 import Link from 'next/link';
+import { CONTACT, whatsappTel } from '../../lib/contact';
 
 export default function OrderConfirmationPage() {
   const orderNumber = `FB-${Date.now().toString().slice(-8)}`;
@@ -76,7 +77,7 @@ export default function OrderConfirmationPage() {
 
             <div className="pt-6 border-t border-charcoal/10">
               <p className="text-sm text-charcoal/60">
-                Des questions ? Contactez notre service client au <a href="tel:+8801234567890" className="text-black hover:text-gold transition-colors">+880 123 456 7890</a>
+                Des questions ? Contactez notre service client au <a href={`tel:${whatsappTel}`} className="text-black hover:text-gold transition-colors">{CONTACT.whatsapp}</a>
               </p>
             </div>
           </div>

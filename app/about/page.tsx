@@ -1,5 +1,6 @@
 import Header from '../../components/Header';
 import Link from 'next/link';
+import { CONTACT } from '../../lib/contact';
 
 export default function AboutPage() {
   return (
@@ -42,11 +43,11 @@ export default function AboutPage() {
             <div className="mt-8 grid gap-6 sm:grid-cols-3">
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-charcoal/60">WhatsApp</p>
-                <p className="mt-2 text-base font-medium text-black">+880 1234 567890</p>
+                <p className="mt-2 text-base font-medium text-black">{CONTACT.whatsapp}</p>
               </div>
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-charcoal/60">Email</p>
-                <p className="mt-2 text-base font-medium text-black">support@frenchbeautybd.com</p>
+                <p className="mt-2 text-base font-medium text-black">{CONTACT.email}</p>
               </div>
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-charcoal/60">Horaires</p>

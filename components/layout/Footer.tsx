@@ -8,10 +8,10 @@ const BRAND_LINKS = getAllBrands();
 
 const HELP_LINKS = [
   { label: 'Track Order', href: '/account' },
-  { label: 'Shipping Info', href: '/about' },
-  { label: 'Returns', href: '/about' },
+  { label: 'Shipping Info', href: '/shipping' },
+  { label: 'Returns', href: '/legal/returns' },
   { label: 'Contact', href: '/about#contact' },
-  { label: 'FAQ', href: '/about' },
+  { label: 'FAQ', href: '/faq' },
 ];
 
 export default function Footer() {
@@ -24,7 +24,7 @@ export default function Footer() {
             FRENCH <span className="text-accent">BEAUTY</span> BD
           </p>
           <p className="max-w-xs text-sm leading-7 text-muted">
-            Importateur officiel de produits cosmétiques français pour le Bangladesh. Authenticité garantie, livraison rapide.
+            Authentic French cosmetics, imported from France. Guaranteed authenticity, fast delivery across Bangladesh.
           </p>
         </div>
 
@@ -86,6 +86,10 @@ export default function Footer() {
           <p className="text-[11px] uppercase tracking-[0.2em] text-muted">
             © French Beauty BD 2026 — Tous droits réservés
           </p>
+          <div className="flex items-center gap-4 text-[11px] uppercase tracking-[0.2em] text-muted">
+            <Link href="/legal/terms" className="transition-colors hover:text-ink">Terms</Link>
+            <Link href="/legal/privacy" className="transition-colors hover:text-ink">Privacy</Link>
+          </div>
           <div className="flex items-center gap-2.5">
             {['COD', 'bKash', 'Nagad'].map((method) => (
               <span
