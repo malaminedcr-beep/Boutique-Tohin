@@ -1,8 +1,10 @@
 import Link from 'next/link';
+import { CATEGORIES, categoryHref } from '../../lib/categories';
+import { getAllBrands } from '../../lib/commerce/mock';
 
-const SHOP_LINKS = ['Skincare', 'Haircare', 'Bodycare', 'Makeup', 'Perfume'];
-
-const BRAND_LINKS = ['CeraVe', 'Vichy', 'La Roche-Posay', 'Yves Rocher', 'Bioderma'];
+// Brands are derived from the real catalogue so the footer never lists a brand
+// we don't actually sell.
+const BRAND_LINKS = getAllBrands();
 
 const HELP_LINKS = [
   { label: 'Track Order', href: '/account' },
@@ -30,13 +32,13 @@ export default function Footer() {
         <div className="space-y-4 p-10">
           <p className="text-[10px] uppercase tracking-[0.3em] text-muted">Shop</p>
           <ul className="space-y-3">
-            {SHOP_LINKS.map((cat) => (
-              <li key={cat}>
+            {CATEGORIES.map((cat) => (
+              <li key={cat.slug}>
                 <Link
-                  href={`/shop?category=${cat.toLowerCase()}`}
+                  href={categoryHref(cat.slug)}
                   className="text-sm text-muted transition-colors hover:text-ink"
                 >
-                  {cat}
+                  {cat.label}
                 </Link>
               </li>
             ))}

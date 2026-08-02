@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import ImageWithFallback from '../ui/image-with-fallback';
 
 export default function PromoBanner() {
   return (
@@ -36,30 +37,17 @@ export default function PromoBanner() {
             </Link>
           </div>
 
-          {/* Right — image placeholder */}
+          {/* Right — banner image */}
           <div className="flex-1 w-full max-w-lg">
             <div
-              className="flex w-full items-center justify-center rounded-2xl"
-              style={{
-                aspectRatio: '4/3',
-                background: '#F5F0EB',
-                border: '2px dashed #D8CFC6',
-              }}
+              className="relative w-full overflow-hidden rounded-2xl"
+              style={{ aspectRatio: '4/3', background: '#F5F0EB' }}
             >
-              <div className="flex flex-col items-center gap-3 p-8 text-center">
-                <svg
-                  className="h-12 w-12"
-                  fill="none"
-                  stroke="#C8BFBA"
-                  strokeWidth={1}
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <p className="text-[10px] uppercase tracking-[0.3em]" style={{ color: '#C8BFBA' }}>
-                  Banner Image
-                </p>
-              </div>
+              <ImageWithFallback
+                src="/images/hero/promo-skincare.jpg"
+                alt="Curated French skincare routine"
+                sizes="(max-width: 768px) 100vw, 512px"
+              />
             </div>
           </div>
         </div>

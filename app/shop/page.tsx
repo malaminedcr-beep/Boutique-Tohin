@@ -3,17 +3,9 @@
 import { useMemo, useState, useEffect } from 'react';
 import ProductCard from '../../components/product/product-card';
 import { getProducts, getAllBrands } from '../../lib/commerce/mock';
+import { CATEGORIES as CATEGORY_SOURCE } from '../../lib/categories';
 
-const CATEGORIES = [
-  { label: 'Skincare', value: 'face-care' },
-  { label: 'Haircare', value: 'hair-care' },
-  { label: 'Bodycare', value: 'body-care' },
-  { label: 'Makeup', value: 'makeup' },
-  { label: 'Suncare', value: 'sunscreen' },
-  { label: 'Perfume', value: 'mens-fragrance' },
-  { label: 'Serum', value: 'serum' },
-  { label: 'Face Wash', value: 'face-wash' },
-];
+const CATEGORIES = CATEGORY_SOURCE.map((c) => ({ label: c.label, value: c.slug }));
 
 const PRICE_RANGES = [
   { label: '৳0 – ৳2,000', value: '0-2000' },

@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useState } from 'react';
 import { useCart } from '../../lib/cart-context';
+import { categoryLabel } from '../../lib/categories';
 
 type Product = {
   id: number;
@@ -19,20 +20,6 @@ type Product = {
 };
 
 const fmt = (v: number) => `৳${v.toLocaleString('en-US')}`;
-
-const CATEGORY_LABELS: Record<string, string> = {
-  'face-care': 'Skincare',
-  'face-wash': 'Face Wash',
-  'moisturizer': 'Moisturizer',
-  'serum': 'Serum',
-  'sunscreen': 'Suncare',
-  'toner': 'Toner',
-  'eye-cream': 'Eye Cream',
-  'hair-care': 'Haircare',
-  'body-care': 'Bodycare',
-  'makeup': 'Makeup',
-  'mens-fragrance': 'Perfume',
-};
 
 function Stars({ rating = 4.5, count = 12 }: { rating?: number; count?: number }) {
   return (
@@ -60,7 +47,7 @@ export default function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart();
   const [imgError, setImgError] = useState(false);
   const hasImage = Boolean(product.image && product.image !== 'placeholder');
-  const categoryLabel = CATEGORY_LABELS[product.category] ?? product.category;
+  const catLabel = categoryLabel(product.category);
 
   const badge =
     product.badge === 'bestseller'
@@ -89,7 +76,7 @@ export default function ProductCard({ product }: { product: Product }) {
       {/* Category tag — top left */}
       <div className="absolute left-2 top-2 z-10">
         <span className="rounded-full border border-hairline bg-white/90 px-2 py-0.5 text-[9px] font-medium uppercase tracking-[0.1em] text-muted backdrop-blur-sm">
-          {categoryLabel}
+          {catLabel}
         </span>
       </div>
 

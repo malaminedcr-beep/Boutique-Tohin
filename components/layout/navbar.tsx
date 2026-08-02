@@ -3,15 +3,12 @@
 import Link from 'next/link';
 import { useState } from 'react';
 import { useCart } from '../../lib/cart-context';
+import { CATEGORIES, categoryHref } from '../../lib/categories';
 
-const navCategories = [
-  { label: 'Skincare', href: '/shop?category=face-care' },
-  { label: 'Haircare', href: '/shop?category=hair-care' },
-  { label: 'Bodycare', href: '/shop?category=body-care' },
-  { label: 'Makeup', href: '/shop?category=makeup' },
-  { label: 'Suncare', href: '/shop?category=suncare' },
-  { label: 'Perfume', href: '/shop?category=mens-fragrance' },
-];
+const navCategories = CATEGORIES.map((c) => ({
+  label: c.label,
+  href: categoryHref(c.slug),
+}));
 
 export default function Navbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
