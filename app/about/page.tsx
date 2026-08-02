@@ -1,6 +1,14 @@
 import Header from '../../components/Header';
 import Link from 'next/link';
 import { CONTACT } from '../../lib/contact';
+import { pageMetadata } from '../../lib/seo';
+
+export const metadata = pageMetadata({
+  title: 'About',
+  description:
+    'French Beauty BD connects the best French cosmetics with Bangladeshi shoppers — guaranteed authenticity, quality and personalised service.',
+  path: '/about',
+});
 
 export default function AboutPage() {
   return (

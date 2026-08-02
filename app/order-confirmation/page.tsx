@@ -1,6 +1,13 @@
+import type { Metadata } from 'next';
 import Header from '../../components/Header';
 import Link from 'next/link';
 import { CONTACT, whatsappTel } from '../../lib/contact';
+
+export const metadata: Metadata = {
+  title: 'Order Confirmation',
+  robots: { index: false, follow: false },
+  alternates: { canonical: '/order-confirmation' },
+};
 
 export default function OrderConfirmationPage() {
   const orderNumber = `FB-${Date.now().toString().slice(-8)}`;
