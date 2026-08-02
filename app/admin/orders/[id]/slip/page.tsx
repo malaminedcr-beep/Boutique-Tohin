@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { supabase } from '../../../../../lib/supabase';
 import type { Order } from '../../../../../lib/types/orders';
 
 const fmt = (n: number) => `৳${n.toLocaleString('en-US')}`;
@@ -32,17 +31,17 @@ export default function SlipPage({ params }: { params: { id: string } }) {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    supabase
-      .from('orders')
-      .select('*, order_items(id, quantity, unit_price_bdt, product:products(name, brand))')
-      .eq('id', params.id)
-      .single()
-      .then(({ data, error }) => {
-        if (error) { setError(error.message); return; }
+    fetch(`/api/admin/orders/${params.id}`)
+      .then(async (res) => {
+        if (!res.ok) throw new Error('Commande introuvable');
+        return res.json();
+      })
+      .then((data) => {
         setOrder(data as Order);
         // Auto-print après rendu
         setTimeout(() => window.print(), 400);
-      });
+      })
+      .catch((err) => setError(err instanceof Error ? err.message : 'Erreur'));
   }, [params.id]);
 
   if (error) {

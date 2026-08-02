@@ -1,11 +1,6 @@
-import { createClient } from '@supabase/supabase-js';
 import Link from 'next/link';
 import type { Order } from '../../../lib/types/orders';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+import { createAdminClient } from '../../../lib/supabase/admin';
 
 const STATUS_STYLES: Record<string, string> = {
   pending:   'bg-amber-50 text-amber-700 border-amber-200',
@@ -34,9 +29,10 @@ const fmt = (n: number) => `৳${n.toLocaleString('en-US')}`;
 const formatDate = (iso: string) =>
   new Date(iso).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
 
-export const revalidate = 0;
+export const dynamic = 'force-dynamic';
 
 export default async function AdminOrdersPage() {
+  const supabase = createAdminClient();
   const { data, error } = await supabase
     .from('orders')
     .select('*, order_items(id, quantity, unit_price_bdt, product:products(name, brand))')

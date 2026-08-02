@@ -4,7 +4,6 @@ import Header from '../../components/Header';
 import Link from 'next/link';
 import { useCart } from '../../lib/cart-context';
 import { useState } from 'react';
-import { supabase } from '../../lib/supabase';
 
 const fmt = (v: number) => `৳${v.toLocaleString('en-US')}`;
 
@@ -56,57 +55,23 @@ export default function CheckoutPage() {
     setError(null);
 
     try {
-      // 1. Récupérer les produits Supabase pour mapper SKU → UUID
-      const { data: products, error: productsError } = await supabase
-        .from('products')
-        .select('id, slug');
+      // Send ONLY identifiers + quantities. Prices and the total are
+      // recomputed server-side in /api/orders — never trusted from the client.
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: state.items.map(item => ({ sku: item.sku, quantity: item.quantity })),
+          paymentMethod,
+          shippingAddress: formData,
+        }),
+      });
 
-      if (productsError) throw productsError;
+      const result = await res.json();
+      if (!res.ok) throw new Error(result?.error ?? 'Une erreur est survenue. Réessayez.');
 
-      const skuToId: Record<string, string> = {};
-      if (products) {
-        for (const item of state.items) {
-          const prefix = item.sku.toLowerCase();
-          const match = products.find(p => p.slug.startsWith(prefix));
-          if (match) skuToId[item.sku] = match.id;
-        }
-      }
-
-      // 2. Créer la commande
-      const { data: order, error: orderError } = await supabase
-        .from('orders')
-        .insert({
-          status: 'pending',
-          payment_method: paymentMethod,
-          payment_status: 'pending',
-          total_bdt: state.total,
-          shipping_address: formData,
-        })
-        .select('id')
-        .single();
-
-      if (orderError) throw orderError;
-
-      // 3. Insérer les lignes de commande
-      const orderItems = state.items
-        .filter(item => skuToId[item.sku])
-        .map(item => ({
-          order_id: order.id,
-          product_id: skuToId[item.sku],
-          quantity: item.quantity,
-          unit_price_bdt: item.priceBdt,
-        }));
-
-      if (orderItems.length > 0) {
-        const { error: itemsError } = await supabase
-          .from('order_items')
-          .insert(orderItems);
-        if (itemsError) throw itemsError;
-      }
-
-      // 4. Succès
       clearCart();
-      window.location.href = `/order-confirmation?order=${order.id}`;
+      window.location.href = `/order-confirmation?order=${result.orderId}`;
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Une erreur est survenue. Réessayez.');
       setIsProcessing(false);

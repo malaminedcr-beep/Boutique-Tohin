@@ -1,6 +1,8 @@
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from './supabase/client';
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-
-export const supabase = createClient(url, key);
+/**
+ * Backward-compatible browser client singleton.
+ * Now cookie-based (via @supabase/ssr) so that server-side auth guards can
+ * read the session. Only import this from Client Components.
+ */
+export const supabase = createClient();
