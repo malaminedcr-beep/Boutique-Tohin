@@ -3,11 +3,12 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { supabase } from '../../../lib/supabase';
+import { getBrowserPb } from '../../../lib/pocketbase/client';
 
 export default function ResetPasswordPage() {
   const router = useRouter();
-  const [ready, setReady] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
+  const [checked, setChecked] = useState(false);
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -15,17 +16,15 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // Supabase fires PASSWORD_RECOVERY when the user lands from the email link
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'PASSWORD_RECOVERY') {
-        setReady(true);
-      }
-    });
-    return () => subscription.unsubscribe();
+    // PocketBase password-reset emails link here with ?token=...
+    const t = new URLSearchParams(window.location.search).get('token');
+    setToken(t);
+    setChecked(true);
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!token) return;
     if (password !== confirm) {
       setError('Passwords do not match.');
       return;
@@ -33,14 +32,15 @@ export default function ResetPasswordPage() {
     setLoading(true);
     setError(null);
 
-    const { error } = await supabase.auth.updateUser({ password });
-
-    if (error) {
-      setError(error.message);
-      setLoading(false);
-    } else {
+    try {
+      await getBrowserPb()
+        .collection('users')
+        .confirmPasswordReset(token, password, confirm);
       setSuccess(true);
-      setTimeout(() => router.push('/account'), 2500);
+      setTimeout(() => router.push('/account/login'), 2500);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not reset the password.');
+      setLoading(false);
     }
   };
 
@@ -56,7 +56,7 @@ export default function ResetPasswordPage() {
             </div>
             <div>
               <h1 className="font-serif text-3xl uppercase tracking-widest text-ink">Password updated</h1>
-              <p className="mt-3 text-sm text-muted">Redirecting to your account…</p>
+              <p className="mt-3 text-sm text-muted">Redirecting to sign in…</p>
             </div>
           </div>
         </section>
@@ -64,15 +64,14 @@ export default function ResetPasswordPage() {
     );
   }
 
-  if (!ready) {
+  if (checked && !token) {
     return (
       <main className="min-h-screen bg-canvas text-ink">
         <section className="mx-auto max-w-lg px-6 py-24 md:px-8">
           <div className="rounded-2xl border border-hairline bg-white p-10 shadow-card text-center space-y-6">
-            <div className="mx-auto h-7 w-7 animate-spin rounded-full border-2 border-ink border-t-transparent" />
-            <p className="text-sm text-muted">Verifying the link…</p>
-            <p className="text-xs text-muted/60">
-              If nothing happens,{' '}
+            <h1 className="font-serif text-3xl uppercase tracking-widest text-ink">Invalid link</h1>
+            <p className="text-sm text-muted">
+              This reset link is invalid or has expired.{' '}
               <Link href="/account/forgot-password" className="underline hover:text-ink">
                 request a new link
               </Link>
@@ -110,8 +109,8 @@ export default function ResetPasswordPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                minLength={6}
-                placeholder="••••••••  (min. 6 characters)"
+                minLength={8}
+                placeholder="••••••••  (min. 8 characters)"
                 className="w-full border border-hairline bg-surface px-4 py-3 text-sm text-ink placeholder:text-muted/40 outline-none focus:border-accent transition-colors"
               />
             </div>
@@ -124,7 +123,7 @@ export default function ResetPasswordPage() {
                 value={confirm}
                 onChange={(e) => setConfirm(e.target.value)}
                 required
-                minLength={6}
+                minLength={8}
                 placeholder="••••••••"
                 className="w-full border border-hairline bg-surface px-4 py-3 text-sm text-ink placeholder:text-muted/40 outline-none focus:border-accent transition-colors"
               />

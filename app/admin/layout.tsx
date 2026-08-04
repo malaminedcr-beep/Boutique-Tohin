@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { createClient } from '../../lib/supabase/server';
+import { getServerPb, getVerifiedAdmin } from '../../lib/pocketbase/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,20 +12,8 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const supabase = createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) notFound();
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-
-  if (profile?.role !== 'admin') notFound();
-
+  const pb = getServerPb();
+  const admin = await getVerifiedAdmin(pb);
+  if (!admin) notFound();
   return <>{children}</>;
 }

@@ -3,29 +3,26 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { supabase } from '../../lib/supabase';
-import type { User } from '@supabase/supabase-js';
+import { getBrowserPb } from '../../lib/pocketbase/client';
+import type { RecordModel } from 'pocketbase';
 
 export default function AccountPage() {
   const router = useRouter();
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<RecordModel | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getUser().then(({ data }) => {
-      setUser(data.user);
-      setLoading(false);
+    const pb = getBrowserPb();
+    setUser(pb.authStore.record ?? null);
+    setLoading(false);
+    const unsubscribe = pb.authStore.onChange(() => {
+      setUser(pb.authStore.record ?? null);
     });
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-    });
-
-    return () => subscription.unsubscribe();
+    return () => unsubscribe();
   }, []);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
+  const handleLogout = () => {
+    getBrowserPb().authStore.clear();
     router.push('/');
   };
 
@@ -69,8 +66,8 @@ export default function AccountPage() {
     );
   }
 
-  const displayName = (user.user_metadata?.full_name as string) || user.email?.split('@')[0] || 'Customer';
-  const memberSince = new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const displayName = (user.full_name as string) || user.email?.split('@')[0] || 'Customer';
+  const memberSince = new Date(user.created).toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
 
   return (
     <main className="min-h-screen bg-canvas text-ink">

@@ -2,9 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { supabase } from '../../../lib/supabase';
-
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://french-beauty-bd.vercel.app';
+import { getBrowserPb } from '../../../lib/pocketbase/client';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -17,15 +15,12 @@ export default function ForgotPasswordPage() {
     setLoading(true);
     setError(null);
 
-    const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${SITE_URL}/account/reset-password`,
-    });
-
-    if (error) {
-      setError(error.message);
-      setLoading(false);
-    } else {
+    try {
+      await getBrowserPb().collection('users').requestPasswordReset(email);
       setSent(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not send the reset link.');
+      setLoading(false);
     }
   };
 

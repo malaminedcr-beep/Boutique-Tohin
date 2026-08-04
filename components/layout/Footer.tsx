@@ -1,10 +1,6 @@
 import Link from 'next/link';
 import { CATEGORIES, categoryHref } from '../../lib/categories';
-import { getAllBrands } from '../../lib/commerce/mock';
-
-// Brands are derived from the real catalogue so the footer never lists a brand
-// we don't actually sell.
-const BRAND_LINKS = getAllBrands();
+import { getAllBrands } from '../../lib/pocketbase/products';
 
 const HELP_LINKS = [
   { label: 'Track Order', href: '/account' },
@@ -14,7 +10,16 @@ const HELP_LINKS = [
   { label: 'FAQ', href: '/faq' },
 ];
 
-export default function Footer() {
+export default async function Footer() {
+  // Brands from PocketBase (source of truth); guarded so a build without
+  // PocketBase running doesn't fail.
+  let BRAND_LINKS: string[] = [];
+  try {
+    BRAND_LINKS = await getAllBrands();
+  } catch {
+    BRAND_LINKS = [];
+  }
+
   return (
     <footer className="border-t border-hairline bg-canvas">
       <div className="mx-auto grid max-w-7xl grid-cols-1 divide-y divide-hairline md:grid-cols-4 md:divide-x md:divide-y-0">

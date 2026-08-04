@@ -21,10 +21,11 @@ Boutique en ligne de cosmétiques français pour le Bangladesh, développée ave
 - **Montserrat** - Sans-serif pour le corps de texte
 - **Design System** - Couleurs, espacement, typographie cohérents
 
-### État & Données
-- **React Context** - Gestion d'état global (panier)
-- **Mock Data** - Données produits simulées (`data/products.json`)
-- **Commerce Adapter** - Abstraction couche commerce (`lib/commerce/mock.ts`)
+### Backend & Données
+- **PocketBase** - Backend auto-hébergé (SQLite). Collections `products`, `orders`, `order_items`, `users`. **Source de vérité** du catalogue et des commandes. Local : `http://127.0.0.1:8090`.
+- **React Context** - Gestion d'état global du panier (`lib/cart-context.tsx`)
+- **Lecture produits** - `lib/pocketbase/products.ts` (serveur). `data/products.json` = **seed initial uniquement** (`scripts/migrate-to-pocketbase.ts`), plus lu en prod.
+- *(Migration Supabase → PocketBase effectuée — voir section « Backend PocketBase ».)*
 
 ## 📁 Structure du Projet
 
@@ -49,7 +50,8 @@ french-beauty-bd/
 │   └── CustomCursor.tsx         # Curseur personnalisé
 ├── lib/                         # Utilitaires & logique métier
 │   ├── cart-context.tsx         # Contexte panier
-│   └── commerce/mock.ts         # Données & logique commerce
+│   ├── pocketbase/              # Clients PB : client, server, admin, products, orders
+│   └── commerce/                # types.ts (Product) + filter.ts (filtre isomorphe)
 ├── data/                        # Données statiques
 │   └── products.json            # Catalogue produits
 ├── public/                      # Assets statiques
@@ -175,7 +177,7 @@ import Header from '../components/Header';
 import { useCart } from '../lib/cart-context';
 
 // Types
-import type { Product } from '../lib/commerce/mock';
+import type { Product } from '../lib/commerce/types';
 ```
 
 ### Styles
@@ -185,11 +187,37 @@ import type { Product } from '../lib/commerce/mock';
 
 ## 🔗 Points d'Extension
 
-### Backend Integration
-- Remplacer `lib/commerce/mock.ts` par API réelle
-- Ajouter authentification utilisateur
-- Intégrer vraie API bKash
-- Base de données pour commandes
+### Backend PocketBase (fait)
+Le backend est **PocketBase** (migration depuis Supabase, branche `migrate/pocketbase`).
+
+**Collections & API Rules** (équivalent des RLS)
+- `products` — lecture **publique** (`list/view = ""`), écriture **superuser only** (`create/update/delete = null`). Champs : `ref`(id numérique vitrine), `sku`, `slug`, `name`, `brand`, `category`, `description`, `volume`, `price_bdt`, `price_eur`, `image_url` (chemins statiques `/images/…`), `gallery`, `in_stock`, `is_new`, `is_bestseller`.
+- `orders` / `order_items` — lecture **propriétaire uniquement** (`user = @request.auth.id`), écriture **serveur only**.
+- `users` (auth) — champs `full_name`, `phone`, `address_line`, `city`, `role` (user/admin) ; rules own-row.
+
+**Clients** (`lib/pocketbase/`)
+- `client.ts` (browser, cookie-sync) · `server.ts` (SSR + `getVerifiedAdmin/User` via `authRefresh`) · `admin.ts` (superuser, server-only) · `products.ts` / `orders.ts` (lectures mappées).
+
+**Sécurité** : recalcul de prix **serveur** dans `app/api/orders/route.ts` (client n'envoie que `[{sku, quantity}]`) ; garde admin (`middleware.ts` + `app/admin/layout.tsx`) qui **vérifie le rôle contre PocketBase** (le cookie n'est jamais fait confiance).
+
+**Lancer PocketBase en local**
+```bash
+# binaire dans C:\Users\USER\pocketbase\
+pocketbase serve --http 127.0.0.1:8090
+# superuser : admin@frenchbeauty.local
+npx tsx scripts/pb-schema.ts            # crée collections + rules (idempotent)
+npx tsx scripts/migrate-to-pocketbase.ts # seed 37 produits depuis products.json
+```
+
+**Variables d'environnement** (`.env.local`)
+```env
+NEXT_PUBLIC_POCKETBASE_URL=http://127.0.0.1:8090
+POCKETBASE_ADMIN_EMAIL=...      # superuser (server-only)
+POCKETBASE_ADMIN_PASSWORD=...   # superuser (server-only)
+```
+
+### Features additionnelles (à venir)
+- Intégrer vraie API bKash · Wishlist · Avis clients (collection `reviews`) · Hébergement prod de PocketBase (VPS)
 
 ### Features Additionnelles
 - Wishlist/favoris
@@ -218,7 +246,7 @@ import type { Product } from '../lib/commerce/mock';
 
 ---
 
-**Dernière mise à jour**: Mai 2026
-**Version**: 1.0.0
-**Status**: Production Ready</content>
+**Dernière mise à jour**: Août 2026 — migration backend Supabase → PocketBase
+**Version**: 2.0.0
+**Status**: Backend PocketBase (local) — hébergement prod PB à décider</content>
 <parameter name="filePath">c:\Tohin\CONTEXT.md

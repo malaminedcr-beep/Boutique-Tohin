@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { supabase } from '../../../lib/supabase';
+import { getBrowserPb } from '../../../lib/pocketbase/client';
 
 export default function RegisterPage() {
   const [fullName, setFullName] = useState('');
@@ -17,17 +17,21 @@ export default function RegisterPage() {
     setLoading(true);
     setError(null);
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { full_name: fullName } },
-    });
-
-    if (error) {
-      setError(error.message);
-      setLoading(false);
-    } else {
+    try {
+      await getBrowserPb().collection('users').create({
+        email,
+        password,
+        passwordConfirm: password,
+        full_name: fullName,
+      });
       setSuccess(true);
+    } catch (err: any) {
+      const msg =
+        err?.response?.data?.email?.message ||
+        err?.response?.message ||
+        (err instanceof Error ? err.message : 'Registration failed.');
+      setError(msg);
+      setLoading(false);
     }
   };
 
@@ -46,9 +50,9 @@ export default function RegisterPage() {
               <h1 className="font-serif text-3xl uppercase tracking-widest text-ink">Account created!</h1>
             </div>
             <p className="text-sm text-muted">
-              A confirmation email has been sent to{' '}
-              <span className="font-semibold text-ink">{email}</span>.<br />
-              Click the link to activate your account.
+              Your account <span className="font-semibold text-ink">{email}</span> has been
+              created.<br />
+              You can now sign in.
             </p>
             <Link
               href="/account/login"
@@ -114,8 +118,8 @@ export default function RegisterPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                minLength={6}
-                placeholder="••••••••  (min. 6 characters)"
+                minLength={8}
+                placeholder="••••••••  (min. 8 characters)"
                 className="w-full border border-hairline bg-surface px-4 py-3 text-sm text-ink placeholder:text-muted/40 outline-none focus:border-accent transition-colors"
               />
             </div>
