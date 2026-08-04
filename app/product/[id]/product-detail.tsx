@@ -2,7 +2,7 @@
 
 import Header from '../../../components/Header';
 import Link from 'next/link';
-import { Product } from '../../../lib/commerce/mock';
+import type { Product } from '../../../lib/commerce/types';
 import { useCart } from '../../../lib/cart-context';
 import { useState, useEffect, useCallback } from 'react';
 import { formatBdt } from '../../../lib/format';

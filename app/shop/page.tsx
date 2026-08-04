@@ -1,21 +1,23 @@
 import type { Metadata } from 'next';
 import { categoryLabel, CATEGORIES } from '../../lib/categories';
-import { getAllBrands } from '../../lib/commerce/mock';
+import { getProducts, getAllBrands } from '../../lib/pocketbase/products';
 import { pageMetadata } from '../../lib/seo';
 import ShopClient from './shop-client';
 
-export function generateMetadata({
+export const dynamic = 'force-dynamic';
+
+export async function generateMetadata({
   searchParams,
 }: {
   searchParams: { category?: string; brand?: string };
-}): Metadata {
+}): Promise<Metadata> {
   const category = searchParams?.category;
   const brand = searchParams?.brand;
 
   let title = 'Shop All Products';
   if (category && CATEGORIES.some((c) => c.slug === category)) {
     title = `${categoryLabel(category)} — Shop`;
-  } else if (brand && getAllBrands().includes(brand)) {
+  } else if (brand && (await getAllBrands()).includes(brand)) {
     title = `${brand} — Shop`;
   }
 
@@ -27,6 +29,7 @@ export function generateMetadata({
   });
 }
 
-export default function ShopPage() {
-  return <ShopClient />;
+export default async function ShopPage() {
+  const [products, brands] = await Promise.all([getProducts(), getAllBrands()]);
+  return <ShopClient products={products} brands={brands} />;
 }

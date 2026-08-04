@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getProductById } from '../../../lib/commerce/mock';
+import { getProductByRef } from '../../../lib/pocketbase/products';
 import {
   PRODUCT_CATEGORY_DESCRIPTIONS,
   PRODUCT_DESCRIPTION_FALLBACK,
@@ -8,8 +8,10 @@ import {
 import { SITE_URL } from '../../../lib/seo';
 import ProductDetail from './product-detail';
 
-export function generateMetadata({ params }: { params: { id: string } }): Metadata {
-  const product = getProductById(Number(params.id));
+export const dynamic = 'force-dynamic';
+
+export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+  const product = await getProductByRef(Number(params.id));
   if (!product) return { title: 'Product not found' };
 
   const title = `${product.name} ${product.volume} — ${product.brand}`;
@@ -37,8 +39,8 @@ export function generateMetadata({ params }: { params: { id: string } }): Metada
   };
 }
 
-export default function ProductPage({ params }: { params: { id: string } }) {
-  const product = getProductById(Number(params.id));
+export default async function ProductPage({ params }: { params: { id: string } }) {
+  const product = await getProductByRef(Number(params.id));
   if (!product) notFound();
 
   const description =

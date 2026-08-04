@@ -1,8 +1,8 @@
 import type { MetadataRoute } from 'next';
 import { SITE_URL } from '../lib/seo';
-import { getProducts } from '../lib/commerce/mock';
+import { getAllProducts } from '../lib/pocketbase/products';
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
 
   const staticRoutes = [
@@ -24,12 +24,18 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: route === '' ? 1 : 0.7,
   }));
 
-  const productEntries: MetadataRoute.Sitemap = getProducts().map((product) => ({
-    url: `${SITE_URL}/product/${product.id}`,
-    lastModified: now,
-    changeFrequency: 'weekly',
-    priority: 0.8,
-  }));
+  let productEntries: MetadataRoute.Sitemap = [];
+  try {
+    const products = await getAllProducts();
+    productEntries = products.map((product) => ({
+      url: `${SITE_URL}/product/${product.id}`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    }));
+  } catch {
+    // PocketBase indisponible au build : on renvoie au moins les routes statiques.
+  }
 
   return [...staticEntries, ...productEntries];
 }

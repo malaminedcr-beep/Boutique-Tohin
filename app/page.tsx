@@ -3,11 +3,12 @@ import Hero from '../components/home/hero';
 import CategoryArches from '../components/home/category-arches';
 import PromoBanner from '../components/home/promo-banner';
 import ProductCard from '../components/product/product-card';
-import { getProducts } from '../lib/commerce/mock';
+import { getProducts } from '../lib/pocketbase/products';
 
-const newArrivals = getProducts().slice(0, 10);
+export const dynamic = 'force-dynamic';
 
-export default function Home() {
+export default async function Home() {
+  const newArrivals = (await getProducts()).slice(0, 10);
   return (
     <main className="bg-canvas text-ink">
       {/* Section 1 — Hero */}

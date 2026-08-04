@@ -2,8 +2,9 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import ProductCard from '../../components/product/product-card';
-import { getProducts, getAllBrands } from '../../lib/commerce/mock';
 import { CATEGORIES as CATEGORY_SOURCE } from '../../lib/categories';
+import { filterProducts } from '../../lib/commerce/filter';
+import type { Product } from '../../lib/commerce/types';
 
 const CATEGORIES = CATEGORY_SOURCE.map((c) => ({ label: c.label, value: c.slug }));
 
@@ -19,8 +20,6 @@ const SORT_OPTIONS = [
   { label: 'Price: Low to High', value: 'price-asc' },
   { label: 'Price: High to Low', value: 'price-desc' },
 ];
-
-const allBrands = getAllBrands();
 
 /* ── small helpers ── */
 
@@ -65,7 +64,13 @@ function CheckRow({
 
 /* ── main client ── */
 
-export default function ShopClient() {
+export default function ShopClient({
+  products,
+  brands,
+}: {
+  products: Product[];
+  brands: string[];
+}) {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedBrand, setSelectedBrand] = useState('');
   const [selectedPrice, setSelectedPrice] = useState('all');
@@ -80,11 +85,11 @@ export default function ShopClient() {
     const cat = params.get('category') ?? '';
     if (cat && CATEGORIES.some((c) => c.value === cat)) setSelectedCategory(cat);
     const brand = params.get('brand') ?? '';
-    if (brand && allBrands.includes(brand)) setSelectedBrand(brand);
-  }, []);
+    if (brand && brands.includes(brand)) setSelectedBrand(brand);
+  }, [brands]);
 
   const filteredProducts = useMemo(() => {
-    const base = getProducts({
+    const base = filterProducts(products, {
       gender: genderQuery,
       category: selectedCategory,
       brand: selectedBrand,
@@ -94,7 +99,7 @@ export default function ShopClient() {
     if (selectedSort === 'price-desc') return [...base].sort((a, b) => b.priceBdt - a.priceBdt);
     if (selectedSort === 'new') return base.filter((p) => p.badge === 'new');
     return base;
-  }, [genderQuery, selectedCategory, selectedBrand, selectedPrice, selectedSort]);
+  }, [products, genderQuery, selectedCategory, selectedBrand, selectedPrice, selectedSort]);
 
   const activeCategoryLabel =
     CATEGORIES.find((c) => c.value === selectedCategory)?.label ?? 'All Products';
@@ -183,7 +188,7 @@ export default function ShopClient() {
         {/* Brand */}
         <div className="py-4 border-b border-hairline">
           <SectionTitle>Brand</SectionTitle>
-          {allBrands.map((brand) => (
+          {brands.map((brand) => (
             <CheckRow
               key={brand}
               label={brand}
