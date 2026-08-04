@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createAdminPb } from '../../../lib/pocketbase/admin';
+import { getServerPb, getVerifiedUser } from '../../../lib/pocketbase/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -97,11 +98,13 @@ export async function POST(request: Request) {
     return { product: product.id, quantity: r.quantity, unit_price_bdt: unitPrice };
   });
 
-  // Create the order (guest for now — user linking added with the auth migration).
+  // Link the order to the signed-in user if there is a valid session (guest allowed).
+  const authUser = await getVerifiedUser(getServerPb());
+
   let order;
   try {
     order = await pb.collection('orders').create({
-      user: '',
+      user: authUser?.id ?? '',
       status: 'pending',
       payment_method: paymentMethod,
       payment_status: 'pending',

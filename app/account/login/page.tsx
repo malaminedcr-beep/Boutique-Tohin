@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { supabase } from '../../../lib/supabase';
+import { getBrowserPb } from '../../../lib/pocketbase/client';
 
 export default function LoginPage() {
   const router = useRouter();
@@ -17,13 +17,12 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
-
-    if (error) {
-      setError(error.message);
-      setLoading(false);
-    } else {
+    try {
+      await getBrowserPb().collection('users').authWithPassword(email, password);
       router.push('/account');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Invalid email or password.');
+      setLoading(false);
     }
   };
 
