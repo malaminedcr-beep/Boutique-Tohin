@@ -39,7 +39,7 @@ export default function PrivacyPage() {
 
       <LegalSection heading="4. Storage & security">
         <p>
-          Data is stored on our infrastructure provider (Supabase / Vercel).
+          Data is stored on our infrastructure provider (PocketBase / Vercel).
           Retention period: <strong>[TO BE COMPLETED]</strong>.
         </p>
       </LegalSection>

@@ -2,7 +2,7 @@
  * Single source of truth for product categories.
  * Consumed by the navbar, footer, shop filters, homepage arches and product
  * cards. Every slug here MUST exist in the catalogue (data/products.json /
- * Supabase `products.category`) — no phantom categories that lead to an empty
+ * PocketBase `products.category`) — no phantom categories that lead to an empty
  * shop.
  */
 export type Category = {

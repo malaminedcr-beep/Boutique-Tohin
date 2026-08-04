@@ -48,7 +48,7 @@ export default async function AdminOrdersPage() {
           </div>
           <div className="flex items-center gap-2 rounded-full border border-hairline bg-surface px-4 py-2 text-xs text-muted shadow-card">
             <span className="inline-block h-2 w-2 rounded-full bg-green-400" />
-            Supabase connected
+            PocketBase connected
           </div>
         </div>
 
