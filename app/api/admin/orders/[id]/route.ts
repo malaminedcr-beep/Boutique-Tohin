@@ -1,47 +1,26 @@
 import { NextResponse } from 'next/server';
-import { createClient } from '../../../../../lib/supabase/server';
-import { createAdminClient } from '../../../../../lib/supabase/admin';
+import { getServerPb, getVerifiedAdmin } from '../../../../../lib/pocketbase/server';
+import { getOrderById } from '../../../../../lib/pocketbase/orders';
 
 export const dynamic = 'force-dynamic';
 
-async function isAdmin() {
-  const supabase = createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) return false;
-  const { data } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .single();
-  return data?.role === 'admin';
-}
-
 /**
  * Returns a single order (with items) for the admin order slip.
- * Reads via service-role behind an admin check. Unauthorized -> 404.
+ * Reads via superuser behind a verified admin check. Unauthorized -> 404.
  */
 export async function GET(
   _request: Request,
   { params }: { params: { id: string } },
 ) {
-  if (!(await isAdmin())) {
+  const admin = await getVerifiedAdmin(getServerPb());
+  if (!admin) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
-  const admin = createAdminClient();
-  const { data, error } = await admin
-    .from('orders')
-    .select(
-      '*, order_items(id, quantity, unit_price_bdt, product:products(name, brand))',
-    )
-    .eq('id', params.id)
-    .single();
-
-  if (error || !data) {
+  const order = await getOrderById(params.id);
+  if (!order) {
     return NextResponse.json({ error: 'Not found' }, { status: 404 });
   }
 
-  return NextResponse.json(data);
+  return NextResponse.json(order);
 }

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { Order } from '../../../lib/types/orders';
-import { createAdminClient } from '../../../lib/supabase/admin';
+import { getAllOrders } from '../../../lib/pocketbase/orders';
 import { ORDER_STATUS_LABELS } from '../../../lib/i18n/strings';
 import { formatBdt as fmt, formatDate } from '../../../lib/format';
 
@@ -21,13 +21,13 @@ const PAYMENT_STYLES: Record<string, string> = {
 export const dynamic = 'force-dynamic';
 
 export default async function AdminOrdersPage() {
-  const supabase = createAdminClient();
-  const { data, error } = await supabase
-    .from('orders')
-    .select('*, order_items(id, quantity, unit_price_bdt, product:products(name, brand))')
-    .order('created_at', { ascending: false });
-
-  const orders = (data ?? []) as Order[];
+  let orders: Order[] = [];
+  let error: string | null = null;
+  try {
+    orders = await getAllOrders();
+  } catch (e) {
+    error = e instanceof Error ? e.message : 'Failed to load orders.';
+  }
 
   return (
     <main className="min-h-screen bg-canvas pb-20 pt-8">
@@ -54,7 +54,7 @@ export default async function AdminOrdersPage() {
 
         {error && (
           <div className="mb-6 rounded-xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-700">
-            Loading error: {error.message}
+            Loading error: {error}
           </div>
         )}
 
