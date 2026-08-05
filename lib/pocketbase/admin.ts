@@ -18,6 +18,10 @@ export async function createAdminPb() {
     );
   }
   const pb = new PocketBase(url);
+  pb.beforeSend = (u, options) => {
+    (options as any).cache = 'no-store';
+    return { url: u, options };
+  };
   await pb.collection('_superusers').authWithPassword(email, password);
   return pb;
 }

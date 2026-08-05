@@ -5,8 +5,8 @@ import type { Product } from './types';
  * Ne dépend d'aucune source de données — opère sur un tableau déjà chargé.
  */
 const genderCategoryMap = {
-  homme: ['mens-fragrance', 'musc', 'deodorants', 'body-care'],
-  femme: ['face-care', 'body-care', 'hair-care', 'deodorants'],
+  homme: ['mens-fragrance', 'body-care'],
+  femme: ['face-care', 'body-care', 'hair-care'],
 };
 
 const priceRangeMap = {

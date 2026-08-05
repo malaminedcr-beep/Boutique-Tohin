@@ -9,6 +9,16 @@ import { filterProducts, type ProductFilters } from '../commerce/filter';
  */
 const URL = process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090';
 
+/** PocketBase client whose requests bypass Next's fetch cache (always fresh). */
+function serverPb(): PocketBase {
+  const pb = new PocketBase(URL);
+  pb.beforeSend = (url, options) => {
+    (options as any).cache = 'no-store';
+    return { url, options };
+  };
+  return pb;
+}
+
 type ProductRecord = {
   ref: number;
   sku: string;
@@ -44,7 +54,7 @@ function toProduct(rec: ProductRecord): Product {
 }
 
 export async function getAllProducts(): Promise<Product[]> {
-  const pb = new PocketBase(URL);
+  const pb = serverPb();
   const items = await pb.collection('products').getFullList<ProductRecord>({ sort: 'ref' });
   return items.map(toProduct);
 }
@@ -55,7 +65,7 @@ export async function getProducts(filters?: ProductFilters): Promise<Product[]> 
 
 export async function getProductByRef(ref: number): Promise<Product | null> {
   if (!Number.isFinite(ref)) return null;
-  const pb = new PocketBase(URL);
+  const pb = serverPb();
   try {
     const rec = await pb.collection('products').getFirstListItem<ProductRecord>(`ref=${ref}`);
     return toProduct(rec);
