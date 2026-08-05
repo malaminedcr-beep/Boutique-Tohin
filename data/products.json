@@ -14,7 +14,7 @@
   {
     "id": 2,
     "sku": "CV-002",
-    "name": "Hydrating Cream",
+    "name": "Moisturizing Cream",
     "brand": "CeraVe",
     "category": "face-care",
     "volume": "50 ml",
@@ -77,7 +77,7 @@
   {
     "id": 6,
     "sku": "CV-006",
-    "name": "Skin Renew Serum",
+    "name": "Skin Renewing Vitamin C Serum",
     "brand": "CeraVe",
     "category": "face-care",
     "volume": "30 ml",
@@ -151,7 +151,7 @@
     "name": "Blemish Control Gel",
     "brand": "CeraVe",
     "category": "face-care",
-    "volume": "56 g",
+    "volume": "40 ml",
     "priceEur": 19,
     "priceBdt": 2090,
     "image": "/images/concentrated-anti-blemish-care-with-logo-lg.webp",
@@ -304,7 +304,7 @@
   {
     "id": 19,
     "sku": "YR-008",
-    "name": "Fragrance Gardenia",
+    "name": "Comme Une Evidence",
     "brand": "Yves Rocher",
     "category": "mens-fragrance",
     "volume": "50 ml",
@@ -321,7 +321,7 @@
   {
     "id": 20,
     "sku": "YR-009",
-    "name": "Oud Intense",
+    "name": "Secrets d'Essences Rose Oud",
     "brand": "Yves Rocher",
     "category": "mens-fragrance",
     "volume": "50 ml",
@@ -333,7 +333,7 @@
   {
     "id": 21,
     "sku": "YR-010",
-    "name": "Vanilla Musk",
+    "name": "Mon Evidence",
     "brand": "Yves Rocher",
     "category": "mens-fragrance",
     "volume": "50 ml",
@@ -345,7 +345,7 @@
   {
     "id": 22,
     "sku": "YR-011",
-    "name": "Rose Signature",
+    "name": "Comme Une Evidence Intense",
     "brand": "Yves Rocher",
     "category": "mens-fragrance",
     "volume": "50 ml",
@@ -550,7 +550,7 @@
   {
     "id": 36,
     "sku": "VY-007",
-    "name": "Eau Thermale Perfume",
+    "name": "Capital Soleil UV-Age Daily SPF50+",
     "brand": "Vichy",
     "category": "mens-fragrance",
     "volume": "75 ml",
@@ -562,7 +562,7 @@
   {
     "id": 37,
     "sku": "VY-008",
-    "name": "Elegant Musk",
+    "name": "Normaderm Phytosolution Double Correction",
     "brand": "Vichy",
     "category": "mens-fragrance",
     "volume": "50 ml",
