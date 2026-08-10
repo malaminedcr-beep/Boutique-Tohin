@@ -18,9 +18,9 @@ export const CATEGORIES: Category[] = [
   { slug: 'hair-care', label: 'Haircare', bg: '#DCF0DC', color: '#2D7A2D' },
   { slug: 'body-care', label: 'Bodycare', bg: '#E0DAFF', color: '#5B4FCF' },
   { slug: 'mens-fragrance', label: 'Perfume', bg: '#DDE4FF', color: '#3B50C9' },
+  { slug: 'deodorants', label: 'Deodorants', bg: '#D9EEFF', color: '#2B6CB0' },
 ];
-// Note: les anciens tags produits `musc` et `deodorants` ont été reclassés
-// (musc -> mens-fragrance/Perfume, deodorants -> body-care/Bodycare).
+// Note: le tag produit `musc` a été reclassé en `mens-fragrance` (Perfume).
 
 export const CATEGORY_LABELS: Record<string, string> = Object.fromEntries(
   CATEGORIES.map((c) => [c.slug, c.label]),

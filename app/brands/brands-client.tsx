@@ -46,6 +46,16 @@ const brands: Brand[] = [
     image: '/images/vichy.jpg',
     foundedYear: 1931,
   },
+  {
+    id: 'la-roche-posay',
+    name: 'La Roche-Posay',
+    description: 'Dermatological skincare powered by thermal spring water.',
+    fullDescription: 'La Roche-Posay is a French dermatological skincare brand recommended by dermatologists worldwide. Its formulas are built around La Roche-Posay Thermal Spring Water and are designed for sensitive, blemish-prone and reactive skin.',
+    expertise: ['Sensitive skin', 'Blemish-prone skin', 'Sun protection', 'Thermal spring water'],
+    heritage: 'Since 1975, La Roche-Posay has developed high-tolerance skincare tested on sensitive skin, drawing on the mineral-rich thermal spring water of La Roche-Posay in France.',
+    image: '/images/laroche-posay.jpg',
+    foundedYear: 1975,
+  },
 ];
 
 export default function BrandsClient() {
