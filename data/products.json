@@ -495,30 +495,6 @@
     "badge": null
   },
   {
-    "id": 36,
-    "sku": "VY-007",
-    "name": "Capital Soleil UV-Age Daily SPF50+",
-    "brand": "Vichy",
-    "category": "face-care",
-    "volume": "75 ml",
-    "priceEur": 44,
-    "priceBdt": 4840,
-    "image": "placeholder",
-    "badge": null
-  },
-  {
-    "id": 37,
-    "sku": "VY-008",
-    "name": "Normaderm Phytosolution Double Correction",
-    "brand": "Vichy",
-    "category": "face-care",
-    "volume": "50 ml",
-    "priceEur": 33,
-    "priceBdt": 3630,
-    "image": "placeholder",
-    "badge": null
-  },
-  {
     "id": 38,
     "sku": "CV-012",
     "name": "AM Facial Moisturizing Lotion SPF30",
