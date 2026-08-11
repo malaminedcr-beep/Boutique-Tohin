@@ -302,59 +302,6 @@
     ]
   },
   {
-    "id": 19,
-    "sku": "YR-008",
-    "name": "Comme Une Evidence",
-    "brand": "Yves Rocher",
-    "category": "mens-fragrance",
-    "volume": "50 ml",
-    "priceEur": 38,
-    "priceBdt": 4180,
-    "image": "/images/Garden Party - Eau de Parfum.webp",
-    "badge": null,
-    "gallery": [
-      "/images/Garden Party - Eau de Parfum.webp",
-      "/images/Garden Party - Eau de Parfum 2.webp",
-      "/images/Garden Party - Eau de Parfum 3.webp"
-    ]
-  },
-  {
-    "id": 20,
-    "sku": "YR-009",
-    "name": "Secrets d'Essences Rose Oud",
-    "brand": "Yves Rocher",
-    "category": "mens-fragrance",
-    "volume": "50 ml",
-    "priceEur": 42,
-    "priceBdt": 4620,
-    "image": "placeholder",
-    "badge": null
-  },
-  {
-    "id": 21,
-    "sku": "YR-010",
-    "name": "Mon Evidence",
-    "brand": "Yves Rocher",
-    "category": "mens-fragrance",
-    "volume": "50 ml",
-    "priceEur": 36,
-    "priceBdt": 3960,
-    "image": "placeholder",
-    "badge": "bestseller"
-  },
-  {
-    "id": 22,
-    "sku": "YR-011",
-    "name": "Comme Une Evidence Intense",
-    "brand": "Yves Rocher",
-    "category": "mens-fragrance",
-    "volume": "50 ml",
-    "priceEur": 34,
-    "priceBdt": 3740,
-    "image": "placeholder",
-    "badge": null
-  },
-  {
     "id": 23,
     "sku": "YR-012",
     "name": "Argan & Rose Petals Shower Gel",
@@ -641,10 +588,10 @@
   {
     "id": 42,
     "sku": "LRP-002",
-    "name": "Effaclar Duo(+)",
+    "name": "Effaclar Serum",
     "brand": "La Roche-Posay",
     "category": "face-care",
-    "volume": "40 ml",
+    "volume": "30 ml",
     "priceEur": null,
     "priceBdt": 3520,
     "image": "/images/lrp-002-1.jpg",
@@ -675,10 +622,10 @@
   {
     "id": 44,
     "sku": "LRP-004",
-    "name": "Toleriane Hydrating Gentle Cleanser",
+    "name": "Toleriane Sensitive Rich Moisturiser",
     "brand": "La Roche-Posay",
     "category": "face-care",
-    "volume": "400 ml",
+    "volume": "40 ml",
     "priceEur": null,
     "priceBdt": 2640,
     "image": "/images/lrp-004-1.jpg",

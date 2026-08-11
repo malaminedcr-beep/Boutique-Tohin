@@ -17,8 +17,6 @@ export const PRODUCT_CATEGORY_DESCRIPTIONS: Record<string, string> = {
     'A rich body care product to nourish and help restore hydration across the whole body.',
   'hair-care': 'A hair care product formulated to protect and enhance the hair.',
   deodorants: 'An effective deodorant offering long-lasting protection and comfort.',
-  'mens-fragrance': 'A masculine fragrance inspired by elegant, assertive notes.',
-  musc: 'A musky scent for a deep, long-lasting signature.',
 };
 
 export const PRODUCT_DESCRIPTION_FALLBACK =
