@@ -580,8 +580,12 @@
     "volume": "89 ml",
     "priceEur": null,
     "priceBdt": 2640,
-    "image": "placeholder",
-    "badge": "new"
+    "image": "/images/cv-012-1.jpg",
+    "badge": "new",
+    "gallery": [
+      "/images/cv-012-1.jpg",
+      "/images/cv-012-2.jpg"
+    ]
   },
   {
     "id": 39,
@@ -592,8 +596,13 @@
     "volume": "40 ml",
     "priceEur": null,
     "priceBdt": 2750,
-    "image": "placeholder",
-    "badge": "new"
+    "image": "/images/vy-009-1.jpg",
+    "badge": "new",
+    "gallery": [
+      "/images/vy-009-1.jpg",
+      "/images/vy-009-2.jpg",
+      "/images/vy-009-3.jpg"
+    ]
   },
   {
     "id": 40,
@@ -604,8 +613,13 @@
     "volume": "50 ml",
     "priceEur": null,
     "priceBdt": 2970,
-    "image": "placeholder",
-    "badge": "new"
+    "image": "/images/vy-010-1.jpg",
+    "badge": "new",
+    "gallery": [
+      "/images/vy-010-1.jpg",
+      "/images/vy-010-2.jpg",
+      "/images/vy-010-3.jpg"
+    ]
   },
   {
     "id": 41,
@@ -616,8 +630,13 @@
     "volume": "200 ml",
     "priceEur": null,
     "priceBdt": 2200,
-    "image": "placeholder",
-    "badge": "new"
+    "image": "/images/lrp-001-1.jpg",
+    "badge": "new",
+    "gallery": [
+      "/images/lrp-001-1.jpg",
+      "/images/lrp-001-2.jpg",
+      "/images/lrp-001-3.jpg"
+    ]
   },
   {
     "id": 42,
@@ -628,8 +647,13 @@
     "volume": "40 ml",
     "priceEur": null,
     "priceBdt": 3520,
-    "image": "placeholder",
-    "badge": "new"
+    "image": "/images/lrp-002-1.jpg",
+    "badge": "new",
+    "gallery": [
+      "/images/lrp-002-1.jpg",
+      "/images/lrp-002-2.jpg",
+      "/images/lrp-002-3.jpg"
+    ]
   },
   {
     "id": 43,
@@ -640,8 +664,13 @@
     "volume": "50 ml",
     "priceEur": null,
     "priceBdt": 3740,
-    "image": "placeholder",
-    "badge": "new"
+    "image": "/images/lrp-003-1.jpg",
+    "badge": "new",
+    "gallery": [
+      "/images/lrp-003-1.jpg",
+      "/images/lrp-003-2.jpg",
+      "/images/lrp-003-3.jpg"
+    ]
   },
   {
     "id": 44,
@@ -652,8 +681,13 @@
     "volume": "400 ml",
     "priceEur": null,
     "priceBdt": 2640,
-    "image": "placeholder",
-    "badge": "new"
+    "image": "/images/lrp-004-1.jpg",
+    "badge": "new",
+    "gallery": [
+      "/images/lrp-004-1.jpg",
+      "/images/lrp-004-2.jpg",
+      "/images/lrp-004-3.jpg"
+    ]
   },
   {
     "id": 45,
@@ -664,8 +698,13 @@
     "volume": "40 ml",
     "priceEur": null,
     "priceBdt": 2200,
-    "image": "placeholder",
-    "badge": "new"
+    "image": "/images/lrp-005-1.jpg",
+    "badge": "new",
+    "gallery": [
+      "/images/lrp-005-1.jpg",
+      "/images/lrp-005-2.jpg",
+      "/images/lrp-005-3.jpg"
+    ]
   },
   {
     "id": 46,
@@ -688,8 +727,13 @@
     "volume": "200 ml",
     "priceEur": null,
     "priceBdt": 2420,
-    "image": "placeholder",
-    "badge": "new"
+    "image": "/images/vy-012-1.webp",
+    "badge": "new",
+    "gallery": [
+      "/images/vy-012-1.webp",
+      "/images/vy-012-2.jpg",
+      "/images/vy-012-3.jpg"
+    ]
   },
   {
     "id": 48,
@@ -700,8 +744,13 @@
     "volume": "200 ml",
     "priceEur": null,
     "priceBdt": 2640,
-    "image": "placeholder",
-    "badge": "new"
+    "image": "/images/lrp-006-1.jpg",
+    "badge": "new",
+    "gallery": [
+      "/images/lrp-006-1.jpg",
+      "/images/lrp-006-2.jpg",
+      "/images/lrp-006-3.jpg"
+    ]
   },
   {
     "id": 49,
