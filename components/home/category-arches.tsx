@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { CATEGORIES, categoryHref } from '../../lib/categories';
 
@@ -6,16 +7,18 @@ function ArchCard({
   label,
   bg,
   color,
+  image,
 }: {
   slug: string;
   label: string;
   bg: string;
   color: string;
+  image: string;
 }) {
   return (
     <Link
       href={categoryHref(slug)}
-      className="group flex flex-col items-center gap-2 cursor-pointer"
+      className="group flex flex-col items-center gap-3 cursor-pointer"
     >
       {/* Arch shape */}
       <div
@@ -26,21 +29,13 @@ function ArchCard({
           backgroundColor: bg,
         }}
       >
-        <div className="absolute inset-0 flex items-end justify-center pb-6">
-          <svg
-            className="h-10 w-10 opacity-25"
-            fill="none"
-            stroke={color}
-            strokeWidth={1.2}
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-            />
-          </svg>
-        </div>
+        <Image
+          src={image}
+          alt={label}
+          fill
+          sizes="(max-width: 640px) 45vw, 22vw"
+          className="object-cover transition-transform duration-300 ease-out group-hover:scale-105"
+        />
       </div>
 
       {/* Label pill */}
@@ -64,8 +59,9 @@ export default function CategoryArches() {
           <h2 className="font-serif text-3xl text-ink">Shop by Category</h2>
         </div>
 
-        {/* Single responsive grid (one source of truth: lib/categories) */}
-        <div className="grid grid-cols-3 gap-3 sm:grid-cols-3 md:grid-cols-6 md:gap-4">
+        {/* Symmetric grid: 2×2 on mobile, 1×4 from tablet up
+            (one source of truth: lib/categories) */}
+        <div className="mx-auto grid max-w-4xl grid-cols-2 gap-4 sm:grid-cols-4 sm:gap-5">
           {CATEGORIES.map((cat) => (
             <ArchCard key={cat.slug} {...cat} />
           ))}
