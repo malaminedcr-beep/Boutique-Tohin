@@ -19,5 +19,8 @@ check-slip-error.js
 french-beauty-bd
 image
 
+# Source images de travail (non versionnées)
+13 IMG/
+
 # Réglages Claude Code personnels (non versionnés)
 .claude/settings.local.json
