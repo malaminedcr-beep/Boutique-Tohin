@@ -6,58 +6,64 @@ import Link from 'next/link';
 
 type Slide = {
   key: string;
+  image: string;
+  /** Empty side of the artwork where the text goes. */
+  side: 'left' | 'right';
+  /** Text color scheme depending on the artwork background. */
+  theme: 'dark' | 'light';
   eyebrow: string;
   title: string;
-  /** Highlighted (italic accent) part of the headline. */
-  titleEm: string;
-  text: string;
+  subtitle: string;
   cta: string;
   href: string;
-  image: string;
-  alt: string;
-  /** Full-bleed background behind the slide (kept light & airy). */
-  background: string;
+  /** Focus point kept in frame when the banner is cropped (mobile). */
+  objectPosition: string;
+  /** Legibility scrim on the text side. */
+  scrim: string;
 };
 
 const SLIDES: Slide[] = [
   {
     key: 'monoi',
-    eyebrow: 'Yves Rocher — Monoï de Tahiti',
-    title: 'Nourished Skin,',
-    titleEm: 'Island Glow',
-    text: 'Tahitian monoï oil for silky, radiant skin — a tropical ritual delivered across Bangladesh.',
+    image: '/images/hero/hero-monoi-v2.jpg',
+    side: 'left',
+    theme: 'dark',
+    eyebrow: 'Scent of Summer',
+    title: 'Nourished Skin, Island Glow',
+    subtitle: '98% natural origin — Monoï de Tahiti body milk',
     cta: 'Shop Now',
-    href: '/shop?category=body-care',
-    image: '/images/hero/hero-monoi.webp',
-    alt: 'Yves Rocher Monoï de Tahiti body and hair collection',
-    background:
-      'radial-gradient(ellipse 80% 90% at 72% 32%, rgba(45,122,122,0.12) 0%, transparent 62%), linear-gradient(115deg, #E4F1EF 0%, #FBF8F5 55%)',
+    href: '/product/16',
+    objectPosition: 'right center',
+    scrim:
+      'linear-gradient(to right, rgba(251,248,245,0.92) 0%, rgba(251,248,245,0.55) 34%, transparent 62%)',
   },
   {
     key: 'effaclar',
-    eyebrow: 'La Roche-Posay — Effaclar Serum',
-    title: 'Clear Skin,',
-    titleEm: 'Every Day',
-    text: 'A daily anti-blemish serum that refines skin texture and fades marks — dermatologist-trusted.',
+    image: '/images/hero/hero-effaclar-v2.jpg',
+    side: 'left',
+    theme: 'dark',
+    eyebrow: 'Dermatologist Recommended',
+    title: 'Clear Skin, Every Day',
+    subtitle: 'Effaclar Serum — daily peeling for visibly reduced imperfections',
     cta: 'Shop Now',
-    href: '/shop?category=face-care',
-    image: '/images/hero/hero-effaclar.jpg',
-    alt: 'La Roche-Posay Effaclar Serum bottle',
-    background:
-      'radial-gradient(ellipse 80% 90% at 72% 32%, rgba(43,108,176,0.12) 0%, transparent 62%), linear-gradient(115deg, #E1ECF3 0%, #FBF8F5 55%)',
+    href: '/product/42',
+    objectPosition: 'right center',
+    scrim:
+      'linear-gradient(to right, rgba(251,248,245,0.92) 0%, rgba(251,248,245,0.55) 34%, transparent 62%)',
   },
   {
     key: 'mineral89',
-    eyebrow: 'Vichy — Minéral 89',
-    title: 'Born From',
-    titleEm: 'French Volcanoes',
-    text: 'A hydrating daily booster with volcanic mineralizing water and hyaluronic acid, for plumped, stronger skin.',
+    image: '/images/hero/hero-mineral89-v2.jpg',
+    side: 'right',
+    theme: 'light',
+    eyebrow: 'New Arrival',
+    title: 'Born From French Volcanoes',
+    subtitle: '89 minerals. One drop of instant hydration.',
     cta: 'Discover',
-    href: '/shop?category=face-care',
-    image: '/images/hero/hero-mineral89.jpg',
-    alt: 'Vichy Minéral 89 hydrating booster bottle',
-    background:
-      'radial-gradient(ellipse 80% 90% at 72% 32%, rgba(30,90,150,0.14) 0%, transparent 62%), linear-gradient(115deg, #DCEAF2 0%, #EFF5F8 55%)',
+    href: '/product/30',
+    objectPosition: 'left center',
+    scrim:
+      'linear-gradient(to left, rgba(6,14,26,0.82) 0%, rgba(6,14,26,0.45) 34%, transparent 62%)',
   },
 ];
 
@@ -104,8 +110,7 @@ export default function Hero() {
     <section
       aria-roledescription="carousel"
       aria-label="Featured collections"
-      className="relative w-full overflow-hidden bg-canvas"
-      style={{ minHeight: 'max(78vh, 600px)' }}
+      className="relative w-full overflow-hidden bg-canvas aspect-[3/4] sm:aspect-[16/10] md:aspect-[1024/572]"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onTouchStart={onTouchStart}
@@ -113,6 +118,7 @@ export default function Hero() {
     >
       {SLIDES.map((slide, i) => {
         const active = i === index;
+        const dark = slide.theme === 'light'; // 'light' theme => text is light (on dark art)
         return (
           <div
             key={slide.key}
@@ -123,69 +129,79 @@ export default function Hero() {
             className={`absolute inset-0 transition-opacity duration-700 ease-soft-ease ${
               active ? 'opacity-100' : 'pointer-events-none opacity-0'
             }`}
-            style={{ background: slide.background }}
           >
-            <div className="mx-auto flex h-full w-full max-w-7xl flex-col-reverse items-center gap-8 px-6 py-14 md:flex-row md:gap-16 md:px-8 md:py-20">
-              {/* Copy */}
-              <div className="flex-[3] space-y-6 text-center md:text-left">
-                <div className="flex items-center justify-center gap-3 md:justify-start">
+            {/* Artwork */}
+            <Image
+              src={slide.image}
+              alt=""
+              fill
+              priority={i === 0}
+              sizes="100vw"
+              className="object-cover"
+              style={{ objectPosition: slide.objectPosition }}
+            />
+
+            {/* Legibility scrim on the text side */}
+            <div aria-hidden className="absolute inset-0" style={{ background: slide.scrim }} />
+
+            {/* Text overlay (clicks pass through except the CTA) */}
+            <div
+              className={`pointer-events-none absolute inset-0 z-10 flex items-center ${
+                slide.side === 'right' ? 'justify-end' : 'justify-start'
+              }`}
+            >
+              <div
+                className={`flex max-w-[80%] flex-col gap-3 px-6 sm:max-w-[62%] sm:gap-4 sm:px-10 md:max-w-[46%] md:px-14 lg:px-20 ${
+                  slide.side === 'right' ? 'items-end text-right' : 'items-start text-left'
+                }`}
+              >
+                {/* Eyebrow */}
+                <div
+                  className={`flex items-center gap-3 ${
+                    slide.side === 'right' ? 'flex-row-reverse' : ''
+                  }`}
+                >
                   <span className="inline-block h-px w-8 bg-accent" />
-                  <p className="text-[10px] uppercase tracking-[0.32em] text-muted">
+                  <p
+                    className={`text-[10px] uppercase tracking-[0.32em] ${
+                      dark ? 'text-white/80' : 'text-muted'
+                    }`}
+                  >
                     {slide.eyebrow}
                   </p>
                 </div>
 
+                {/* Title */}
                 <h1
-                  className="font-serif text-ink"
+                  className={`font-serif ${dark ? 'text-white' : 'text-ink'}`}
                   style={{
-                    fontSize: 'clamp(2.3rem, 5vw, 4.2rem)',
+                    fontSize: 'clamp(1.75rem, 4.2vw, 4rem)',
                     lineHeight: 1.08,
                     letterSpacing: '-0.01em',
                   }}
                 >
-                  {slide.title}{' '}
-                  <em className="text-accent" style={{ fontStyle: 'italic' }}>
-                    {slide.titleEm}
-                  </em>
+                  {slide.title}
                 </h1>
 
+                {/* Subtitle */}
                 <p
-                  className="mx-auto max-w-md text-sm leading-7 text-muted md:mx-0"
+                  className={`max-w-md text-xs leading-6 sm:text-sm sm:leading-7 ${
+                    dark ? 'text-white/85' : 'text-muted'
+                  }`}
                   style={{ fontFamily: 'var(--font-sans)' }}
                 >
-                  {slide.text}
+                  {slide.subtitle}
                 </p>
 
-                <div className="pt-1">
+                {/* Real CTA button */}
+                <div className="pointer-events-auto pt-1">
                   <Link
                     href={slide.href}
-                    className="inline-flex cursor-pointer items-center gap-2 rounded px-8 py-3.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white transition-opacity hover:opacity-90 active:opacity-80"
+                    className="inline-flex cursor-pointer items-center gap-2 rounded px-8 py-3.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white shadow-sm transition-opacity hover:opacity-90 active:opacity-80"
                     style={{ backgroundColor: '#C9513A' }}
                   >
                     {slide.cta}
                   </Link>
-                </div>
-              </div>
-
-              {/* Product image (blends via soft white glow) */}
-              <div className="flex flex-[2] items-center justify-center">
-                <div className="relative aspect-[4/3] w-full max-w-[280px] md:aspect-square md:max-w-[440px]">
-                  <div
-                    aria-hidden
-                    className="absolute inset-0"
-                    style={{
-                      background:
-                        'radial-gradient(circle at 50% 50%, #ffffff 42%, transparent 74%)',
-                    }}
-                  />
-                  <Image
-                    src={slide.image}
-                    alt={slide.alt}
-                    fill
-                    priority={i === 0}
-                    sizes="(max-width: 768px) 80vw, 440px"
-                    className="object-contain"
-                  />
                 </div>
               </div>
             </div>
@@ -216,7 +232,7 @@ export default function Hero() {
       </button>
 
       {/* Dots */}
-      <div className="absolute bottom-6 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2.5">
+      <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 items-center gap-2.5 md:bottom-6">
         {SLIDES.map((slide, i) => (
           <button
             key={slide.key}
@@ -224,8 +240,8 @@ export default function Hero() {
             onClick={() => goTo(i)}
             aria-label={`Go to slide ${i + 1}`}
             aria-current={i === index}
-            className={`h-2 rounded-full transition-all duration-300 ${
-              i === index ? 'w-6 bg-accent' : 'w-2 bg-ink/25 hover:bg-ink/40'
+            className={`h-2 rounded-full shadow-sm transition-all duration-300 ${
+              i === index ? 'w-6 bg-accent' : 'w-2 bg-white/70 hover:bg-white'
             }`}
           />
         ))}
