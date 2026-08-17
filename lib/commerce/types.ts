@@ -1,4 +1,4 @@
-/** Shape produit consommée par la vitrine (id numérique = `ref` PocketBase). */
+/** Shape produit consommée par la vitrine (id numérique = `ref` Supabase). */
 export type Product = {
   id: number;
   sku: string;

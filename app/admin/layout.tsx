@@ -1,5 +1,5 @@
 import { notFound } from 'next/navigation';
-import { getServerPb, getVerifiedAdmin } from '../../lib/pocketbase/server';
+import { getVerifiedAdmin } from '../../lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,8 +12,7 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const pb = getServerPb();
-  const admin = await getVerifiedAdmin(pb);
+  const admin = await getVerifiedAdmin();
   if (!admin) notFound();
   return <>{children}</>;
 }

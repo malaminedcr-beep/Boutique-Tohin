@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next';
 import { SITE_URL } from '../lib/seo';
-import { getAllProducts } from '../lib/pocketbase/products';
+import { getAllProducts } from '../lib/supabase/products';
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
@@ -34,7 +34,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     }));
   } catch {
-    // PocketBase indisponible au build : on renvoie au moins les routes statiques.
+    // Supabase indisponible au build : on renvoie au moins les routes statiques.
   }
 
   return [...staticEntries, ...productEntries];

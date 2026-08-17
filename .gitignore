@@ -22,5 +22,9 @@ image
 # Source images de travail (non versionnées)
 13 IMG/
 
+# Export/migration PocketBase -> Supabase (contient des données clients : PII)
+.migration/
+.pb/
+
 # Réglages Claude Code personnels (non versionnés)
 .claude/settings.local.json

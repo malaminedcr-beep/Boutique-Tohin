@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { getBrowserPb } from '../../../lib/pocketbase/client';
+import { getBrowserSupabase } from '../../../lib/supabase/client';
 
 export default function RegisterPage() {
   const [fullName, setFullName] = useState('');
@@ -17,22 +17,21 @@ export default function RegisterPage() {
     setLoading(true);
     setError(null);
 
-    try {
-      await getBrowserPb().collection('users').create({
-        email,
-        password,
-        passwordConfirm: password,
-        full_name: fullName,
-      });
-      setSuccess(true);
-    } catch (err: any) {
-      const msg =
-        err?.response?.data?.email?.message ||
-        err?.response?.message ||
-        (err instanceof Error ? err.message : 'Registration failed.');
-      setError(msg);
+    const { error: signUpError } = await getBrowserSupabase().auth.signUp({
+      email,
+      password,
+      options: {
+        data: { full_name: fullName },
+        emailRedirectTo:
+          typeof window !== 'undefined' ? `${window.location.origin}/account/login` : undefined,
+      },
+    });
+    if (signUpError) {
+      setError(signUpError.message || 'Registration failed.');
       setLoading(false);
+      return;
     }
+    setSuccess(true);
   };
 
   if (success) {

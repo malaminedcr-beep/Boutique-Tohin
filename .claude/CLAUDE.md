@@ -21,7 +21,7 @@
 | Framework | Next.js 14 (App Router) |
 | Language | TypeScript |
 | Styling | Tailwind CSS |
-| Backend / DB | PocketBase (SQLite + Auth) — auto-hébergé, local `http://127.0.0.1:8090` |
+| Backend / DB | Supabase (Postgres + Auth) — projet `jonny-cargo`, `https://ujcxhukiwgxwgyiuoryt.supabase.co` |
 | Images | Fichiers statiques `/public/images` (pas de storage DB) |
 | State management | React Context (`lib/cart-context.tsx`) |
 | Déploiement | Vercel |
@@ -69,7 +69,7 @@ C:\Tohin\
 │   └── checkout/
 │       └── PaymentSelector.tsx   # COD / bKash / Nagad
 ├── lib/
-│   ├── pocketbase/               # Clients PB : client, server, admin, products, orders
+│   ├── supabase/                # Clients Supabase : client, server, admin, products, orders
 │   ├── commerce/                 # types.ts (Product) + filter.ts (filtre isomorphe)
 │   ├── cart-context.tsx          # État panier (React Context)
 │   └── types/                    # Types TypeScript globaux
@@ -126,7 +126,7 @@ C:\Tohin\
 | Nuxe | Luxe naturel | Huiles, Prodigieux |
 | Avène | Eau thermale | Peaux réactives, bébé |
 
-> Source de vérité : collection PocketBase `products` (seed initial depuis `data/products.json` via `scripts/migrate-to-pocketbase.ts`). Catalogue gérable depuis l'admin PocketBase sans redéployer. *(Catalogue réel actuel : CeraVe, Vichy, Yves Rocher.)*
+> Source de vérité : table Supabase `products` (44 lignes migrées depuis PocketBase le 2026-08-17). Catalogue gérable depuis l'admin Supabase sans redéployer. *(Marques réelles actuelles : CeraVe, Vichy, Yves Rocher, La Roche-Posay.)*
 
 ---
 
@@ -147,36 +147,36 @@ C:\Tohin\
       → Email de confirmation
       → Webhook partenaire Bangladesh (à implémenter)
 [Admin]
-  → Réception commande dans PocketBase (back-office /admin/orders, garde rôle admin)
+  → Réception commande dans Supabase (back-office /admin/orders, garde rôle admin)
   → Traitement expédition depuis France
 ```
 
 ---
 
-## 7. Collections PocketBase & API Rules
+## 7. Tables Supabase & RLS
 
-Schéma créé par `scripts/pb-schema.ts` (idempotent). Les **API Rules** reproduisent l'ancienne RLS.
+Postgres avec Row Level Security. IDs PocketBase préservés en clés `text` lors de la migration.
 
-| Collection | Champs clés | Rules (lecture / écriture) |
+| Table | Champs clés | RLS (lecture / écriture) |
 |---|---|---|
-| `products` | `ref`(id num. vitrine), `sku`, `slug`, `name`, `brand`, `category`, `description`, `volume`, `price_bdt`, `price_eur`, `image_url` (statique), `gallery`, `in_stock`, `is_new`, `is_bestseller` | **publique** (`list/view = ""`) / **superuser only** |
-| `orders` | `user`(relation), `status`, `payment_method`, `payment_status`, `total_bdt`, `shipping_address`(json) | **propriétaire** (`user = @request.auth.id`) / **serveur only** |
-| `order_items` | `order`(relation, cascade), `product`(relation), `quantity`, `unit_price_bdt` | `order.user = @request.auth.id` / **serveur only** |
-| `users` (auth) | `full_name`, `phone`, `address_line`, `city`, `role` (user/admin) | own-row |
+| `products` | `id`(text), `ref`(id num. vitrine, unique), `sku`, `slug`, `name`, `brand`, `category`, `description`, `volume`, `price_bdt`, `price_eur`, `image_url` (statique), `gallery`(jsonb), `in_stock`, `is_new`, `is_bestseller` | **publique** (`products_public_read`) / **service-role only** |
+| `orders` | `id`(text, défaut uuid), `user_id`(uuid→profiles), `status`, `payment_method`, `payment_status`, `total_bdt`, `shipping_address`(jsonb) | **propriétaire ou admin** (`user_id = auth.uid() or is_admin()`) / **service-role only** |
+| `order_items` | `order_id`(text, cascade), `product_id`(text), `quantity`, `unit_price_bdt` | lisible si commande parente lisible / **service-role only** |
+| `profiles` (lié `auth.users`, uuid) | `full_name`, `phone`, `address_line`, `city`, `role` (user/admin) | own-row ; trigger `handle_new_user`, `is_admin()`, garde anti-escalade de rôle |
 
-- **Recalcul prix** : `app/api/orders/route.ts` (client ↦ `[{sku, quantity}]` seulement, total recalculé serveur via superuser).
-- **Garde admin** : `middleware.ts` + `app/admin/layout.tsx` vérifient le rôle contre PocketBase (`authRefresh`) — le cookie n'est jamais fait confiance.
-- **Clients** : `lib/pocketbase/{client,server,admin,products,orders}.ts`.
+- **Recalcul prix** : `app/api/orders/route.ts` (client ↦ `[{sku, quantity}]` seulement, total recalculé serveur via service-role).
+- **Garde admin** : `middleware.ts` + `app/admin/layout.tsx` revalident le JWT (`auth.getUser()`) puis vérifient `profiles.role` — le cookie n'est jamais fait confiance.
+- **Clients** : `lib/supabase/{client,server,admin,products,orders}.ts`.
 
 ---
 
 ## 8. Variables d'environnement (.env.local)
 
 ```env
-# PocketBase
-NEXT_PUBLIC_POCKETBASE_URL=http://127.0.0.1:8090
-POCKETBASE_ADMIN_EMAIL=        # superuser (server-only)
-POCKETBASE_ADMIN_PASSWORD=     # superuser (server-only)
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=https://ujcxhukiwgxwgyiuoryt.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_...   # clé publique
+SUPABASE_SERVICE_ROLE_KEY=                          # SECRET, server-only
 
 # Paiements Bangladesh (à configurer)
 BKASH_APP_KEY=
@@ -195,23 +195,23 @@ PARTNER_WEBHOOK_SECRET=
 
 ### ✅ Fait
 - [x] Boutique complète (home, shop + filtres, fiches produits, panier React Context, checkout COD/bKash/Nagad, confirmation)
-- [x] **Backend PocketBase** : collections + rules, seed 37 produits, vitrine branchée sur PB (source de vérité)
+- [x] **Backend Supabase** : tables + RLS, 44 produits migrés, vitrine branchée sur Supabase (source de vérité), hébergé
 - [x] **Recalcul de prix côté serveur** (`api/orders`) — anti-fraude
-- [x] **Auth PocketBase** native (login/register/reset/account) + **garde admin** (rôle vérifié serveur)
-- [x] Back-office `/admin/orders` (liste + bon de commande) sur PocketBase
+- [x] **Auth Supabase** native (login/register/reset/account) + **garde admin** (rôle vérifié serveur)
+- [x] Back-office `/admin/orders` (liste + bon de commande) sur Supabase
 - [x] SEO (metadata par page, JSON-LD, sitemap/robots), i18n 100% anglais, pages légales
-- [x] Git + audit (`docs/AUDIT.md`) ; migration Supabase → PocketBase mergée sur `master`
+- [x] Migration PocketBase → Supabase (projet `jonny-cargo`) : code réécrit, `npm run build` OK
 
 ### ⏳ À faire
-- [ ] **Hébergement prod PocketBase** (VPS/service joignable — sinon Vercel ne l'atteint pas)
-- [ ] **Promotion admin** : passer ton compte `users.role='admin'` (superuser)
-- [ ] **SMTP PocketBase** : pour vérif email + reset password
+- [ ] **Service-role key** : copier depuis Supabase dans `.env.local` + Vercel (sinon création de commande KO)
+- [ ] **Env Supabase sur Vercel** + retrait des `POCKETBASE_*`, puis redéploiement
+- [ ] **Promotion admin** : réinscrire `malaminedcr@gmail.com` puis `update profiles set role='admin'`
+- [ ] **SMTP / confirmation email Supabase** : sinon désactiver "Confirm email" dans Auth settings
 - [ ] **Images hero/bannière** : fournir les fichiers (fallback propre en attendant)
 - [ ] **Paiement réel** bKash/Nagad + webhook partenaire BD
-- [ ] **Vercel** : redéploiement une fois PocketBase joignable en prod
 
 ### 🔴 Bloquants prod
-- PocketBase tourne en **local** (`:8090`) → un déploiement Vercel ne l'atteint pas tant qu'il n'est pas hébergé publiquement
+- `SUPABASE_SERVICE_ROLE_KEY` absente de Vercel → les créations de commande échoueront tant qu'elle n'est pas configurée
 
 ---
 
@@ -220,7 +220,7 @@ PARTNER_WEBHOOK_SECRET=
 | Ressource | Lien |
 |---|---|
 | Design inspiration | [choicelegacy.com.bd](https://choicelegacy.com.bd) |
-| PocketBase docs | [pocketbase.io/docs](https://pocketbase.io/docs) |
+| Supabase docs | [supabase.com/docs](https://supabase.com/docs) |
 | Next.js 14 App Router | [nextjs.org/docs](https://nextjs.org/docs) |
 | bKash Payment Gateway | [developer.bka.sh](https://developer.bka.sh) |
 | Nagad API | [nagad.com.bd/developer](https://nagad.com.bd) |

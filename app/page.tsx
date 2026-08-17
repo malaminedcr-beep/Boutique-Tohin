@@ -3,7 +3,7 @@ import Hero from '../components/home/hero';
 import CategoryArches from '../components/home/category-arches';
 import PromoBanner from '../components/home/promo-banner';
 import ProductCard from '../components/product/product-card';
-import { getProducts } from '../lib/pocketbase/products';
+import { getProducts } from '../lib/supabase/products';
 
 export const dynamic = 'force-dynamic';
 

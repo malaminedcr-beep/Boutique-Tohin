@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { categoryLabel, CATEGORIES } from '../../lib/categories';
-import { getProducts, getAllBrands } from '../../lib/pocketbase/products';
+import { getProducts, getAllBrands } from '../../lib/supabase/products';
 import { pageMetadata } from '../../lib/seo';
 import ShopClient from './shop-client';
 

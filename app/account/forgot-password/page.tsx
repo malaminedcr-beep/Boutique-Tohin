@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { getBrowserPb } from '../../../lib/pocketbase/client';
+import { getBrowserSupabase } from '../../../lib/supabase/client';
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
@@ -15,13 +15,15 @@ export default function ForgotPasswordPage() {
     setLoading(true);
     setError(null);
 
-    try {
-      await getBrowserPb().collection('users').requestPasswordReset(email);
-      setSent(true);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not send the reset link.');
+    const { error: resetError } = await getBrowserSupabase().auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/account/reset-password`,
+    });
+    if (resetError) {
+      setError(resetError.message || 'Could not send the reset link.');
       setLoading(false);
+      return;
     }
+    setSent(true);
   };
 
   if (sent) {

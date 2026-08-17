@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { CATEGORIES, categoryHref } from '../../lib/categories';
-import { getAllBrands } from '../../lib/pocketbase/products';
+import { getAllBrands } from '../../lib/supabase/products';
 
 const HELP_LINKS = [
   { label: 'Track Order', href: '/account' },
@@ -11,8 +11,8 @@ const HELP_LINKS = [
 ];
 
 export default async function Footer() {
-  // Brands from PocketBase (source of truth); guarded so a build without
-  // PocketBase running doesn't fail.
+  // Brands from Supabase (source of truth); guarded so a build without
+  // Supabase reachable doesn't fail.
   let BRAND_LINKS: string[] = [];
   try {
     BRAND_LINKS = await getAllBrands();

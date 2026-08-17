@@ -22,10 +22,10 @@ Boutique en ligne de cosmétiques français pour le Bangladesh, développée ave
 - **Design System** - Couleurs, espacement, typographie cohérents
 
 ### Backend & Données
-- **PocketBase** - Backend auto-hébergé (SQLite). Collections `products`, `orders`, `order_items`, `users`. **Source de vérité** du catalogue et des commandes. Local : `http://127.0.0.1:8090`.
+- **Supabase** (Postgres + Auth) - Backend hébergé, projet `jonny-cargo` (`https://ujcxhukiwgxwgyiuoryt.supabase.co`). Tables `products`, `orders`, `order_items`, `profiles`. **Source de vérité** du catalogue et des commandes. RLS activée.
 - **React Context** - Gestion d'état global du panier (`lib/cart-context.tsx`)
-- **Lecture produits** - `lib/pocketbase/products.ts` (serveur). `data/products.json` = **seed initial uniquement** (`scripts/migrate-to-pocketbase.ts`), plus lu en prod.
-- *(Migration Supabase → PocketBase effectuée — voir section « Backend PocketBase ».)*
+- **Lecture produits** - `lib/supabase/products.ts` (serveur, clé anon, lecture publique). `data/products.json` = **seed initial uniquement**, plus lu en prod.
+- *(Migration PocketBase → Supabase effectuée le 2026-08-17 — voir section « Backend Supabase ».)*
 
 ## 📁 Structure du Projet
 
@@ -50,7 +50,7 @@ french-beauty-bd/
 │   └── CustomCursor.tsx         # Curseur personnalisé
 ├── lib/                         # Utilitaires & logique métier
 │   ├── cart-context.tsx         # Contexte panier
-│   ├── pocketbase/              # Clients PB : client, server, admin, products, orders
+│   ├── supabase/               # Clients Supabase : client, server, admin, products, orders
 │   └── commerce/                # types.ts (Product) + filter.ts (filtre isomorphe)
 ├── data/                        # Données statiques
 │   └── products.json            # Catalogue produits
@@ -187,37 +187,30 @@ import type { Product } from '../lib/commerce/types';
 
 ## 🔗 Points d'Extension
 
-### Backend PocketBase (fait)
-Le backend est **PocketBase** (migration depuis Supabase, branche `migrate/pocketbase`).
+### Backend Supabase (fait)
+Le backend est **Supabase** (Postgres + Auth), projet `jonny-cargo` — migration depuis PocketBase le 2026-08-17.
 
-**Collections & API Rules** (équivalent des RLS)
-- `products` — lecture **publique** (`list/view = ""`), écriture **superuser only** (`create/update/delete = null`). Champs : `ref`(id numérique vitrine), `sku`, `slug`, `name`, `brand`, `category`, `description`, `volume`, `price_bdt`, `price_eur`, `image_url` (chemins statiques `/images/…`), `gallery`, `in_stock`, `is_new`, `is_bestseller`.
-- `orders` / `order_items` — lecture **propriétaire uniquement** (`user = @request.auth.id`), écriture **serveur only**.
-- `users` (auth) — champs `full_name`, `phone`, `address_line`, `city`, `role` (user/admin) ; rules own-row.
+**Tables & RLS**
+- `products` — lecture **publique** (policy `products_public_read`), écriture **service-role only**. Colonnes : `id`(text), `ref`(id numérique vitrine, unique), `sku`, `slug`, `name`, `brand`, `category`, `description`, `volume`, `price_bdt`, `price_eur`, `image_url` (chemins statiques `/images/…`), `gallery`(jsonb), `in_stock`, `is_new`, `is_bestseller`.
+- `orders` / `order_items` — lecture **propriétaire ou admin** (`user_id = auth.uid() or is_admin()`), écriture **service-role only**. `orders.id`/`order_items.id` défaut `gen_random_uuid()::text`.
+- `profiles` (lié à `auth.users`, uuid) — `full_name`, `phone`, `address_line`, `city`, `role` (user/admin) ; RLS own-row. Trigger `handle_new_user` crée le profil à l'inscription ; `is_admin()` (security definer) ; garde anti-escalade de rôle.
 
-**Clients** (`lib/pocketbase/`)
-- `client.ts` (browser, cookie-sync) · `server.ts` (SSR + `getVerifiedAdmin/User` via `authRefresh`) · `admin.ts` (superuser, server-only) · `products.ts` / `orders.ts` (lectures mappées).
+**Clients** (`lib/supabase/`)
+- `client.ts` (browser, `@supabase/ssr`, session cookies) · `server.ts` (SSR + `getVerifiedUser/Admin` via `auth.getUser()`) · `admin.ts` (service-role, server-only, bypass RLS) · `products.ts` / `orders.ts` (lectures mappées).
 
-**Sécurité** : recalcul de prix **serveur** dans `app/api/orders/route.ts` (client n'envoie que `[{sku, quantity}]`) ; garde admin (`middleware.ts` + `app/admin/layout.tsx`) qui **vérifie le rôle contre PocketBase** (le cookie n'est jamais fait confiance).
-
-**Lancer PocketBase en local**
-```bash
-# binaire dans C:\Users\USER\pocketbase\
-pocketbase serve --http 127.0.0.1:8090
-# superuser : admin@frenchbeauty.local
-npx tsx scripts/pb-schema.ts            # crée collections + rules (idempotent)
-npx tsx scripts/migrate-to-pocketbase.ts # seed 37 produits depuis products.json
-```
+**Sécurité** : recalcul de prix **serveur** dans `app/api/orders/route.ts` (client n'envoie que `[{sku, quantity}]`) ; garde admin (`middleware.ts` + `app/admin/layout.tsx`) qui **vérifie le rôle dans `profiles`** après revalidation du JWT (le cookie n'est jamais fait confiance).
 
 **Variables d'environnement** (`.env.local`)
 ```env
-NEXT_PUBLIC_POCKETBASE_URL=http://127.0.0.1:8090
-POCKETBASE_ADMIN_EMAIL=...      # superuser (server-only)
-POCKETBASE_ADMIN_PASSWORD=...   # superuser (server-only)
+NEXT_PUBLIC_SUPABASE_URL=https://ujcxhukiwgxwgyiuoryt.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sb_publishable_...     # clé publique
+SUPABASE_SERVICE_ROLE_KEY=...                        # SECRET, server-only
 ```
 
+**Migration / seed** : `scripts/pb-to-supabase.mjs` génère le SQL depuis un export PocketBase (outillage one-shot, conservé pour référence). Catalogue gérable ensuite depuis l'admin Supabase.
+
 ### Features additionnelles (à venir)
-- Intégrer vraie API bKash · Wishlist · Avis clients (collection `reviews`) · Hébergement prod de PocketBase (VPS)
+- Intégrer vraie API bKash · Wishlist · Avis clients (table `reviews`) · Config SMTP Supabase (confirmation email + reset)
 
 ### Features Additionnelles
 - Wishlist/favoris
@@ -246,7 +239,7 @@ POCKETBASE_ADMIN_PASSWORD=...   # superuser (server-only)
 
 ---
 
-**Dernière mise à jour**: Août 2026 — migration backend Supabase → PocketBase
-**Version**: 2.0.0
-**Status**: Backend PocketBase (local) — hébergement prod PB à décider</content>
+**Dernière mise à jour**: 2026-08-17 — migration backend PocketBase → Supabase (projet `jonny-cargo`)
+**Version**: 3.0.0
+**Status**: Backend Supabase (hébergé) — reste : service-role key sur Vercel, réinscription admin, config confirmation email</content>
 <parameter name="filePath">c:\Tohin\CONTEXT.md

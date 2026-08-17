@@ -3,11 +3,11 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getBrowserPb } from '../../../lib/pocketbase/client';
+import { getBrowserSupabase } from '../../../lib/supabase/client';
 
 export default function ResetPasswordPage() {
   const router = useRouter();
-  const [token, setToken] = useState<string | null>(null);
+  const [ready, setReady] = useState(false);
   const [checked, setChecked] = useState(false);
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -16,15 +16,27 @@ export default function ResetPasswordPage() {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    // PocketBase password-reset emails link here with ?token=...
-    const t = new URLSearchParams(window.location.search).get('token');
-    setToken(t);
-    setChecked(true);
+    // Supabase reset emails redirect here with a recovery link. The client
+    // detects it and opens a temporary session (PASSWORD_RECOVERY / SIGNED_IN).
+    const supabase = getBrowserSupabase();
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY' || (event === 'SIGNED_IN' && session)) {
+        setReady(true);
+        setChecked(true);
+      }
+    });
+    supabase.auth.getSession().then(({ data }) => {
+      if (data.session) setReady(true);
+      setChecked(true);
+    });
+    return () => subscription.unsubscribe();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!token) return;
+    if (!ready) return;
     if (password !== confirm) {
       setError('Passwords do not match.');
       return;
@@ -32,16 +44,14 @@ export default function ResetPasswordPage() {
     setLoading(true);
     setError(null);
 
-    try {
-      await getBrowserPb()
-        .collection('users')
-        .confirmPasswordReset(token, password, confirm);
-      setSuccess(true);
-      setTimeout(() => router.push('/account/login'), 2500);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not reset the password.');
+    const { error: updateError } = await getBrowserSupabase().auth.updateUser({ password });
+    if (updateError) {
+      setError(updateError.message || 'Could not reset the password.');
       setLoading(false);
+      return;
     }
+    setSuccess(true);
+    setTimeout(() => router.push('/account/login'), 2500);
   };
 
   if (success) {
@@ -64,7 +74,7 @@ export default function ResetPasswordPage() {
     );
   }
 
-  if (checked && !token) {
+  if (checked && !ready) {
     return (
       <main className="min-h-screen bg-canvas text-ink">
         <section className="mx-auto max-w-lg px-6 py-24 md:px-8">

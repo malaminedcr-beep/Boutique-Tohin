@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { createAdminPb } from '../../../lib/pocketbase/admin';
-import { getServerPb, getVerifiedUser } from '../../../lib/pocketbase/server';
+import { createAdminSupabase } from '../../../lib/supabase/admin';
+import { getVerifiedUser } from '../../../lib/supabase/server';
 
 export const dynamic = 'force-dynamic';
 
@@ -21,9 +21,9 @@ function badRequest(message: string) {
 /**
  * Creates an order. The client sends ONLY [{ sku, quantity }] + payment method
  * + shipping address. Prices and the total are recomputed server-side from the
- * PocketBase `products` collection — the client never gets to set a price.
- * Writes run with the superuser client so the collection rules can stay locked
- * down (orders/order_items have no public create rule).
+ * Supabase `products` table — the client never gets to set a price. Writes run
+ * with the service-role client so RLS can stay locked down (orders/order_items
+ * have no public write policy).
  */
 export async function POST(request: Request) {
   let body: any;
@@ -62,28 +62,25 @@ export async function POST(request: Request) {
     requested.push({ slug: sku.toLowerCase(), quantity });
   }
 
-  let pb;
+  let supabase;
   try {
-    pb = await createAdminPb();
+    supabase = createAdminSupabase();
   } catch (e) {
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : 'PocketBase auth failed.' },
+      { error: e instanceof Error ? e.message : 'Supabase init failed.' },
       { status: 500 },
     );
   }
 
-  // Read authoritative prices from PocketBase (only ~37 products → fetch all).
-  let products: Array<{ id: string; slug: string; price_bdt: number; in_stock: boolean }>;
-  try {
-    products = await pb.collection('products').getFullList({ fields: 'id,slug,price_bdt,in_stock' });
-  } catch (e) {
-    return NextResponse.json(
-      { error: e instanceof Error ? e.message : 'Failed to read products.' },
-      { status: 500 },
-    );
+  // Read authoritative prices from Supabase (only ~44 products → fetch all).
+  const { data: products, error: productsErr } = await supabase
+    .from('products')
+    .select('id, slug, price_bdt, in_stock');
+  if (productsErr) {
+    return NextResponse.json({ error: productsErr.message }, { status: 500 });
   }
 
-  const bySlug = new Map(products.map((p) => [p.slug, p]));
+  const bySlug = new Map((products ?? []).map((p) => [p.slug, p]));
   for (const { slug } of requested) {
     const product = bySlug.get(slug);
     if (!product) return badRequest(`Unknown product: ${slug}.`);
@@ -95,41 +92,39 @@ export async function POST(request: Request) {
     const product = bySlug.get(r.slug)!;
     const unitPrice = Number(product.price_bdt);
     total += unitPrice * r.quantity;
-    return { product: product.id, quantity: r.quantity, unit_price_bdt: unitPrice };
+    return { product_id: product.id as string, quantity: r.quantity, unit_price_bdt: unitPrice };
   });
 
   // Link the order to the signed-in user if there is a valid session (guest allowed).
-  const authUser = await getVerifiedUser(getServerPb());
+  const authUser = await getVerifiedUser();
 
-  let order;
-  try {
-    order = await pb.collection('orders').create({
-      user: authUser?.id ?? '',
+  const { data: order, error: orderErr } = await supabase
+    .from('orders')
+    .insert({
+      user_id: authUser?.id ?? null,
       status: 'pending',
       payment_method: paymentMethod,
       payment_status: 'pending',
       total_bdt: total,
       shipping_address: shippingAddress,
-    });
-  } catch (e) {
+    })
+    .select('id')
+    .single();
+  if (orderErr || !order) {
     return NextResponse.json(
-      { error: e instanceof Error ? e.message : 'Failed to create order.' },
+      { error: orderErr?.message ?? 'Failed to create order.' },
       { status: 500 },
     );
   }
 
-  try {
-    for (const li of lineItems) {
-      await pb.collection('order_items').create({ order: order.id, ...li });
-    }
-  } catch (e) {
+  const { error: itemsErr } = await supabase
+    .from('order_items')
+    .insert(lineItems.map((li) => ({ order_id: order.id, ...li })));
+  if (itemsErr) {
     // Roll back the order so we never leave a total without its line items.
     // order_items cascade-delete with the order.
-    await pb.collection('orders').delete(order.id).catch(() => {});
-    return NextResponse.json(
-      { error: e instanceof Error ? e.message : 'Failed to create order items.' },
-      { status: 500 },
-    );
+    await supabase.from('orders').delete().eq('id', order.id);
+    return NextResponse.json({ error: itemsErr.message }, { status: 500 });
   }
 
   return NextResponse.json({ orderId: order.id, total });

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getProductByRef } from '../../../lib/pocketbase/products';
+import { getProductByRef } from '../../../lib/supabase/products';
 import {
   PRODUCT_CATEGORY_DESCRIPTIONS,
   PRODUCT_DESCRIPTION_FALLBACK,

@@ -1,26 +1,43 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import PocketBase from 'pocketbase';
+import { createServerClient } from '@supabase/ssr';
 
 /**
  * Server-side guard for the back-office.
- * Verifies the PocketBase session against the server (authRefresh — the cookie
- * model is client-writable and never trusted) and requires role 'admin'.
+ * Verifies the Supabase session against the Auth server (getUser — the cookie
+ * is never trusted blindly) and requires the profile role 'admin'.
  * Unauthorized -> 404 (we do not reveal that the route exists).
  */
 export async function middleware(request: NextRequest) {
-  const pb = new PocketBase(
-    process.env.NEXT_PUBLIC_POCKETBASE_URL || 'http://127.0.0.1:8090',
+  const response = NextResponse.next({ request });
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options),
+          );
+        },
+      },
+    },
   );
-  pb.authStore.loadFromCookie(request.headers.get('cookie') || '');
 
   let isAdmin = false;
-  if (pb.authStore.isValid) {
-    try {
-      const { record } = await pb.collection('users').authRefresh();
-      isAdmin = record?.role === 'admin';
-    } catch {
-      isAdmin = false;
-    }
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+    isAdmin = profile?.role === 'admin';
   }
 
   if (!isAdmin) {
@@ -28,7 +45,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.rewrite(new URL('/_blocked_not_found', request.url));
   }
 
-  return NextResponse.next();
+  return response;
 }
 
 export const config = {
