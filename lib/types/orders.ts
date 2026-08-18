@@ -20,14 +20,29 @@ export type OrderItem = {
   } | null;
 };
 
+export type PaymentStatus =
+  | 'en_attente_paiement'
+  | 'paiement_a_verifier'
+  | 'paye'
+  | 'expire'
+  | 'refuse';
+
 export type Order = {
   id: string;
+  order_number: string;
   user_id: string | null;
   status: 'pending' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
   payment_method: 'cod' | 'bkash' | 'nagad';
-  payment_status: 'pending' | 'paid' | 'failed';
+  payment_status: PaymentStatus;
   total_bdt: number;
   shipping_address: ShippingAddress;
   created_at: string;
+  // Champs du flux bKash manuel
+  trxid: string | null;
+  trxid_submitted_at: string | null;
+  verified_at: string | null;
+  verified_by: string | null;
+  bkash_receiver_number: string | null;
+  payment_notes: string | null;
   order_items: OrderItem[];
 };

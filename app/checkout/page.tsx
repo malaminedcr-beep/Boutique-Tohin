@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useCart } from '../../lib/cart-context';
 import { useState } from 'react';
 import { formatBdt as fmt } from '../../lib/format';
+import PaymentPopup from '../../components/checkout/PaymentPopup';
 
 type PaymentMethod = 'cod' | 'bkash' | 'nagad';
 
@@ -22,6 +23,12 @@ export default function CheckoutPage() {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cod');
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Popup bKash (paiement manuel) : ouverte après création de la commande.
+  const [bkashOrder, setBkashOrder] = useState<{
+    orderId: string;
+    orderNumber: string;
+    total: number;
+  } | null>(null);
 
   if (state.items.length === 0) {
     return (
@@ -68,6 +75,18 @@ export default function CheckoutPage() {
 
       const result = await res.json();
       if (!res.ok) throw new Error(result?.error ?? 'Something went wrong. Please try again.');
+
+      // bKash manuel : on garde le panier et on ouvre la popup pour le TrxID.
+      // Le panier n'est vidé qu'après soumission réussie du paiement.
+      if (paymentMethod === 'bkash') {
+        setBkashOrder({
+          orderId: result.orderId,
+          orderNumber: result.orderNumber,
+          total: result.total ?? state.total,
+        });
+        setIsProcessing(false);
+        return;
+      }
 
       clearCart();
       window.location.href = `/order-confirmation?order=${result.orderId}`;
@@ -244,6 +263,21 @@ export default function CheckoutPage() {
           </form>
         </div>
       </section>
+
+      {bkashOrder && (
+        <PaymentPopup
+          open
+          orderId={bkashOrder.orderId}
+          orderNumber={bkashOrder.orderNumber}
+          totalBdt={bkashOrder.total}
+          onClose={() => setBkashOrder(null)}
+          onSuccess={() => {
+            const id = bkashOrder.orderId;
+            clearCart();
+            window.location.href = `/order-confirmation?order=${id}`;
+          }}
+        />
+      )}
     </main>
   );
 }
