@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import Header from '../../components/Header';
 import Link from 'next/link';
 import { CONTACT, whatsappTel } from '../../lib/contact';
+import { getOrderById } from '../../lib/supabase/orders';
+import { formatBdt } from '../../lib/format';
 
 export const metadata: Metadata = {
   title: 'Order Confirmation',
@@ -9,8 +11,24 @@ export const metadata: Metadata = {
   alternates: { canonical: '/order-confirmation' },
 };
 
-export default function OrderConfirmationPage() {
-  const orderNumber = `FB-${Date.now().toString().slice(-8)}`;
+// Cette page dépend de la commande réelle (?order=<id>) : jamais de rendu statique
+// figé (l'ancien `FB-${Date.now()}` était gelé au build → toujours le même numéro).
+export const dynamic = 'force-dynamic';
+
+export default async function OrderConfirmationPage({
+  searchParams,
+}: {
+  searchParams: { order?: string };
+}) {
+  const orderId = searchParams?.order;
+  const order = orderId ? await getOrderById(orderId) : null;
+
+  // Numéro réel FBD-YYMMDD-XXXXX (fallback propre si commande introuvable).
+  const orderNumber = order?.order_number ?? '—';
+
+  // Message de paiement contextualisé (bKash manuel = vérification à venir).
+  const awaitingBkashCheck =
+    order?.payment_method === 'bkash' && order?.payment_status === 'paiement_a_verifier';
 
   return (
     <main className="min-h-screen bg-background text-text">
@@ -28,6 +46,14 @@ export default function OrderConfirmationPage() {
               <p className="text-xs uppercase tracking-[0.35em] text-charcoal/60">Order confirmed</p>
               <h1 className="text-4xl font-semibold text-black">Thank you for your order!</h1>
               <p className="text-lg text-charcoal/70">Order number: <span className="font-semibold text-black">{orderNumber}</span></p>
+              {order && (
+                <p className="text-sm text-charcoal/60">Total: <span className="font-semibold text-black">{formatBdt(order.total_bdt)}</span></p>
+              )}
+              {awaitingBkashCheck && (
+                <p className="mx-auto max-w-md rounded-full bg-highlight px-4 py-2 text-sm font-medium text-accent">
+                  bKash payment received — we are verifying your TrxID. You’ll be confirmed shortly.
+                </p>
+              )}
             </div>
 
             <div className="max-w-2xl mx-auto space-y-4 text-left bg-cream rounded-2xl p-6">
