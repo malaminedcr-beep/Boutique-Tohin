@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { Cormorant_Garamond, Inter } from 'next/font/google';
 import './globals.css';
-import CustomCursor from '../components/CustomCursor';
 import Footer from '../components/layout/Footer';
 import Navbar from '../components/layout/navbar';
 import AnnouncementBar from '../components/layout/announcement-bar';
@@ -57,12 +56,11 @@ const organizationJsonLd = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={`${serif.variable} ${sans.variable} bg-canvas text-ink antialiased`} style={{ cursor: 'none' }}>
+      <body className={`${serif.variable} ${sans.variable} bg-canvas text-ink antialiased`}>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
         />
-        <CustomCursor />
         <CartProvider>
           <AnnouncementBar />
           <Navbar />

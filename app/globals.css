@@ -68,39 +68,3 @@ section {
     transform: translateY(0);
   }
 }
-
-/* Custom cursor — light theme */
-#custom-cursor-dot,
-#custom-cursor-ring {
-  position: fixed;
-  pointer-events: none;
-  top: 0;
-  left: 0;
-  transform: translate(-50%, -50%);
-  z-index: 9999;
-}
-
-#custom-cursor-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: #C9513A;
-  transition: transform 0.1s ease;
-}
-
-#custom-cursor-ring {
-  width: 40px;
-  height: 40px;
-  border-radius: 999px;
-  border: 1.5px solid rgba(201, 81, 58, 0.4);
-  transition: transform 0.18s ease, opacity 0.18s ease;
-}
-
-.cursor-hover #custom-cursor-dot {
-  transform: translate(-50%, -50%) scale(1.5);
-}
-
-.cursor-hover #custom-cursor-ring {
-  transform: translate(-50%, -50%) scale(1.6);
-  opacity: 0.5;
-}
