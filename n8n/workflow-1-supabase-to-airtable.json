@@ -1,0 +1,104 @@
+{
+  "name": "bKash 1 — Supabase → Airtable (nouvelle vérification)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bkash-new-verification",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "wf1-webhook",
+      "name": "Webhook Supabase",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [220, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "typeValidation": "loose" },
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.body.record.payment_status }}",
+              "rightValue": "paiement_a_verifier",
+              "operator": { "type": "string", "operation": "equals" }
+            },
+            {
+              "leftValue": "={{ $json.body.record.payment_method }}",
+              "rightValue": "bkash",
+              "operator": { "type": "string", "operation": "equals" }
+            },
+            {
+              "leftValue": "={{ $json.body.old_record ? $json.body.old_record.payment_status : '' }}",
+              "rightValue": "paiement_a_verifier",
+              "operator": { "type": "string", "operation": "notEquals" }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf1-if",
+      "name": "Filtre paiement_a_verifier",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.airtable.com/v0/app8wnK5LRxNVaXq1/Verifications",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"fields\": { \"order_id\": $json.body.record.id, \"order_number\": $json.body.record.order_number, \"client_nom\": ((($json.body.record.shipping_address || {}).firstName || '') + ' ' + (($json.body.record.shipping_address || {}).lastName || '')).trim(), \"client_telephone\": ($json.body.record.shipping_address || {}).phone, \"montant\": $json.body.record.total_bdt, \"trxid\": $json.body.record.trxid, \"soumis_le\": $json.body.record.trxid_submitted_at, \"statut\": \"A verifier\" } } }}",
+        "options": {}
+      },
+      "id": "wf1-airtable",
+      "name": "Airtable — Créer vérification",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [720, 240],
+      "credentials": {
+        "airtableTokenApi": { "id": "", "name": "Airtable Paiements bKash" }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{ $env.TELEGRAM_ADMIN_CHAT_ID }}",
+        "text": "=🔔 Nouveau paiement à vérifier : {{ $('Webhook Supabase').item.json.body.record.order_number }} — {{ $('Webhook Supabase').item.json.body.record.total_bdt }} BDT — TrxID {{ $('Webhook Supabase').item.json.body.record.trxid }}",
+        "additionalFields": {}
+      },
+      "id": "wf1-notif",
+      "name": "Telegram — Notif admin",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [980, 240],
+      "continueOnFail": true,
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "telegramApi": { "id": "", "name": "Telegram bKash Bot" }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook Supabase": {
+      "main": [[{ "node": "Filtre paiement_a_verifier", "type": "main", "index": 0 }]]
+    },
+    "Filtre paiement_a_verifier": {
+      "main": [
+        [{ "node": "Airtable — Créer vérification", "type": "main", "index": 0 }],
+        []
+      ]
+    },
+    "Airtable — Créer vérification": {
+      "main": [[{ "node": "Telegram — Notif admin", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "active": false
+}

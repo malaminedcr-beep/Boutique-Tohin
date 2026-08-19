@@ -1,0 +1,224 @@
+{
+  "name": "bKash 3 — Matching automatique par SMS",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bkash-sms-inbound",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "wf3-webhook",
+      "name": "Webhook SMS",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [200, 320]
+    },
+    {
+      "parameters": {
+        "jsCode": "// ⚠️ REGEX À AJUSTER avec de vrais SMS bKash (le format exact n'est pas confirmé).\n// Exemple attendu : \"You have received Tk 3,960.00 ... TrxID 9AB3CD5EF2 at ...\"\nconst body = ($input.first().json.body) || {};\nconst text = body.text || body.message || body.sms || '';\nconst m = String(text).match(/TrxID[:\\s]+([A-Z0-9]+)/i);\nreturn [{ json: { text, trxid: m ? m[1].toUpperCase() : null } }];"
+      },
+      "id": "wf3-code",
+      "name": "Extraire TrxID (regex)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [420, 320]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "typeValidation": "loose" },
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.trxid }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "notEmpty", "singleValue": true }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf3-if-trxid",
+      "name": "IF TrxID trouvé",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [640, 320]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ 'https://api.airtable.com/v0/app8wnK5LRxNVaXq1/Verifications?maxRecords=1&filterByFormula=' + encodeURIComponent(\"AND({trxid}='\" + $json.trxid + \"',{statut}='A verifier')\") }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "options": {}
+      },
+      "id": "wf3-search",
+      "name": "Airtable — Rechercher TrxID",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [860, 240],
+      "credentials": {
+        "airtableTokenApi": { "id": "", "name": "Airtable Paiements bKash" }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "typeValidation": "loose" },
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ ($json.records || []).length }}",
+              "rightValue": 0,
+              "operator": { "type": "number", "operation": "gt" }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf3-if-found",
+      "name": "IF ligne trouvée",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1080, 240]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "={{ 'https://api.airtable.com/v0/app8wnK5LRxNVaXq1/Verifications/' + $json.records[0].id }}",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"fields\": { \"statut\": \"Paye\", \"verifie_par\": \"auto-sms\", \"verifie_le\": $now.toISO() } } }}",
+        "options": {}
+      },
+      "id": "wf3-airtable-update",
+      "name": "Airtable — Marquer Paye",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1300, 180],
+      "credentials": {
+        "airtableTokenApi": { "id": "", "name": "Airtable Paiements bKash" }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "tableId": "orders",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('Airtable — Rechercher TrxID').item.json.records[0].fields.order_id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            { "fieldId": "payment_status", "fieldValue": "paye" },
+            { "fieldId": "verified_by", "fieldValue": "auto-sms" },
+            { "fieldId": "verified_at", "fieldValue": "={{ $now.toISO() }}" }
+          ]
+        }
+      },
+      "id": "wf3-supabase",
+      "name": "Supabase — Update orders (paye)",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1520, 180],
+      "credentials": {
+        "supabaseApi": { "id": "", "name": "Supabase French Beauty" }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "XXXXXXXXXX",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"to\": $('Airtable — Rechercher TrxID').item.json.records[0].fields.client_telephone, \"message\": 'Paiement reçu et confirmé pour la commande ' + $('Airtable — Rechercher TrxID').item.json.records[0].fields.order_number + '. Merci !' } }}",
+        "options": {}
+      },
+      "id": "wf3-notif-client",
+      "name": "Notif client (paye)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1740, 180],
+      "continueOnFail": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{ $env.TELEGRAM_ADMIN_CHAT_ID }}",
+        "text": "=⚠️ SMS reçu mais format non reconnu : {{ $('Extraire TrxID (regex)').item.json.text }}",
+        "additionalFields": {}
+      },
+      "id": "wf3-alert-format",
+      "name": "Telegram — Alerte SMS non reconnu",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [900, 500],
+      "continueOnFail": true,
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "telegramApi": { "id": "", "name": "Telegram bKash Bot" }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{ $env.TELEGRAM_ADMIN_CHAT_ID }}",
+        "text": "=⚠️ TrxID reçu par SMS sans commande correspondante — vérification manuelle nécessaire : {{ $('Extraire TrxID (regex)').item.json.trxid }}",
+        "additionalFields": {}
+      },
+      "id": "wf3-alert-nomatch",
+      "name": "Telegram — Alerte TrxID sans commande",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1300, 420],
+      "continueOnFail": true,
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "telegramApi": { "id": "", "name": "Telegram bKash Bot" }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook SMS": {
+      "main": [[{ "node": "Extraire TrxID (regex)", "type": "main", "index": 0 }]]
+    },
+    "Extraire TrxID (regex)": {
+      "main": [[{ "node": "IF TrxID trouvé", "type": "main", "index": 0 }]]
+    },
+    "IF TrxID trouvé": {
+      "main": [
+        [{ "node": "Airtable — Rechercher TrxID", "type": "main", "index": 0 }],
+        [{ "node": "Telegram — Alerte SMS non reconnu", "type": "main", "index": 0 }]
+      ]
+    },
+    "Airtable — Rechercher TrxID": {
+      "main": [[{ "node": "IF ligne trouvée", "type": "main", "index": 0 }]]
+    },
+    "IF ligne trouvée": {
+      "main": [
+        [{ "node": "Airtable — Marquer Paye", "type": "main", "index": 0 }],
+        [{ "node": "Telegram — Alerte TrxID sans commande", "type": "main", "index": 0 }]
+      ]
+    },
+    "Airtable — Marquer Paye": {
+      "main": [[{ "node": "Supabase — Update orders (paye)", "type": "main", "index": 0 }]]
+    },
+    "Supabase — Update orders (paye)": {
+      "main": [[{ "node": "Notif client (paye)", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "active": false
+}

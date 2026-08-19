@@ -1,0 +1,104 @@
+{
+  "name": "bKash 2 — Airtable → Supabase (validation manuelle)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bkash-airtable-validation",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "wf2-webhook",
+      "name": "Webhook Airtable",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [220, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "typeValidation": "loose" },
+          "combinator": "or",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.body.statut }}",
+              "rightValue": "Paye",
+              "operator": { "type": "string", "operation": "equals" }
+            },
+            {
+              "leftValue": "={{ $json.body.statut }}",
+              "rightValue": "Refuse",
+              "operator": { "type": "string", "operation": "equals" }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf2-if",
+      "name": "IF statut = Paye/Refuse",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [460, 300]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "tableId": "orders",
+        "filters": {
+          "conditions": [
+            { "keyName": "id", "condition": "eq", "keyValue": "={{ $json.body.order_id }}" }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            { "fieldId": "payment_status", "fieldValue": "={{ $json.body.statut === 'Paye' ? 'paye' : 'refuse' }}" },
+            { "fieldId": "verified_by", "fieldValue": "={{ $json.body.verifie_par || 'airtable' }}" },
+            { "fieldId": "verified_at", "fieldValue": "={{ $now.toISO() }}" }
+          ]
+        }
+      },
+      "id": "wf2-supabase",
+      "name": "Supabase — Update orders",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [720, 240],
+      "credentials": {
+        "supabaseApi": { "id": "", "name": "Supabase French Beauty" }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "XXXXXXXXXX",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { \"to\": $('Webhook Airtable').item.json.body.client_telephone, \"message\": ($('Webhook Airtable').item.json.body.statut === 'Paye' ? 'Votre paiement pour la commande ' + $('Webhook Airtable').item.json.body.order_number + ' est confirmé. Merci !' : 'Le paiement de la commande ' + $('Webhook Airtable').item.json.body.order_number + ' n a pas pu être validé. Contactez-nous.') } }}",
+        "options": {}
+      },
+      "id": "wf2-notif",
+      "name": "Notif client (email/SMS)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [980, 240],
+      "continueOnFail": true,
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "connections": {
+    "Webhook Airtable": {
+      "main": [[{ "node": "IF statut = Paye/Refuse", "type": "main", "index": 0 }]]
+    },
+    "IF statut = Paye/Refuse": {
+      "main": [
+        [{ "node": "Supabase — Update orders", "type": "main", "index": 0 }],
+        []
+      ]
+    },
+    "Supabase — Update orders": {
+      "main": [[{ "node": "Notif client (email/SMS)", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "active": false
+}
