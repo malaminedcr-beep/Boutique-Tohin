@@ -69,7 +69,7 @@
       "parameters": {
         "resource": "message",
         "operation": "sendMessage",
-        "chatId": "={{ $env.TELEGRAM_ADMIN_CHAT_ID }}",
+        "chatId": "-5162751576",
         "text": "=🔔 Nouveau paiement à vérifier : {{ $('Webhook Supabase').item.json.body.record.order_number }} — {{ $('Webhook Supabase').item.json.body.record.total_bdt }} BDT — TrxID {{ $('Webhook Supabase').item.json.body.record.trxid }}",
         "additionalFields": {}
       },

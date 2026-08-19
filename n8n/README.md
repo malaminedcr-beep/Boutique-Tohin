@@ -50,8 +50,9 @@ Les workflows mappent déjà vers ces colonnes réelles.
 ### 0. Credentials n8n à créer une fois (réutilisés par les 3 workflows)
 - **`Supabase French Beauty`** (type *Supabase API*) : Host `https://ujcxhukiwgxwgyiuoryt.supabase.co`, Service Role Secret = la `SUPABASE_SERVICE_ROLE_KEY` de ton `.env.local`. → secret stocké dans n8n, **jamais en clair dans les workflows**.
 - **`Airtable Paiements bKash`** (type *Airtable Personal Access Token*) : un PAT Airtable avec scopes `data.records:read`, `data.records:write` sur la base `app8wnK5LRxNVaXq1`.
-- **`Telegram bKash Bot`** (type *Telegram API*) : le **bot token** obtenu via @BotFather (voir la section « Configuration Telegram » plus bas). Utilisé par les notifs **admin** (WF1 + WF2 alertes).
-- **Variable d'environnement n8n `TELEGRAM_ADMIN_CHAT_ID`** : le `chat_id` du **groupe Telegram** admin (toi + associé). Recommandé en variable d'env (et non en dur) car réutilisé par 3 nœuds dans 2 workflows → un seul endroit à changer.
+- **`Telegram bKash Bot`** (type *Telegram API*) : le **bot token** obtenu via @BotFather (voir la section « Configuration Telegram » plus bas). Utilisé par les notifs **admin** (WF1 + les 2 alertes WF3).
+
+> **chat_id en dur** : le `chat_id` du groupe admin (`-5162751576`) est écrit **directement dans les 3 nœuds Telegram** (le plan n8n actuel ne licence pas les variables d'environnement — erreur *« Plan lacks license for this feature »*). Si le groupe change un jour, il faudra **modifier manuellement chaque nœud Telegram concerné** (1 dans WF1, 2 dans WF3).
 
 Après import, ouvre chaque nœud Airtable/Supabase/Telegram et **sélectionne le credential** (le champ `id` est vide exprès).
 
@@ -62,7 +63,7 @@ Après import, ouvre chaque nœud Airtable/Supabase/Telegram et **sélectionne l
    - Table : `orders` · Événements : **UPDATE**
    - Type : HTTP Request · Method : `POST` · URL : l'URL n8n ci-dessus
    - (le filtre `payment_status = paiement_a_verifier` est déjà fait **dans** le workflow, nœud *Filtre*)
-4. Notif admin : le nœud **Telegram — Notif admin** est déjà en place. Connecte le credential `Telegram bKash Bot` et définis la variable d'env `TELEGRAM_ADMIN_CHAT_ID` (voir « Configuration Telegram »). Rien à remplacer côté admin.
+4. Notif admin : le nœud **Telegram — Notif admin** est déjà en place (credential `Telegram bKash Bot` à sélectionner ; `chat_id -5162751576` déjà en dur). Rien à remplacer côté admin.
 
 ### 2. Workflow 2 — validation Airtable → Supabase
 1. Importe `workflow-2`, connecte le credential Supabase, **active**.
@@ -86,7 +87,7 @@ Après import, ouvre chaque nœud Airtable/Supabase/Telegram et **sélectionne l
 1. Importe `workflow-3`, connecte les credentials Airtable **et** Supabase, **active**.
 2. URL du *Webhook SMS* : `.../webhook/bkash-sms-inbound`. Configure ton app de forward SMS (Android dédié) pour POST le texte du SMS en `{"text": "<contenu du SMS>"}`.
 3. **⚠️ Le regex `/TrxID[:\s]+([A-Z0-9]+)/i` (nœud *Extraire TrxID*) devra être ajusté avec de vrais SMS bKash** — le format exact n'est pas confirmé. Envoie-moi un vrai SMS reçu et j'affine le regex.
-4. Notifs admin : les deux nœuds **Telegram — Alerte SMS non reconnu** (format non reconnu) et **Telegram — Alerte TrxID sans commande** (aucune ligne correspondante) sont déjà en place (credential `Telegram bKash Bot` + env `TELEGRAM_ADMIN_CHAT_ID`).
+4. Notifs admin : les deux nœuds **Telegram — Alerte SMS non reconnu** (format non reconnu) et **Telegram — Alerte TrxID sans commande** (aucune ligne correspondante) sont déjà en place (credential `Telegram bKash Bot` ; `chat_id -5162751576` en dur).
 5. Notif **client** : remplace l'URL `XXXXXXXXXX` du nœud *Notif client (paye)* par ton provider email (inchangé, hors périmètre Telegram).
 
 ---
@@ -98,7 +99,6 @@ Après import, ouvre chaque nœud Airtable/Supabase/Telegram et **sélectionne l
 | `XXXXXXXXXX` | `workflow-2` → nœud *Notif client (email/SMS)* → `url` | Provider notif **client** (email) |
 | `XXXXXXXXXX` | `workflow-3` → nœud *Notif client (paye)* → `url` | Provider notif **client** (email) |
 | `id: ""` | tous les nœuds Airtable/Supabase/Telegram → `credentials` | À relier après import |
-| `TELEGRAM_ADMIN_CHAT_ID` | variable d'env n8n (référencée par les 3 nœuds Telegram) | `chat_id` du groupe admin |
 | Base ID Airtable | déjà connu → `app8wnK5LRxNVaXq1` | (rien à faire) |
 
 > Les notifs **admin** ne sont plus des placeholders : elles passent par des nœuds **Telegram natifs**. Il ne reste des `XXXXXXXXXX` que sur les notifs **client (email)**, volontairement laissées intactes.
@@ -121,13 +121,12 @@ Un **groupe** évite de dupliquer les notifs vers chaque personne.
 2. Envoie n'importe quel message dans le groupe (ex : `/start` ou « test »).
 3. Ouvre dans un navigateur (remplace `<TOKEN>`) :
    `https://api.telegram.org/bot<TOKEN>/getUpdates`
-4. Dans la réponse JSON, lis `result[].message.chat.id`. Pour un **groupe**, c'est un **nombre négatif** (ex : `-1002123456789`). C'est ton `chat_id`.
-5. Mets cette valeur dans la variable d'env n8n **`TELEGRAM_ADMIN_CHAT_ID`**.
+4. Dans la réponse JSON, lis `result[].message.chat.id`. Pour un **groupe**, c'est un **nombre négatif**. C'est ton `chat_id`.
 
-> Variante individuelle : écris directement au bot en privé, puis même appel `getUpdates` → `chat.id` positif. Mais il faudrait alors un nœud par personne → le groupe est plus simple.
+### c) chat_id en dur (limitation du plan n8n)
+Le plan n8n actuel ne permet **pas** les variables d'environnement (*« Plan lacks license for this feature »*). Le `chat_id` du groupe (**`-5162751576`**) est donc écrit **en dur dans les 3 nœuds Telegram** (`workflow-1` : *Telegram — Notif admin* ; `workflow-3` : *Alerte SMS non reconnu* et *Alerte TrxID sans commande*).
 
-### c) Pourquoi env var plutôt que credential pour le chat_id ?
-Le `chat_id` n'est pas un secret et est **réutilisé par 3 nœuds** (WF1 + les 2 alertes WF3). En variable d'env `TELEGRAM_ADMIN_CHAT_ID`, tu le changes à **un seul endroit**. Le **token**, lui, reste dans le credential (secret).
+> **Si le groupe change**, modifie le champ *Chat ID* de **chacun** de ces 3 nœuds. Le **token** reste, lui, dans le credential `Telegram bKash Bot` (secret).
 
 ---
 
@@ -135,3 +134,32 @@ Le `chat_id` n'est pas un secret et est **réutilisé par 3 nœuds** (WF1 + les 
 - Chaque workflow est importé **inactif** (`"active": false`) — active-les après avoir branché les credentials.
 - Les nœuds de notification sont en `continueOnFail` : une notif manquante ne bloque pas la synchro paiement.
 - Anti-doublon (WF1) : le filtre ignore les updates où le statut était déjà `paiement_a_verifier`.
+
+---
+
+## ✅ Checklist de mise en production (dans l'ordre exact)
+
+1. **Réimporter les 3 JSON à jour** dans n8n (*Workflows → Import from File*) — ça remplace les versions précédentes.
+2. **Nœuds Telegram (3 au total)** : vérifier/sélectionner le credential **`Telegram bKash Bot`** (le `chat_id -5162751576` est déjà en dur).
+3. **Nœuds Airtable** : créer/sélectionner le credential **`Airtable Paiements bKash`** (PAT avec scope read/write sur `app8wnK5LRxNVaXq1`).
+4. **Nœuds Supabase** : créer/sélectionner le credential **`Supabase French Beauty`** (host `https://ujcxhukiwgxwgyiuoryt.supabase.co` + `service_role` du `.env.local`).
+5. **Activer `workflow-1`** → copier l'URL du *Webhook Supabase* générée.
+6. **Supabase** (projet `ujcxhukiwgxwgyiuoryt`) → *Database → Webhooks → Create* : table `orders`, événement **UPDATE**, filtre `payment_status = paiement_a_verifier`, POST vers l'URL de l'étape 5.
+7. **Activer `workflow-2`** → copier l'URL du *Webhook Airtable* générée.
+8. **Airtable** (base *Paiements bKash*) → *Automations → New automation* → trigger **When a record is updated** (champ `statut`) → action **Send webhook** vers l'URL de l'étape 7 (corps JSON : voir §2 ci-dessus).
+9. **NE PAS activer `workflow-3`** pour l'instant (dépend du regex SMS pas encore validé avec un vrai SMS bKash).
+
+---
+
+## 🧪 Test de bout en bout (à exécuter après les étapes 1–8)
+
+1. **Passer une commande test** sur https://french-beauty-bd.vercel.app : ajoute un produit au panier → checkout → **bKash** (déjà par défaut) → *Place order*.
+2. **Soumettre un faux TrxID** dans la popup (ex : `TESTE2E12345`) → valider. La commande passe en `paiement_a_verifier` côté Supabase.
+3. **Vérifier Airtable** : dans *Paiements bKash → Verifications*, une nouvelle ligne apparaît avec `statut = A verifier`, le bon `order_number`, `montant`, `trxid`, nom/téléphone. *(déclenché par WF1 via le webhook Supabase)*
+4. **Vérifier Telegram** : une notif *« 🔔 Nouveau paiement à vérifier : FBD-… — … BDT — TrxID TESTE2E12345 »* arrive dans le groupe admin.
+5. **Valider à la main dans Airtable** : passe le `statut` de la ligne à **Paye**. *(déclenche l'automation Airtable → WF2)*
+6. **Vérifier Supabase** : la commande passe `payment_status = paye`, avec `verified_by` + `verified_at` renseignés (visible dans *Table editor → orders*, ou back-office).
+7. **Vérifier l'email client** : un email de confirmation part *(une fois le provider email branché sur le nœud Notif client — placeholder `XXXXXXXXXX` à remplacer au préalable, sinon cette étape est ignorée sans bloquer le reste)*.
+8. **Nettoyage** : supprime la commande + la ligne Airtable de test.
+
+> Astuce debug : si une étape échoue, ouvre l'onglet **Executions** du workflow concerné dans n8n — chaque exécution montre le payload reçu et l'erreur exacte par nœud.

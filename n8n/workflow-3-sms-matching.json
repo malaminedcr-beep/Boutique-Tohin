@@ -155,7 +155,7 @@
       "parameters": {
         "resource": "message",
         "operation": "sendMessage",
-        "chatId": "={{ $env.TELEGRAM_ADMIN_CHAT_ID }}",
+        "chatId": "-5162751576",
         "text": "=⚠️ SMS reçu mais format non reconnu : {{ $('Extraire TrxID (regex)').item.json.text }}",
         "additionalFields": {}
       },
@@ -174,7 +174,7 @@
       "parameters": {
         "resource": "message",
         "operation": "sendMessage",
-        "chatId": "={{ $env.TELEGRAM_ADMIN_CHAT_ID }}",
+        "chatId": "-5162751576",
         "text": "=⚠️ TrxID reçu par SMS sans commande correspondante — vérification manuelle nécessaire : {{ $('Extraire TrxID (regex)').item.json.trxid }}",
         "additionalFields": {}
       },
