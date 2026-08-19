@@ -16,7 +16,7 @@
     },
     {
       "parameters": {
-        "jsCode": "// ⚠️ REGEX À AJUSTER avec de vrais SMS bKash (le format exact n'est pas confirmé).\n// Exemple attendu : \"You have received Tk 3,960.00 ... TrxID 9AB3CD5EF2 at ...\"\nconst body = ($input.first().json.body) || {};\nconst text = body.text || body.message || body.sms || '';\nconst m = String(text).match(/TrxID[:\\s]+([A-Z0-9]+)/i);\nreturn [{ json: { text, trxid: m ? m[1].toUpperCase() : null } }];"
+        "jsCode": "// Parsing SMS bKash. Regex validé sur les formats connus (Send Money reçu,\n// paiement marchand). ⚠️ À reconfirmer avec un VRAI SMS bKash de ton téléphone.\n// Ex : \"You have received Tk 1,540.00 from 01712345678. ... TrxID BHK7A2C9Q1 at 19/08/2026 15:42\"\nconst body = ($input.first().json.body) || {};\nconst text = String(body.text || body.message || body.sms || '');\nconst trxidMatch = text.match(/TrxID[:\\s]*([A-Z0-9]{6,})/i);\nconst amountMatch = text.match(/Tk[:\\s]*([\\d,]+(?:\\.\\d{1,2})?)/i);\nconst senderMatch = text.match(/from\\s+(01\\d{9})/i);\nreturn [{ json: {\n  text,\n  trxid: trxidMatch ? trxidMatch[1].toUpperCase() : null,\n  amount: amountMatch ? Number(amountMatch[1].replace(/,/g, '')) : null,\n  sender: senderMatch ? senderMatch[1] : null\n} }];"
       },
       "id": "wf3-code",
       "name": "Extraire TrxID (regex)",
@@ -180,7 +180,7 @@
         "resource": "message",
         "operation": "sendMessage",
         "chatId": "-5162751576",
-        "text": "=⚠️ TrxID reçu par SMS sans commande correspondante — vérification manuelle nécessaire : {{ $('Extraire TrxID (regex)').item.json.trxid }}",
+        "text": "=⚠️ TrxID reçu par SMS sans commande correspondante — vérification manuelle nécessaire.\nTrxID : {{ $('Extraire TrxID (regex)').item.json.trxid }}\nMontant : {{ $('Extraire TrxID (regex)').item.json.amount }} BDT\nExpéditeur : {{ $('Extraire TrxID (regex)').item.json.sender }}",
         "additionalFields": {}
       },
       "id": "wf3-alert-nomatch",

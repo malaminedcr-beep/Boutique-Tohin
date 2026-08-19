@@ -87,7 +87,7 @@ Après import, ouvre chaque nœud Airtable/Supabase/Telegram et **sélectionne l
 ### 3. Workflow 3 — matching SMS (en dernier)
 1. Importe `workflow-3`, connecte les credentials Airtable **et** Supabase, **active**.
 2. URL du *Webhook SMS* : `.../webhook/bkash-sms-inbound`. Configure ton app de forward SMS (Android dédié) pour POST le texte du SMS en `{"text": "<contenu du SMS>"}`.
-3. **⚠️ Le regex `/TrxID[:\s]+([A-Z0-9]+)/i` (nœud *Extraire TrxID*) devra être ajusté avec de vrais SMS bKash** — le format exact n'est pas confirmé. Envoie-moi un vrai SMS reçu et j'affine le regex.
+3. **Regex durci** dans le nœud *Extraire TrxID (regex)* : `TrxID[:\s]*([A-Z0-9]{6,})` (+ extraction bonus du **montant** `Tk …` et de l'**expéditeur** `from 01…`). Validé sur les formats bKash connus (voir « Test & regex SMS » plus bas). **⚠️ À reconfirmer avec un VRAI SMS bKash** — envoie-m'en un et je verrouille le regex.
 4. Notifs admin : les deux nœuds **Telegram — Alerte SMS non reconnu** (format non reconnu) et **Telegram — Alerte TrxID sans commande** (aucune ligne correspondante) sont déjà en place (credential `Telegram bKash Bot` ; `chat_id -5162751576` en dur).
 5. Email **client** : le nœud **Resend — Email client (paye)** est déjà branché sur Resend (credential `Resend API`). Rien à remplacer.
 
@@ -138,6 +138,33 @@ Un **groupe** évite de dupliquer les notifs vers chaque personne.
 Le plan n8n actuel ne permet **pas** les variables d'environnement (*« Plan lacks license for this feature »*). Le `chat_id` du groupe (**`-5162751576`**) est donc écrit **en dur dans les 3 nœuds Telegram** (`workflow-1` : *Telegram — Notif admin* ; `workflow-3` : *Alerte SMS non reconnu* et *Alerte TrxID sans commande*).
 
 > **Si le groupe change**, modifie le champ *Chat ID* de **chacun** de ces 3 nœuds. Le **token** reste, lui, dans le credential `Telegram bKash Bot` (secret).
+
+---
+
+## 📨 Test & regex SMS (workflow-3)
+
+Le nœud *Extraire TrxID (regex)* applique :
+- **TrxID** : `/TrxID[:\s]*([A-Z0-9]{6,})/i` (mis en MAJUSCULES)
+- **Montant** (bonus) : `/Tk[:\s]*([\d,]+(?:\.\d{1,2})?)/i`
+- **Expéditeur** (bonus) : `/from\s+(01\d{9})/i`
+
+Formats bKash **plausibles** utilisés pour valider le regex (⚠️ à confirmer avec un vrai SMS) :
+```
+You have received Tk 1,540.00 from 01712345678. Ref None. Fee Tk 0.00 Balance Tk 2,090.50. TrxID BHK7A2C9Q1 at 19/08/2026 15:42
+You have received Tk 500.00 from 01812345678. TrxID: 9F2A1B3C4D. Balance Tk 1,200.00
+Payment Tk 3,960.00 received from 01912345678 TrxID CDE4F5G6H7 at 19/08/2026 16:10
+```
+→ TrxID correctement extrait dans les 3 cas ; un SMS non-bKash (OTP, pub) donne `trxid = null` → route vers l'alerte *SMS non reconnu*.
+
+**Tester workflow-3 sans vrai téléphone** — POST un faux SMS sur le webhook (remplace l'URL) :
+```bash
+curl -X POST "https://<ton-n8n>/webhook/bkash-sms-inbound" \
+  -H "Content-Type: application/json" \
+  -d '{"text":"You have received Tk 1,540.00 from 01712345678. TrxID BHK7A2C9Q1 at 19/08/2026 15:42"}'
+```
+Pour tester le **chemin succès**, mets d'abord une ligne dans Airtable avec `trxid = BHK7A2C9Q1` et `statut = A verifier` (le workflow doit la passer à `Paye` + mettre à jour Supabase). Sans ligne correspondante → alerte Telegram *TrxID sans commande* (avec montant + expéditeur).
+
+> 🔑 **Envoie-moi UN vrai SMS bKash** (copie exacte du texte reçu) et j'ajuste le regex au format réel — c'est la seule inconnue restante avant d'activer workflow-3.
 
 ---
 
