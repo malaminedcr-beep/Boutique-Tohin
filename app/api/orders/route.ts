@@ -13,7 +13,6 @@ const REQUIRED_ADDRESS_FIELDS = [
   'email',
   'phone',
   'address',
-  'city',
 ] as const;
 
 function badRequest(message: string) {

@@ -4,8 +4,8 @@ export type ShippingAddress = {
   email: string;
   phone: string;
   address: string;
-  city: string;
-  postalCode: string;
+  city?: string;
+  postalCode?: string;
 };
 
 export type OrderItem = {

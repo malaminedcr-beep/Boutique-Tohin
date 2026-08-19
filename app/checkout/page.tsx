@@ -17,10 +17,9 @@ export default function CheckoutPage() {
     email: '',
     phone: '',
     address: '',
-    city: '',
-    postalCode: '',
   });
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('bkash');
+  // bKash est la seule méthode de paiement.
+  const paymentMethod: PaymentMethod = 'bkash';
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // Popup bKash (paiement manuel) : ouverte après création de la commande.
@@ -96,19 +95,11 @@ export default function CheckoutPage() {
     }
   };
 
-  const btnLabel = () => {
-    if (isProcessing) return 'Processing…';
-    if (paymentMethod === 'cod') return `Place order — ${fmt(state.total)}`;
-    if (paymentMethod === 'bkash') return `Pay with bKash — ${fmt(state.total)}`;
-    return `Pay with Nagad — ${fmt(state.total)}`;
-  };
+  const btnLabel = () =>
+    isProcessing ? 'Processing…' : `Pay with bKash — ${fmt(state.total)}`;
 
-  const btnClass = () => {
-    if (isProcessing) return 'bg-gray-400 cursor-not-allowed';
-    if (paymentMethod === 'bkash') return 'bg-pink-600 hover:bg-pink-700';
-    if (paymentMethod === 'nagad') return 'bg-orange-500 hover:bg-orange-600';
-    return 'bg-black hover:bg-charcoal/90';
-  };
+  const btnClass = () =>
+    isProcessing ? 'bg-gray-400 cursor-not-allowed' : 'bg-pink-600 hover:bg-pink-700';
 
   return (
     <main className="min-h-screen bg-background text-text">
@@ -160,54 +151,19 @@ export default function CheckoutPage() {
                   <textarea name="address" value={formData.address} onChange={handleInputChange} required rows={3}
                     className="w-full rounded-lg border border-charcoal/20 px-4 py-3 text-sm focus:border-black focus:outline-none" />
                 </div>
-                <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                  <div>
-                    <label className="block text-sm font-medium text-charcoal/70 mb-2">City</label>
-                    <input type="text" name="city" value={formData.city} onChange={handleInputChange} required
-                      className="w-full rounded-lg border border-charcoal/20 px-4 py-3 text-sm focus:border-black focus:outline-none" />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-charcoal/70 mb-2">Postal code</label>
-                    <input type="text" name="postalCode" value={formData.postalCode} onChange={handleInputChange} required
-                      className="w-full rounded-lg border border-charcoal/20 px-4 py-3 text-sm focus:border-black focus:outline-none" />
-                  </div>
-                </div>
               </div>
 
               {/* ── Paiement ── */}
               <div className="rounded-[2rem] border border-charcoal/10 bg-white p-6 shadow-soft">
                 <h2 className="text-lg font-semibold text-black mb-6">Payment</h2>
-                <div className="space-y-3">
 
-                  {/* COD */}
-                  <label className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition ${paymentMethod === 'cod' ? 'border-black bg-gray-50' : 'border-charcoal/20 hover:border-charcoal/40'}`}>
-                    <input type="radio" name="payment" value="cod" checked={paymentMethod === 'cod'} onChange={() => setPaymentMethod('cod')} className="h-4 w-4" />
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-stone-800 text-xs font-bold text-white">৳</div>
-                    <div>
-                      <div className="font-medium text-black">Cash on Delivery (COD)</div>
-                      <div className="text-xs text-charcoal/60">Pay on delivery</div>
-                    </div>
-                  </label>
-
-                  {/* bKash */}
-                  <label className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition ${paymentMethod === 'bkash' ? 'border-pink-500 bg-pink-50' : 'border-charcoal/20 hover:border-charcoal/40'}`}>
-                    <input type="radio" name="payment" value="bkash" checked={paymentMethod === 'bkash'} onChange={() => setPaymentMethod('bkash')} className="h-4 w-4" />
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-pink-600 text-sm font-bold text-white">b</div>
-                    <div>
-                      <div className="font-medium text-black">bKash</div>
-                      <div className="text-xs text-charcoal/60">Mobile banking</div>
-                    </div>
-                  </label>
-
-                  {/* Nagad */}
-                  <label className={`flex cursor-pointer items-center gap-3 rounded-xl border p-4 transition ${paymentMethod === 'nagad' ? 'border-orange-400 bg-orange-50' : 'border-charcoal/20 hover:border-charcoal/40'}`}>
-                    <input type="radio" name="payment" value="nagad" checked={paymentMethod === 'nagad'} onChange={() => setPaymentMethod('nagad')} className="h-4 w-4" />
-                    <div className="flex h-8 w-8 items-center justify-center rounded bg-orange-500 text-xs font-bold text-white">N</div>
-                    <div>
-                      <div className="font-medium text-black">Nagad</div>
-                      <div className="text-xs text-charcoal/60">Mobile banking</div>
-                    </div>
-                  </label>
+                {/* bKash — seule méthode de paiement, sélectionnée par défaut */}
+                <div className="flex items-center gap-3 rounded-xl border border-pink-500 bg-pink-50 p-4">
+                  <div className="flex h-8 w-8 items-center justify-center rounded bg-pink-600 text-sm font-bold text-white">b</div>
+                  <div>
+                    <div className="font-medium text-black">bKash</div>
+                    <div className="text-xs text-charcoal/60">Mobile banking</div>
+                  </div>
                 </div>
               </div>
             </div>
