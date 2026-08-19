@@ -20,7 +20,7 @@ export default function CheckoutPage() {
     city: '',
     postalCode: '',
   });
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('cod');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('bkash');
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // Popup bKash (paiement manuel) : ouverte après création de la commande.
