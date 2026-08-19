@@ -51,6 +51,7 @@ Les workflows mappent déjà vers ces colonnes réelles.
 - **`Supabase French Beauty`** (type *Supabase API*) : Host `https://ujcxhukiwgxwgyiuoryt.supabase.co`, Service Role Secret = la `SUPABASE_SERVICE_ROLE_KEY` de ton `.env.local`. → secret stocké dans n8n, **jamais en clair dans les workflows**.
 - **`Airtable Paiements bKash`** (type *Airtable Personal Access Token*) : un PAT Airtable avec scopes `data.records:read`, `data.records:write` sur la base `app8wnK5LRxNVaXq1`.
 - **`Telegram bKash Bot`** (type *Telegram API*) : le **bot token** obtenu via @BotFather (voir la section « Configuration Telegram » plus bas). Utilisé par les notifs **admin** (WF1 + les 2 alertes WF3).
+- **`Resend API`** (type *Header Auth*) : Name = `Authorization`, Value = `Bearer re_xxxxxxxxxxxxxxxxxxxx` (ta clé Resend). Utilisé par les emails **client** (WF2 + WF3). → clé stockée dans n8n, **jamais en clair dans les workflows/GitHub**. Voir la section « Configuration Resend » plus bas.
 
 > **chat_id en dur** : le `chat_id` du groupe admin (`-5162751576`) est écrit **directement dans les 3 nœuds Telegram** (le plan n8n actuel ne licence pas les variables d'environnement — erreur *« Plan lacks license for this feature »*). Si le groupe change un jour, il faudra **modifier manuellement chaque nœud Telegram concerné** (1 dans WF1, 2 dans WF3).
 
@@ -79,16 +80,16 @@ Après import, ouvre chaque nœud Airtable/Supabase/Telegram et **sélectionne l
    }
    ```
    Mappe chaque `{{...}}` sur le champ correspondant de la ligne modifiée.
-4. Remplace l'URL `XXXXXXXXXX` du nœud *Notif client* par ton provider email/SMS.
+4. Email client : le nœud **Resend — Email client** est déjà branché sur l'API Resend. Sélectionne le credential `Resend API`. Il envoie un email « paiement confirmé » (si `Paye`) ou « paiement non validé » (si `Refuse`) à l'adresse du client. Rien à remplacer.
 
-> Le workflow mappe `Paye → paye` et `Refuse → refuse`, et écrit `verified_by` + `verified_at`.
+> Le workflow mappe `Paye → paye` et `Refuse → refuse`, écrit `verified_by` + `verified_at`, et lit l'email client depuis la ligne Supabase retournée (`shipping_address.email`).
 
 ### 3. Workflow 3 — matching SMS (en dernier)
 1. Importe `workflow-3`, connecte les credentials Airtable **et** Supabase, **active**.
 2. URL du *Webhook SMS* : `.../webhook/bkash-sms-inbound`. Configure ton app de forward SMS (Android dédié) pour POST le texte du SMS en `{"text": "<contenu du SMS>"}`.
 3. **⚠️ Le regex `/TrxID[:\s]+([A-Z0-9]+)/i` (nœud *Extraire TrxID*) devra être ajusté avec de vrais SMS bKash** — le format exact n'est pas confirmé. Envoie-moi un vrai SMS reçu et j'affine le regex.
 4. Notifs admin : les deux nœuds **Telegram — Alerte SMS non reconnu** (format non reconnu) et **Telegram — Alerte TrxID sans commande** (aucune ligne correspondante) sont déjà en place (credential `Telegram bKash Bot` ; `chat_id -5162751576` en dur).
-5. Notif **client** : remplace l'URL `XXXXXXXXXX` du nœud *Notif client (paye)* par ton provider email (inchangé, hors périmètre Telegram).
+5. Email **client** : le nœud **Resend — Email client (paye)** est déjà branché sur Resend (credential `Resend API`). Rien à remplacer.
 
 ---
 
@@ -96,14 +97,24 @@ Après import, ouvre chaque nœud Airtable/Supabase/Telegram et **sélectionne l
 
 | Placeholder | Emplacement | Quoi |
 |---|---|---|
-| `XXXXXXXXXX` | `workflow-2` → nœud *Notif client (email/SMS)* → `url` | Provider notif **client** (email) |
-| `XXXXXXXXXX` | `workflow-3` → nœud *Notif client (paye)* → `url` | Provider notif **client** (email) |
-| `id: ""` | tous les nœuds Airtable/Supabase/Telegram → `credentials` | À relier après import |
+| `id: ""` | tous les nœuds Airtable/Supabase/Telegram/Resend → `credentials` | À relier après import |
+| `onboarding@resend.dev` | WF2 + WF3 nœuds Resend → champ `from` du `jsonBody` | Adresse expéditeur (voir « Configuration Resend ») |
 | Base ID Airtable | déjà connu → `app8wnK5LRxNVaXq1` | (rien à faire) |
 
-> Les notifs **admin** ne sont plus des placeholders : elles passent par des nœuds **Telegram natifs**. Il ne reste des `XXXXXXXXXX` que sur les notifs **client (email)**, volontairement laissées intactes.
+> **Plus aucun `XXXXXXXXXX` dans les workflows.** Toutes les notifs sont branchées : **admin → Telegram**, **client → Resend**. Il ne reste qu'à connecter les credentials.
 
-Le **PAT Airtable**, la **service_role Supabase** et le **bot token Telegram** vont dans les **credentials n8n**, pas dans les fichiers.
+Le **PAT Airtable**, la **service_role Supabase**, le **bot token Telegram** et la **clé Resend** vont dans les **credentials n8n**, pas dans les fichiers.
+
+---
+
+## 📧 Configuration Resend (emails client)
+
+1. **Credential n8n** : crée un credential type **Header Auth** nommé **`Resend API`** → Name `Authorization`, Value `Bearer <ta_clé_resend>`. Sélectionne-le sur les 2 nœuds *Resend — Email client* (WF2) et *Resend — Email client (paye)* (WF3).
+2. **Adresse expéditeur (`from`)** : par défaut `onboarding@resend.dev` (fourni par Resend). ⚠️ En **sandbox**, Resend ne délivre les emails **qu'à l'adresse du propriétaire du compte** — parfait pour tester, mais **pas** pour de vrais clients.
+   - **Pour la production** : vérifie ton domaine dans Resend (*Domains → Add domain*, config DNS SPF/DKIM), puis remplace `onboarding@resend.dev` par ex. `no-reply@tondomaine.com` dans le champ `from` des 2 nœuds Resend.
+3. **Email du client** : lu automatiquement depuis la ligne Supabase retournée par le nœud *Update orders* (`shipping_address.email`) — rien à configurer.
+
+> 🔐 Ta clé a été partagée dans le chat : considère-la exposée et **fais-la tourner** (Resend → *API Keys* → recrée-en une), puis mets la nouvelle dans le credential n8n.
 
 ---
 
@@ -143,11 +154,12 @@ Le plan n8n actuel ne permet **pas** les variables d'environnement (*« Plan lac
 2. **Nœuds Telegram (3 au total)** : vérifier/sélectionner le credential **`Telegram bKash Bot`** (le `chat_id -5162751576` est déjà en dur).
 3. **Nœuds Airtable** : créer/sélectionner le credential **`Airtable Paiements bKash`** (PAT avec scope read/write sur `app8wnK5LRxNVaXq1`).
 4. **Nœuds Supabase** : créer/sélectionner le credential **`Supabase French Beauty`** (host `https://ujcxhukiwgxwgyiuoryt.supabase.co` + `service_role` du `.env.local`).
-5. **Activer `workflow-1`** → copier l'URL du *Webhook Supabase* générée.
-6. **Supabase** (projet `ujcxhukiwgxwgyiuoryt`) → *Database → Webhooks → Create* : table `orders`, événement **UPDATE**, filtre `payment_status = paiement_a_verifier`, POST vers l'URL de l'étape 5.
-7. **Activer `workflow-2`** → copier l'URL du *Webhook Airtable* générée.
-8. **Airtable** (base *Paiements bKash*) → *Automations → New automation* → trigger **When a record is updated** (champ `statut`) → action **Send webhook** vers l'URL de l'étape 7 (corps JSON : voir §2 ci-dessus).
-9. **NE PAS activer `workflow-3`** pour l'instant (dépend du regex SMS pas encore validé avec un vrai SMS bKash).
+5. **Nœuds Resend (WF2 + WF3)** : créer/sélectionner le credential **`Resend API`** (Header Auth : `Authorization = Bearer <clé>`). Pour de vrais clients, vérifier un domaine Resend et remplacer le `from` (voir « Configuration Resend »).
+6. **Activer `workflow-1`** → copier l'URL du *Webhook Supabase* générée.
+7. **Supabase** (projet `ujcxhukiwgxwgyiuoryt`) → *Database → Webhooks → Create* : table `orders`, événement **UPDATE**, filtre `payment_status = paiement_a_verifier`, POST vers l'URL de l'étape 6.
+8. **Activer `workflow-2`** → copier l'URL du *Webhook Airtable* générée.
+9. **Airtable** (base *Paiements bKash*) → *Automations → New automation* → trigger **When a record is updated** (champ `statut`) → action **Send webhook** vers l'URL de l'étape 8 (corps JSON : voir §2 ci-dessus).
+10. **NE PAS activer `workflow-3`** pour l'instant (dépend du regex SMS pas encore validé avec un vrai SMS bKash).
 
 ---
 
@@ -159,7 +171,7 @@ Le plan n8n actuel ne permet **pas** les variables d'environnement (*« Plan lac
 4. **Vérifier Telegram** : une notif *« 🔔 Nouveau paiement à vérifier : FBD-… — … BDT — TrxID TESTE2E12345 »* arrive dans le groupe admin.
 5. **Valider à la main dans Airtable** : passe le `statut` de la ligne à **Paye**. *(déclenche l'automation Airtable → WF2)*
 6. **Vérifier Supabase** : la commande passe `payment_status = paye`, avec `verified_by` + `verified_at` renseignés (visible dans *Table editor → orders*, ou back-office).
-7. **Vérifier l'email client** : un email de confirmation part *(une fois le provider email branché sur le nœud Notif client — placeholder `XXXXXXXXXX` à remplacer au préalable, sinon cette étape est ignorée sans bloquer le reste)*.
+7. **Vérifier l'email client (Resend)** : un email « Paiement confirmé — commande FBD-… » part vers l'adresse de la commande (via WF2). ⚠️ En sandbox Resend (`onboarding@resend.dev`), l'email n'arrive **qu'à l'adresse propriétaire du compte Resend** — pour tester, utilise cette adresse comme email de commande. Vérifie aussi l'onglet *Emails* du dashboard Resend (statut *delivered*).
 8. **Nettoyage** : supprime la commande + la ligne Airtable de test.
 
 > Astuce debug : si une étape échoue, ouvre l'onglet **Executions** du workflow concerné dans n8n — chaque exécution montre le payload reçu et l'erreur exacte par nœud.

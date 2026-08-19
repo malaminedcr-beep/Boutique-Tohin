@@ -70,19 +70,24 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "XXXXXXXXXX",
+        "url": "https://api.resend.com/emails",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { \"to\": $('Webhook Airtable').item.json.body.client_telephone, \"message\": ($('Webhook Airtable').item.json.body.statut === 'Paye' ? 'Votre paiement pour la commande ' + $('Webhook Airtable').item.json.body.order_number + ' est confirmé. Merci !' : 'Le paiement de la commande ' + $('Webhook Airtable').item.json.body.order_number + ' n a pas pu être validé. Contactez-nous.') } }}",
+        "jsonBody": "={{ { from: 'French Beauty BD <onboarding@resend.dev>', to: [ $('Supabase — Update orders').item.json.shipping_address.email ], subject: ($('Webhook Airtable').item.json.body.statut === 'Paye' ? 'Paiement confirmé — commande ' + $('Webhook Airtable').item.json.body.order_number : 'Paiement non validé — commande ' + $('Webhook Airtable').item.json.body.order_number), html: ($('Webhook Airtable').item.json.body.statut === 'Paye' ? '<p>Bonjour,</p><p>Votre paiement bKash pour la commande <b>' + $('Webhook Airtable').item.json.body.order_number + '</b> a été confirmé. Merci pour votre confiance !</p><p>— French Beauty BD</p>' : '<p>Bonjour,</p><p>Le paiement bKash de votre commande <b>' + $('Webhook Airtable').item.json.body.order_number + '</b> n a pas pu être validé. Contactez-nous pour régulariser.</p><p>— French Beauty BD</p>') } }}",
         "options": {}
       },
       "id": "wf2-notif",
-      "name": "Notif client (email/SMS)",
+      "name": "Resend — Email client",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [980, 240],
       "continueOnFail": true,
-      "onError": "continueRegularOutput"
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "httpHeaderAuth": { "id": "", "name": "Resend API" }
+      }
     }
   ],
   "connections": {
@@ -96,7 +101,7 @@
       ]
     },
     "Supabase — Update orders": {
-      "main": [[{ "node": "Notif client (email/SMS)", "type": "main", "index": 0 }]]
+      "main": [[{ "node": "Resend — Email client", "type": "main", "index": 0 }]]
     }
   },
   "settings": { "executionOrder": "v1" },

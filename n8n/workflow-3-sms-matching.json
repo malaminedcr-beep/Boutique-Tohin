@@ -137,19 +137,24 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "XXXXXXXXXX",
+        "url": "https://api.resend.com/emails",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { \"to\": $('Airtable — Rechercher TrxID').item.json.records[0].fields.client_telephone, \"message\": 'Paiement reçu et confirmé pour la commande ' + $('Airtable — Rechercher TrxID').item.json.records[0].fields.order_number + '. Merci !' } }}",
+        "jsonBody": "={{ { from: 'French Beauty BD <onboarding@resend.dev>', to: [ $('Supabase — Update orders (paye)').item.json.shipping_address.email ], subject: 'Paiement confirmé — commande ' + $('Supabase — Update orders (paye)').item.json.order_number, html: '<p>Bonjour,</p><p>Nous avons bien reçu votre paiement bKash pour la commande <b>' + $('Supabase — Update orders (paye)').item.json.order_number + '</b>. Merci pour votre confiance !</p><p>— French Beauty BD</p>' } }}",
         "options": {}
       },
       "id": "wf3-notif-client",
-      "name": "Notif client (paye)",
+      "name": "Resend — Email client (paye)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [1740, 180],
       "continueOnFail": true,
-      "onError": "continueRegularOutput"
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "httpHeaderAuth": { "id": "", "name": "Resend API" }
+      }
     },
     {
       "parameters": {
@@ -216,7 +221,7 @@
       "main": [[{ "node": "Supabase — Update orders (paye)", "type": "main", "index": 0 }]]
     },
     "Supabase — Update orders (paye)": {
-      "main": [[{ "node": "Notif client (paye)", "type": "main", "index": 0 }]]
+      "main": [[{ "node": "Resend — Email client (paye)", "type": "main", "index": 0 }]]
     }
   },
   "settings": { "executionOrder": "v1" },
