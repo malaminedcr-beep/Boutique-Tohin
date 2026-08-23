@@ -22,8 +22,15 @@ export default function ProductDetail({ product }: { product: Product }) {
   const [addedToCart, setAddedToCart] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
-  const images = product.gallery && product.gallery.length > 0 ? product.gallery : [product.image];
+  // Ignore les sources non exploitables ('placeholder' / vide) — certains
+  // produits n'ont pas encore de visuel fourni.
+  const images = (
+    product.gallery && product.gallery.length > 0 ? product.gallery : [product.image]
+  ).filter((src) => src && src !== 'placeholder');
+  const hasImages = images.length > 0;
+  const showImage = hasImages && !imgError;
   const activeImage = images[activeIndex];
 
   const prev = useCallback(() => setActiveIndex(i => (i - 1 + images.length) % images.length), [images.length]);
@@ -61,7 +68,7 @@ export default function ProductDetail({ product }: { product: Product }) {
     <main className="min-h-screen bg-background text-text">
       <Header />
 
-      {lightboxOpen && (
+      {lightboxOpen && showImage && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
           onClick={() => setLightboxOpen(false)}
@@ -114,16 +121,29 @@ export default function ProductDetail({ product }: { product: Product }) {
             <div className="rounded-[2.5rem] border border-charcoal/10 bg-white p-8 shadow-sm">
               <div className="grid gap-8 lg:grid-cols-[1.3fr_0.7fr]">
                 <div className="space-y-4">
-                  <button
-                    onClick={() => setLightboxOpen(true)}
-                    className="block w-full overflow-hidden rounded-[2rem] border border-black/10 bg-cream cursor-zoom-in"
-                  >
-                    <img
-                      src={activeImage}
-                      alt={product.name}
-                      className="w-full aspect-square object-cover"
-                    />
-                  </button>
+                  {showImage ? (
+                    <button
+                      onClick={() => setLightboxOpen(true)}
+                      className="block w-full overflow-hidden rounded-[2rem] border border-black/10 bg-cream cursor-zoom-in"
+                    >
+                      <img
+                        src={activeImage}
+                        alt={product.name}
+                        onError={() => setImgError(true)}
+                        className="w-full aspect-square object-cover"
+                      />
+                    </button>
+                  ) : (
+                    <div
+                      role="img"
+                      aria-label={product.name}
+                      className="flex aspect-square w-full items-center justify-center rounded-[2rem] border border-black/10 bg-cream"
+                    >
+                      <span className="font-serif text-7xl italic" style={{ color: '#DDD6CF' }}>
+                        {product.brand.charAt(0)}
+                      </span>
+                    </div>
+                  )}
 
                   {images.length > 1 && (
                     <div className="flex gap-3 justify-center flex-wrap">
