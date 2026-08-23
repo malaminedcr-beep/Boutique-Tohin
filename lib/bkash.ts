@@ -5,19 +5,21 @@
  * vers un numéro personnel fixe, puis colle son TrxID sur le site. L'admin
  * vérifie le TrxID à la main dans /admin/paiements.
  *
- * ⚠️ PLACEHOLDERS À REMPLACER (infos publiques, affichées au client) :
- *   - BKASH_RECEIVER_NUMBER : le numéro bKash qui reçoit l'argent  -> `0000000000`
- *   - BKASH_RECEIVER_NAME   : le nom du titulaire du compte        -> `XXXXXXXXXX`
+ * Infos publiques (affichées au client dans la popup de paiement) :
+ *   - BKASH_RECEIVER_NUMBER : numéro bKash local classique (format 01XXXXXXXXX,
+ *     11 chiffres, zéro initial, SANS indicatif +880 — c'est le format que le
+ *     client bangladais saisit dans son app bKash).
+ *   - BKASH_RECEIVER_NAME   : nom du titulaire du compte.
  *
  * Ces valeurs ne sont pas secrètes (le client doit les voir), d'où le choix de
  * simples constantes plutôt que des variables d'environnement.
  */
 
-/** Numéro bKash (personnel) qui reçoit les paiements « Send Money ». */
-export const BKASH_RECEIVER_NUMBER = '0000000000';
+/** Numéro bKash (personnel) qui reçoit les paiements « Send Money ». Format local 01XXXXXXXXX. */
+export const BKASH_RECEIVER_NUMBER = '01764267322';
 
 /** Nom du titulaire du compte bKash (affiché au client pour rassurer). */
-export const BKASH_RECEIVER_NAME = 'XXXXXXXXXX';
+export const BKASH_RECEIVER_NAME = 'MD. SHOZIB';
 
 /** Type de compte bKash à utiliser côté client (Send Money vers un perso). */
 export const BKASH_ACCOUNT_TYPE = 'Personal';
