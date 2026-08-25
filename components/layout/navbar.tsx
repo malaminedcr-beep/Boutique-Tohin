@@ -17,10 +17,13 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-hairline bg-canvas/95 backdrop-blur-md">
-      <div className="mx-auto flex h-[68px] max-w-7xl items-center justify-between gap-6 px-6 md:px-8">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-4 px-5 sm:h-[68px] sm:gap-6 sm:px-6 md:px-8">
 
         {/* Logo */}
-        <Link href="/" className="shrink-0 font-serif text-[17px] tracking-[0.22em] text-ink">
+        <Link
+          href="/"
+          className="shrink-0 font-serif text-[15px] tracking-[0.18em] text-ink sm:text-[17px] sm:tracking-[0.22em]"
+        >
           FRENCH <span className="text-accent">BEAUTY</span> BD
         </Link>
 
@@ -54,7 +57,7 @@ export default function Navbar() {
 
           <Link
             href="/account"
-            className="flex h-8 w-8 cursor-pointer items-center justify-center border border-hairline text-muted transition-colors hover:border-accent hover:text-accent"
+            className="flex h-9 w-9 cursor-pointer items-center justify-center border border-hairline text-muted transition-colors hover:border-accent hover:text-accent"
             aria-label="Account"
           >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -64,7 +67,7 @@ export default function Navbar() {
 
           <Link
             href="/cart"
-            className="relative flex h-8 w-8 cursor-pointer items-center justify-center border border-hairline text-muted transition-colors hover:border-accent hover:text-accent"
+            className="relative flex h-9 w-9 cursor-pointer items-center justify-center border border-hairline text-muted transition-colors hover:border-accent hover:text-accent"
             aria-label="Cart"
           >
             <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -78,7 +81,7 @@ export default function Navbar() {
           </Link>
 
           <button
-            className="flex h-8 w-8 cursor-pointer items-center justify-center border border-hairline text-muted transition-colors hover:border-ink hover:text-ink md:hidden"
+            className="flex h-9 w-9 cursor-pointer items-center justify-center border border-hairline text-muted transition-colors hover:border-ink hover:text-ink md:hidden"
             onClick={() => setMobileOpen(!mobileOpen)}
             aria-label="Menu"
           >
