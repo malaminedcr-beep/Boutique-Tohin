@@ -196,9 +196,9 @@ export default function Hero() {
                 panelDark ? 'bg-ink' : 'bg-surface'
               }`}
             >
-              <div className="flex flex-col items-start gap-5 px-8 py-12 text-left md:px-12 lg:px-16">
+              <div className="flex w-full min-w-0 flex-col gap-5 px-8 py-12 text-left md:px-12 lg:px-16">
                 {/* Badge / eyebrow */}
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 self-start">
                   <span className="inline-block h-px w-8 bg-accent" />
                   <span
                     className={`text-[10px] uppercase tracking-[0.3em] ${
@@ -211,7 +211,7 @@ export default function Hero() {
 
                 {/* Title */}
                 <h1
-                  className={`font-serif ${panelDark ? 'text-white' : 'text-ink'}`}
+                  className={`w-full font-serif ${panelDark ? 'text-white' : 'text-ink'}`}
                   style={{
                     fontSize: 'clamp(1.9rem, 6vw, 3.25rem)',
                     lineHeight: 1.1,
@@ -223,7 +223,7 @@ export default function Hero() {
 
                 {/* Subtitle */}
                 <p
-                  className={`max-w-md text-sm leading-7 ${panelDark ? 'text-white/65' : 'text-muted'}`}
+                  className={`min-w-0 max-w-md text-sm leading-7 ${panelDark ? 'text-white/65' : 'text-muted'}`}
                   style={{ fontFamily: 'var(--font-sans)' }}
                 >
                   {slide.subtitle}
@@ -234,7 +234,7 @@ export default function Hero() {
                   whileHover={{ scale: 1.03 }}
                   whileTap={{ scale: 0.97 }}
                   transition={{ duration: 0.2, ease: 'easeOut' }}
-                  className="mt-1 inline-block"
+                  className="mt-1 inline-block self-start"
                 >
                   <Link
                     href={slide.href}
