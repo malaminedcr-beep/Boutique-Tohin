@@ -22,22 +22,20 @@ export default function FaqPage() {
 
       <LegalSection heading="How can I pay?">
         <p>
-          We accept Cash on Delivery (COD), bKash and Nagad. Mobile payment steps:{' '}
-          <strong>[TO BE COMPLETED]</strong>.
+          We accept payment via bKash only.
         </p>
       </LegalSection>
 
       <LegalSection heading="How long does delivery take?">
         <p>
-          See our <a href="/shipping" className="text-accent hover:underline">Shipping page</a>{' '}
-          for areas, timeframes and fees.
+          As our products are sourced directly from France, delivery takes between
+          2 to 3 weeks.
         </p>
       </LegalSection>
 
       <LegalSection heading="Can I return a product?">
         <p>
-          Yes, under the conditions on our{' '}
-          <a href="/legal/returns" className="text-accent hover:underline">Returns &amp; Refunds page</a>.
+          We do not accept product returns.
         </p>
       </LegalSection>
 
