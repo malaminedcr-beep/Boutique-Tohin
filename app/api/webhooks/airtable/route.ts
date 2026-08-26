@@ -9,7 +9,7 @@ const PAYMENT_STATUSES = ['pending', 'paid', 'failed'] as const;
 /**
  * Airtable → Supabase. Appelé par une automation Airtable quand le statut d'une
  * commande change. Sécurisé par un secret partagé (header x-airtable-secret).
- * Body attendu : { orderId, status?, paymentStatus? }.
+ * Body attendu : { orderId, status?, paymentStatus?, tracking? }.
  */
 export async function POST(request: Request) {
   const secret = process.env.AIRTABLE_WEBHOOK_SECRET;
@@ -41,6 +41,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Invalid paymentStatus' }, { status: 400 });
     }
     patch.payment_status = body.paymentStatus;
+  }
+  if (body.tracking != null) {
+    patch.tracking_number = String(body.tracking).trim();
   }
   if (Object.keys(patch).length === 0) {
     return NextResponse.json({ error: 'Nothing to update' }, { status: 400 });
