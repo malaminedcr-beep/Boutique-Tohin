@@ -47,22 +47,22 @@
     },
     {
       "parameters": {
-        "method": "POST",
+        "method": "PATCH",
         "url": "https://api.airtable.com/v0/app8wnK5LRxNVaXq1/Verifications",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "airtableTokenApi",
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ { \"fields\": { \"order_id\": $json.body.record.id, \"order_number\": $json.body.record.order_number, \"client_nom\": ((($json.body.record.shipping_address || {}).firstName || '') + ' ' + (($json.body.record.shipping_address || {}).lastName || '')).trim(), \"client_telephone\": ($json.body.record.shipping_address || {}).phone, \"montant\": $json.body.record.total_bdt, \"trxid\": $json.body.record.trxid, \"soumis_le\": $json.body.record.trxid_submitted_at, \"statut\": \"A verifier\" } } }}",
+        "jsonBody": "={{ { performUpsert: { fieldsToMergeOn: ['order_id'] }, records: [ { fields: { order_id: $json.body.record.id, order_number: $json.body.record.order_number, client_nom: ((($json.body.record.shipping_address || {}).firstName || '') + ' ' + (($json.body.record.shipping_address || {}).lastName || '')).trim(), client_telephone: ($json.body.record.shipping_address || {}).phone, montant: $json.body.record.total_bdt, trxid: $json.body.record.trxid, soumis_le: $json.body.record.trxid_submitted_at, statut: 'A verifier' } } ] } }}",
         "options": {}
       },
       "id": "wf1-airtable",
-      "name": "Airtable — Créer vérification",
+      "name": "Airtable — Upsert vérification",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [720, 300],
       "credentials": {
-        "airtableTokenApi": { "id": "", "name": "Airtable Paiements bKash" }
+        "airtableTokenApi": { "id": "", "name": "Airtable Personal Access Token account" }
       }
     },
     {
@@ -77,66 +77,11 @@
       "name": "Telegram — Notif admin",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
-      "position": [980, 200],
+      "position": [980, 300],
       "continueOnFail": true,
       "onError": "continueRegularOutput",
       "credentials": {
-        "telegramApi": { "id": "", "name": "Telegram bKash Bot" }
-      }
-    },
-    {
-      "parameters": {
-        "method": "GET",
-        "url": "=https://www.frenchbeautybd.com/api/orders/{{ $('Webhook Supabase').item.json.body.record.id }}/slip",
-        "authentication": "genericCredentialType",
-        "genericAuthType": "httpHeaderAuth",
-        "options": {
-          "response": { "response": { "responseFormat": "file", "outputPropertyName": "data" } }
-        }
-      },
-      "id": "wf1-fetchpdf",
-      "name": "Fetch bon de commande (PDF)",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [980, 400],
-      "continueOnFail": true,
-      "onError": "continueRegularOutput",
-      "credentials": {
-        "httpHeaderAuth": { "id": "", "name": "Supabase Service Bearer" }
-      }
-    },
-    {
-      "parameters": {
-        "jsCode": "const buf = await this.helpers.getBinaryDataBuffer(0, 'data');\nreturn [{ json: { file: buf.toString('base64') } }];"
-      },
-      "id": "wf1-tobase64",
-      "name": "PDF → base64",
-      "type": "n8n-nodes-base.code",
-      "typeVersion": 2,
-      "position": [1220, 400],
-      "continueOnFail": true,
-      "onError": "continueRegularOutput"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "=https://content.airtable.com/v0/app8wnK5LRxNVaXq1/{{ $('Airtable — Créer vérification').item.json.id }}/fldWgQe2Biz7LbWFc/uploadAttachment",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "airtableTokenApi",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ { contentType: 'application/pdf', filename: 'bon-commande-' + $('Webhook Supabase').item.json.body.record.order_number + '.pdf', file: $json.file } }}",
-        "options": {}
-      },
-      "id": "wf1-uploadpdf",
-      "name": "Airtable — Upload PDF",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [1460, 400],
-      "continueOnFail": true,
-      "onError": "continueRegularOutput",
-      "credentials": {
-        "airtableTokenApi": { "id": "", "name": "Airtable Paiements bKash" }
+        "telegramApi": { "id": "", "name": "Telegram account" }
       }
     }
   ],
@@ -146,21 +91,12 @@
     },
     "Filtre paiement_a_verifier": {
       "main": [
-        [{ "node": "Airtable — Créer vérification", "type": "main", "index": 0 }],
+        [{ "node": "Airtable — Upsert vérification", "type": "main", "index": 0 }],
         []
       ]
     },
-    "Airtable — Créer vérification": {
-      "main": [[
-        { "node": "Telegram — Notif admin", "type": "main", "index": 0 },
-        { "node": "Fetch bon de commande (PDF)", "type": "main", "index": 0 }
-      ]]
-    },
-    "Fetch bon de commande (PDF)": {
-      "main": [[{ "node": "PDF → base64", "type": "main", "index": 0 }]]
-    },
-    "PDF → base64": {
-      "main": [[{ "node": "Airtable — Upload PDF", "type": "main", "index": 0 }]]
+    "Airtable — Upsert vérification": {
+      "main": [[{ "node": "Telegram — Notif admin", "type": "main", "index": 0 }]]
     }
   },
   "settings": { "executionOrder": "v1" },

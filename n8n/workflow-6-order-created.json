@@ -1,0 +1,122 @@
+{
+  "name": "FBD 6 — Commande créée → Airtable + PDF",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "order-created",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "wf6-webhook",
+      "name": "Webhook order created",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [220, 300]
+    },
+    {
+      "parameters": {
+        "method": "PATCH",
+        "url": "https://api.airtable.com/v0/app8wnK5LRxNVaXq1/Verifications",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { performUpsert: { fieldsToMergeOn: ['order_id'] }, records: [ { fields: { order_id: $json.body.record.id, order_number: $json.body.record.order_number, client_nom: ((($json.body.record.shipping_address || {}).firstName || '') + ' ' + (($json.body.record.shipping_address || {}).lastName || '')).trim(), client_telephone: ($json.body.record.shipping_address || {}).phone, montant: $json.body.record.total_bdt } } ] } }}",
+        "options": {}
+      },
+      "id": "wf6-upsert",
+      "name": "Airtable — Upsert commande",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [460, 300],
+      "credentials": {
+        "airtableTokenApi": { "id": "", "name": "Airtable Personal Access Token account" }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "await new Promise(r => setTimeout(r, 5000));\nreturn $input.all();"
+      },
+      "id": "wf6-wait",
+      "name": "Attendre 5s (items commit)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [700, 300]
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "=https://www.frenchbeautybd.com/api/orders/{{ $('Webhook order created').item.json.body.record.id }}/slip",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "response": { "response": { "responseFormat": "file", "outputPropertyName": "data" } }
+        }
+      },
+      "id": "wf6-fetchpdf",
+      "name": "Fetch bon de commande (PDF)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [940, 300],
+      "continueOnFail": true,
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "httpHeaderAuth": { "id": "", "name": "Supabase Service Bearer" }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const buf = await this.helpers.getBinaryDataBuffer(0, 'data');\nreturn [{ json: { file: buf.toString('base64') } }];"
+      },
+      "id": "wf6-tobase64",
+      "name": "PDF → base64",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1180, 300],
+      "continueOnFail": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://content.airtable.com/v0/app8wnK5LRxNVaXq1/{{ $('Airtable — Upsert commande').item.json.records[0].id }}/fldWgQe2Biz7LbWFc/uploadAttachment",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "airtableTokenApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { contentType: 'application/pdf', filename: 'bon-commande-' + $('Webhook order created').item.json.body.record.order_number + '.pdf', file: $json.file } }}",
+        "options": {}
+      },
+      "id": "wf6-uploadpdf",
+      "name": "Airtable — Upload PDF",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1420, 300],
+      "continueOnFail": true,
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "airtableTokenApi": { "id": "", "name": "Airtable Personal Access Token account" }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook order created": {
+      "main": [[{ "node": "Airtable — Upsert commande", "type": "main", "index": 0 }]]
+    },
+    "Airtable — Upsert commande": {
+      "main": [[{ "node": "Attendre 5s (items commit)", "type": "main", "index": 0 }]]
+    },
+    "Attendre 5s (items commit)": {
+      "main": [[{ "node": "Fetch bon de commande (PDF)", "type": "main", "index": 0 }]]
+    },
+    "Fetch bon de commande (PDF)": {
+      "main": [[{ "node": "PDF → base64", "type": "main", "index": 0 }]]
+    },
+    "PDF → base64": {
+      "main": [[{ "node": "Airtable — Upload PDF", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "active": false
+}
