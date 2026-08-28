@@ -1,0 +1,81 @@
+{
+  "name": "FBD 5 — Airtable order_status → Supabase (direct)",
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "airtableTokenApi",
+        "baseId": { "__rl": true, "value": "app8wnK5LRxNVaXq1", "mode": "id" },
+        "tableId": { "__rl": true, "value": "tbl01vfBCqTzkqwRI", "mode": "id" },
+        "triggerField": "order_status_modified",
+        "additionalFields": {},
+        "pollTimes": { "item": [{ "mode": "everyMinute" }] }
+      },
+      "id": "wf5b-trigger",
+      "name": "Airtable Trigger (order_status)",
+      "type": "n8n-nodes-base.airtableTrigger",
+      "typeVersion": 1,
+      "position": [220, 320],
+      "credentials": {
+        "airtableTokenApi": { "id": "dsiXq4QhLKRCokwg", "name": "Airtable Personal Access Token account" }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "typeValidation": "loose" },
+          "combinator": "or",
+          "conditions": [
+            { "leftValue": "={{ $json.fields.order_status }}", "rightValue": "confirmed", "operator": { "type": "string", "operation": "equals" } },
+            { "leftValue": "={{ $json.fields.order_status }}", "rightValue": "shipped", "operator": { "type": "string", "operation": "equals" } },
+            { "leftValue": "={{ $json.fields.order_status }}", "rightValue": "delivered", "operator": { "type": "string", "operation": "equals" } }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf5b-if",
+      "name": "IF order_status in (confirmed/shipped/delivered)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [520, 320]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "tableId": "orders",
+        "filters": {
+          "conditions": [
+            { "keyName": "id", "condition": "eq", "keyValue": "={{ $json.fields.order_id }}" }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            { "fieldId": "status", "fieldValue": "={{ $json.fields.order_status }}" },
+            { "fieldId": "tracking_number", "fieldValue": "={{ $json.fields.tracking_number || null }}" }
+          ]
+        }
+      },
+      "id": "wf5b-supabase",
+      "name": "Supabase — Update orders.status",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [820, 300],
+      "credentials": {
+        "supabaseApi": { "id": "V6mU6B3xrZknNcvf", "name": "Supabase French Beauty" }
+      }
+    }
+  ],
+  "connections": {
+    "Airtable Trigger (order_status)": {
+      "main": [[{ "node": "IF order_status in (confirmed/shipped/delivered)", "type": "main", "index": 0 }]]
+    },
+    "IF order_status in (confirmed/shipped/delivered)": {
+      "main": [
+        [{ "node": "Supabase — Update orders.status", "type": "main", "index": 0 }],
+        []
+      ]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "active": false
+}

@@ -1,0 +1,75 @@
+{
+  "name": "FBD 5 — Airtable order_status → app webhook (Supabase)",
+  "nodes": [
+    {
+      "parameters": {
+        "authentication": "airtableTokenApi",
+        "baseId": { "__rl": true, "value": "app8wnK5LRxNVaXq1", "mode": "id" },
+        "tableId": { "__rl": true, "value": "tbl01vfBCqTzkqwRI", "mode": "id" },
+        "triggerField": "order_status_modified",
+        "additionalFields": {}
+      },
+      "id": "wf5-trigger",
+      "name": "Airtable Trigger (order_status)",
+      "type": "n8n-nodes-base.airtableTrigger",
+      "typeVersion": 1,
+      "position": [220, 320],
+      "pollTimes": { "item": [{ "mode": "everyMinute" }] },
+      "credentials": {
+        "airtableTokenApi": { "id": "dsiXq4QhLKRCokwg", "name": "Airtable Personal Access Token account" }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "typeValidation": "loose" },
+          "combinator": "or",
+          "conditions": [
+            { "leftValue": "={{ $json.fields.order_status }}", "rightValue": "confirmed", "operator": { "type": "string", "operation": "equals" } },
+            { "leftValue": "={{ $json.fields.order_status }}", "rightValue": "shipped", "operator": { "type": "string", "operation": "equals" } },
+            { "leftValue": "={{ $json.fields.order_status }}", "rightValue": "delivered", "operator": { "type": "string", "operation": "equals" } }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf5-if",
+      "name": "IF order_status in (confirmed/shipped/delivered)",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [520, 320]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://www.frenchbeautybd.com/api/webhooks/airtable",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { orderId: $json.fields.order_id, status: $json.fields.order_status, tracking: ($json.fields.tracking_number || undefined) } }}",
+        "options": { "redirect": { "redirect": { "followRedirects": true } } }
+      },
+      "id": "wf5-post",
+      "name": "POST /api/webhooks/airtable",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [820, 320],
+      "credentials": {
+        "httpHeaderAuth": { "id": "", "name": "Airtable Webhook Secret" }
+      }
+    }
+  ],
+  "connections": {
+    "Airtable Trigger (order_status)": {
+      "main": [[{ "node": "IF order_status in (confirmed/shipped/delivered)", "type": "main", "index": 0 }]]
+    },
+    "IF order_status in (confirmed/shipped/delivered)": {
+      "main": [
+        [{ "node": "POST /api/webhooks/airtable", "type": "main", "index": 0 }],
+        []
+      ]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "active": false
+}
