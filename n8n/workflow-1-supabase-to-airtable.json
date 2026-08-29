@@ -77,11 +77,33 @@
       "name": "Telegram — Notif admin",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
-      "position": [980, 300],
+      "position": [980, 220],
       "continueOnFail": true,
       "onError": "continueRegularOutput",
       "credentials": {
         "telegramApi": { "id": "", "name": "Telegram account" }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.resend.com/emails",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ { from: 'French Beauty BD <no-reply@frenchbeautybd.com>', to: [ ($('Webhook Supabase').item.json.body.record.shipping_address || {}).email ], subject: 'Payment received — order ' + $('Webhook Supabase').item.json.body.record.order_number + ' is under review', html: '<div style=\"margin:0;padding:24px;background:#FAF8F5;font-family:Helvetica,Arial,sans-serif;color:#1A1A1A;\"><div style=\"max-width:560px;margin:0 auto;background:#FFFFFF;border:1px solid #E8E2DA;border-radius:8px;overflow:hidden;\"><div style=\"padding:22px 32px;border-bottom:1px solid #E8E2DA;\"><span style=\"font-family:Georgia,serif;font-size:18px;letter-spacing:2px;color:#C9513A;\">FRENCH BEAUTY BD</span></div><div style=\"padding:32px;\"><h1 style=\"margin:0 0 18px;font-family:Georgia,serif;font-size:26px;font-weight:normal;color:#1A1A1A;\">Payment received</h1><p style=\"margin:0 0 16px;font-size:15px;line-height:1.65;\">Hi ' + (($('Webhook Supabase').item.json.body.record.shipping_address || {}).firstName || 'there') + ',</p><p style=\"margin:0 0 16px;font-size:15px;line-height:1.65;\">We have received your bKash payment reference for order <b>' + $('Webhook Supabase').item.json.body.record.order_number + '</b> (' + $('Webhook Supabase').item.json.body.record.total_bdt + ' BDT). Our team is verifying it now — you will receive a confirmation email as soon as it is validated.</p><div style=\"margin:26px 0 0;\"><span style=\"display:inline-block;padding:10px 18px;background:#C9513A;color:#FFFFFF;font-size:13px;letter-spacing:1px;border-radius:4px;\">UNDER VERIFICATION</span></div><div style=\"margin:26px 0;height:1px;background:#E8E2DA;\"></div><p style=\"margin:0;font-size:12px;line-height:1.6;color:#6B6B6B;\">French Beauty BD — authentic French cosmetics, delivered to Bangladesh.</p></div></div></div>' } }}",
+        "options": {}
+      },
+      "id": "wf1-emailrecu",
+      "name": "Resend — Paiement reçu",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [980, 400],
+      "continueOnFail": true,
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "httpHeaderAuth": { "id": "", "name": "Resend API" }
       }
     }
   ],
@@ -96,7 +118,10 @@
       ]
     },
     "Airtable — Upsert vérification": {
-      "main": [[{ "node": "Telegram — Notif admin", "type": "main", "index": 0 }]]
+      "main": [[
+        { "node": "Telegram — Notif admin", "type": "main", "index": 0 },
+        { "node": "Resend — Paiement reçu", "type": "main", "index": 0 }
+      ]]
     }
   },
   "settings": { "executionOrder": "v1" },
