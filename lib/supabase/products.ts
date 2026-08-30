@@ -11,7 +11,16 @@ const url = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 function db() {
-  return createClient(url, anon, { auth: { persistSession: false } });
+  return createClient(url, anon, {
+    auth: { persistSession: false },
+    // Always read live prices/stock from Supabase. Without this, Next.js/Vercel
+    // stores the supabase-js fetch in the Data Cache (even on force-dynamic pages),
+    // so admin edits in Supabase would not appear until the next redeploy.
+    global: {
+      fetch: (input: RequestInfo | URL, init?: RequestInit) =>
+        fetch(input, { ...init, cache: 'no-store' }),
+    },
+  });
 }
 
 type ProductRow = {
