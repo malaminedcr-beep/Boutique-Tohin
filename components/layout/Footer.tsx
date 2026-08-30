@@ -96,7 +96,7 @@ export default async function Footer() {
             <Link href="/legal/privacy" className="transition-colors hover:text-ink">Privacy</Link>
           </div>
           <div className="flex items-center gap-2.5">
-            {['COD', 'bKash', 'Nagad'].map((method) => (
+            {['bKash'].map((method) => (
               <span
                 key={method}
                 className="border border-hairline px-3 py-1 text-[9px] uppercase tracking-[0.2em] text-muted transition-colors hover:border-accent hover:text-accent"

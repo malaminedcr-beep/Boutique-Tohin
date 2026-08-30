@@ -228,9 +228,9 @@ export default function ProductDetail({ product }: { product: Product }) {
             <div className="space-y-4 rounded-3xl bg-cream p-6">
               <p className="text-xs uppercase tracking-[0.3em] text-charcoal/60">Service</p>
               <ul className="space-y-3 text-sm leading-7 text-charcoal/75">
-                <li>Secure and fast delivery.</li>
-                <li>After-sales support available.</li>
-                <li>Easy returns if needed.</li>
+                <li>Free, secure delivery nationwide.</li>
+                <li>After-sales support on WhatsApp and email.</li>
+                <li>Authenticity guaranteed on every item.</li>
               </ul>
             </div>
           </aside>

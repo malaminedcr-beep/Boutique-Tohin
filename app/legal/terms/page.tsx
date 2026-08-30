@@ -11,6 +11,7 @@ export default function TermsPage() {
     <LegalShell
       title="Terms of Service"
       intro="These terms govern your use of French Beauty BD and any order you place with us."
+      lastUpdated="August 2026"
     >
       <LegalSection heading="1. Who we are">
         <p>
@@ -30,9 +31,9 @@ export default function TermsPage() {
 
       <LegalSection heading="3. Prices & payment">
         <p>
-          Prices are shown in Bangladeshi Taka (৳) and include <strong>[TO BE COMPLETED: taxes/duties?]</strong>.
-          Accepted payment methods: Cash on Delivery, bKash and Nagad. Payment terms
-          for mobile methods: <strong>[TO BE COMPLETED]</strong>.
+          Prices are shown in Bangladeshi Taka (৳); the price shown at checkout is the
+          price you pay, with no hidden customs fees or import duties on arrival.
+          Payment is made via bKash only.
         </p>
       </LegalSection>
 
@@ -45,7 +46,8 @@ export default function TermsPage() {
 
       <LegalSection heading="5. Returns & refunds">
         <p>
-          Your rights and our procedure are described on our{' '}
+          All sales are final: we do not offer returns or exchanges. Orders that
+          arrive damaged or incorrect are handled as described on our{' '}
           <a href="/legal/returns" className="text-accent hover:underline">Returns &amp; Refunds page</a>.
         </p>
       </LegalSection>

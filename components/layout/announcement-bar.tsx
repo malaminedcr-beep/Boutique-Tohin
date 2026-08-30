@@ -12,7 +12,7 @@ export default function AnnouncementBar() {
         <span className="mx-2.5 text-white/45">·</span>
         Free Delivery Nationwide
         <span className="mx-2.5 text-white/45">·</span>
-        COD Available
+        bKash Accepted
       </p>
     </div>
   );

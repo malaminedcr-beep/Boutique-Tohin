@@ -12,13 +12,13 @@ export default function PrivacyPage() {
     <LegalShell
       title="Privacy Policy"
       intro="This policy explains what personal data we collect and how we use it."
+      lastUpdated="August 2026"
     >
       <LegalSection heading="1. Data we collect">
         <p>
           When you create an account or place an order we collect: name, email,
-          phone number, delivery address, and order history. Payment is handled at
-          delivery (COD) or via mobile money (bKash/Nagad); we do{' '}
-          <strong>[TO BE COMPLETED: confirm]</strong> not store mobile-wallet credentials.
+          phone number, delivery address, and order history. Payment is made via
+          bKash; we do not store your bKash or mobile-wallet credentials.
         </p>
       </LegalSection>
 

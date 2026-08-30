@@ -38,7 +38,7 @@ export default function AboutPage() {
               <ul className="mt-6 space-y-4 text-sm leading-7 text-charcoal/75">
                 <li>Personalised support on WhatsApp and email.</li>
                 <li>Real-time order tracking through to delivery.</li>
-                <li>Clear and flexible returns policy.</li>
+                <li>Authenticity guaranteed on every order.</li>
               </ul>
             </div>
           </div>

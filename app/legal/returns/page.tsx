@@ -4,49 +4,47 @@ import { CONTACT } from '../../../lib/contact';
 
 export const metadata: Metadata = {
   title: 'Returns & Refunds | French Beauty BD',
-  description: 'Our returns and refunds policy for orders delivered in Bangladesh.',
+  description:
+    'All sales are final. We do not offer returns or exchanges, but we make it right if your order arrives damaged or incorrect.',
 };
 
 export default function ReturnsPage() {
   return (
     <LegalShell
       title="Returns & Refunds"
-      intro="How to return an item and how refunds are handled."
+      intro="Our policy on returns, exchanges and orders that arrive damaged or incorrect."
+      lastUpdated="August 2026"
     >
-      <LegalSection heading="1. Return window">
+      <LegalSection heading="1. All sales are final">
         <p>
-          You may request a return within <strong>[TO BE COMPLETED: e.g. 7]</strong> days of
-          delivery. Items must be unused, unopened and in their original packaging.
+          Because each order is sourced individually from France especially for you,
+          we do not offer returns, exchanges or refunds once an order is confirmed.
+          Please review your order carefully before completing payment.
         </p>
       </LegalSection>
 
-      <LegalSection heading="2. Non-returnable items">
+      <LegalSection heading="2. Damaged or incorrect orders">
         <p>
-          For hygiene reasons, opened or used cosmetics cannot be returned unless
-          they are damaged or defective on arrival. Other exclusions: <strong>[TO BE COMPLETED]</strong>.
+          If your order arrives damaged, or you received the wrong item, contact us
+          within <strong>48 hours</strong> of delivery with a clear photo of the item
+          and packaging. We will review it and, where appropriate, arrange a
+          replacement or refund at no cost to you — as a goodwill gesture.
         </p>
       </LegalSection>
 
-      <LegalSection heading="3. Damaged or wrong items">
+      <LegalSection heading="3. Hygiene">
         <p>
-          If your item arrives damaged or incorrect, contact us within{' '}
-          <strong>[TO BE COMPLETED: e.g. 48h]</strong> with a photo. We will arrange a
-          replacement or full refund at no cost to you.
+          For hygiene and safety reasons, opened or used cosmetics cannot be returned
+          or exchanged under any circumstances, except in the damaged-on-arrival case
+          described above.
         </p>
       </LegalSection>
 
-      <LegalSection heading="4. How to start a return">
+      <LegalSection heading="4. How to reach us">
         <p>
           Email <a href={`mailto:${CONTACT.email}`} className="text-accent hover:underline">{CONTACT.email}</a>{' '}
-          or message us on WhatsApp at {CONTACT.whatsapp} with your order number.
-        </p>
-      </LegalSection>
-
-      <LegalSection heading="5. Refunds">
-        <p>
-          Approved refunds are issued via <strong>[TO BE COMPLETED: bKash/Nagad/bank]</strong>{' '}
-          within <strong>[TO BE COMPLETED: e.g. 7 business days]</strong>. Return shipping
-          costs: <strong>[TO BE COMPLETED: who pays]</strong>.
+          or message us on WhatsApp at {CONTACT.whatsapp} with your order number, and
+          we will help as quickly as we can.
         </p>
       </LegalSection>
     </LegalShell>

@@ -7,7 +7,7 @@ export const SITE_URL = (
 
 export const SITE_NAME = 'French Beauty BD';
 export const SITE_DESCRIPTION =
-  'Authentic French cosmetics, imported from France and delivered across Bangladesh. CeraVe, Vichy and Yves Rocher — guaranteed authenticity, Cash on Delivery, bKash & Nagad.';
+  'Authentic French cosmetics, imported from France and delivered across Bangladesh. CeraVe, Vichy and Yves Rocher — guaranteed authenticity, free nationwide delivery and secure bKash payment.';
 
 /** Default Open Graph image (1200x630). */
 export const OG_DEFAULT = '/images/og-default.jpg';
