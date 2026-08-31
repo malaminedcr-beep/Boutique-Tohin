@@ -168,6 +168,33 @@ Pour tester le **chemin succès**, mets d'abord une ligne dans Airtable avec `tr
 
 ---
 
+## 🔐 workflow-7 — auto-confirm par SMS marchand (REMPLACE WF3)
+
+`workflow-7-sms-auto-confirm.json` sécurise la vérification bKash : on ne fait plus confiance au seul TrxID saisi par le client, on **confronte le vrai SMS reçu** sur le téléphone marchand à la commande. Il **remplace WF3** (même path webhook `bkash-sms-inbound`).
+
+**Chaîne :** Webhook (auth header secret) → *Parse SMS* (montant + TrxID + expéditeur) → *IF exploitable* → *Supabase: chercher la commande* `WHERE trxid = <SMS.trxid> AND payment_status='paiement_a_verifier'` → *Décider* :
+- **trxid trouvé ET montant SMS == total commande** → `payment_status='paye'` + `status='confirmed'` (auto) + Telegram ✅
+- montant différent → Telegram ⚠️ (NON confirmé)
+- aucune commande → Telegram ⚠️ (NON confirmé)
+
+**3 garde-fous cumulés avant confirmation :** (1) un vrai SMS *reçu* sur ton numéro (preuve que l'argent est arrivé), (2) TrxID SMS == TrxID soumis par le client (colonne `orders.trxid` **UNIQUE** → pas de rejeu / partage), (3) **montant exact** == `total_bdt`.
+
+### Étapes
+1. **Désactive `workflow-3`** dans n8n (il possède le même path `bkash-sms-inbound` → conflit sinon).
+2. Importe `workflow-7`, relie les credentials `Supabase French Beauty` et `Telegram bKash Bot`.
+3. **Sécurise le webhook (obligatoire).** Le nœud *Webhook SMS (marchand)* est en **Header Auth** (credential `SMS Webhook Token`). Crée un credential n8n type *Header Auth* : Name `x-sms-token`, Value = un secret long aléatoire. → **sans ça, quiconque connaît l'URL peut POSTER un faux SMS et auto-confirmer sans payer** (ça recréerait la faille).
+4. Garde **WF4 actif** : quand `status` passe à `confirmed`, il envoie tout seul l'email « confirmed » au client (ne pas dupliquer l'email dans WF7).
+5. **Téléphone (SMS Gateway for Android — recommandé)** : forwarder les SMS de l'expéditeur **`bKash` uniquement** vers l'URL du webhook, en ajoutant le header `x-sms-token: <ton secret>`. Corps POST : `{ "text": "<contenu brut du SMS>" }` (le parse lit aussi `message`/`sms`/`payload`).
+
+### Regex (nœud *Parse bKash SMS*)
+- **Montant** : `/receiv(?:ed)?(?:\s+payment)?\s+Tk[.:\s]*([\d,]+(?:\.\d{1,2})?)/i` (ancré sur *received* → ignore `Fee`/`Balance`)
+- **TrxID** : `/TrxID[:\s]*([A-Z0-9]{10})\b/i` (bKash = 10 car. MAJ ; fallback `{8,12}`)
+- **Expéditeur** : `/from\s+(01\d{9})/i`
+
+> ⚠️ **À reconfirmer avec un VRAI SMS bKash** reçu sur le téléphone marchand — envoie le texte exact et on verrouille le regex sur le format réel.
+
+---
+
 ## Notes
 - Chaque workflow est importé **inactif** (`"active": false`) — active-les après avoir branché les credentials.
 - Les nœuds de notification sont en `continueOnFail` : une notif manquante ne bloque pas la synchro paiement.

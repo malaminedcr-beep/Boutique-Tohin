@@ -1,0 +1,281 @@
+{
+  "name": "bKash 7 — SMS marchand → auto-confirm (Supabase)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "bkash-sms-inbound",
+        "responseMode": "onReceived",
+        "authentication": "headerAuth",
+        "options": {}
+      },
+      "id": "wf7-webhook",
+      "name": "Webhook SMS (marchand)",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [200, 340],
+      "credentials": {
+        "httpHeaderAuth": { "id": "", "name": "SMS Webhook Token" }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parse d'un SMS bKash *reçu* sur le téléphone marchand.\n// On extrait : montant reçu, TrxID réel, expéditeur. On ne fait confiance qu'au\n// SMS (preuve que l'argent est bien arrivé), jamais au seul TrxID saisi par le client.\n// ⚠️ Regex à reconfirmer avec un VRAI SMS bKash — envoie-m'en un et je verrouille.\n//\n// Formats bKash 'Received' typiques :\n//  \"You have received Tk 1,540.00 from 01712345678. ... TrxID BHK7A2C9Q1 at 19/08/2026 15:42\"\n//  \"You have received Tk 500.00 from 01812345678. TrxID: 9F2A1B3C4D. Balance Tk 1,200.00\"\n//  \"Received payment Tk 3,960.00 from 01912345678. TrxID CDE4F5G6H7 ...\"\nconst body = ($input.first().json.body) || $input.first().json || {};\nconst text = String(body.text || body.message || body.sms || body.msg || body.payload || '').trim();\n\n// TrxID bKash = 10 caractères alphanumériques MAJ. Fallback 8-12 si le format varie.\nconst trxM = text.match(/TrxID[:\\s]*([A-Z0-9]{10})\\b/i) || text.match(/TrxID[:\\s]*([A-Z0-9]{8,12})\\b/i);\n\n// Montant : on ancre sur 'received (payment) Tk ...' pour ne PAS attraper Fee/Balance.\nconst amtM = text.match(/receiv(?:ed)?(?:\\s+payment)?\\s+Tk[.:\\s]*([\\d,]+(?:\\.\\d{1,2})?)/i)\n          || text.match(/\\bTk[.:\\s]*([\\d,]+(?:\\.\\d{1,2})?)/i);\n\nconst sendM = text.match(/from\\s+(01\\d{9})/i);\n\nconst trxid  = trxM  ? trxM[1].toUpperCase() : null;\nconst amount = amtM  ? Math.round(Number(amtM[1].replace(/,/g, ''))) : null;\nconst sender = sendM ? sendM[1] : null;\n// Sécurité : on ne traite que les SMS d'ENTREE d'argent (reçu / payment reçu).\nconst isReceived = /receiv|payment received|received payment/i.test(text);\n\nreturn [{ json: { text, trxid, amount, sender, isReceived } }];"
+      },
+      "id": "wf7-parse",
+      "name": "Parse bKash SMS",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [420, 340]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "typeValidation": "loose" },
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.trxid }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "notEmpty", "singleValue": true }
+            },
+            {
+              "leftValue": "={{ $json.amount }}",
+              "rightValue": 0,
+              "operator": { "type": "number", "operation": "gt" }
+            },
+            {
+              "leftValue": "={{ $json.isReceived }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "true", "singleValue": true }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf7-if-parsed",
+      "name": "IF SMS exploitable",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [640, 340]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "getAll",
+        "tableId": "orders",
+        "returnAll": true,
+        "filters": {
+          "conditions": [
+            { "keyName": "trxid", "condition": "eq", "keyValue": "={{ $json.trxid }}" },
+            { "keyName": "payment_status", "condition": "eq", "keyValue": "paiement_a_verifier" }
+          ]
+        }
+      },
+      "id": "wf7-find",
+      "name": "Supabase — Chercher commande (TrxID)",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [880, 260],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": { "id": "", "name": "Supabase French Beauty" }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Décision de confirmation. On exige :\n//  1) une commande en 'paiement_a_verifier' dont le trxid == trxid du SMS\n//  2) montant du SMS == total_bdt de la commande (exact)\n// Sinon => on ne confirme JAMAIS, on notifie pour vérif manuelle.\nconst sms = $('Parse bKash SMS').item.json;      // trxid, amount, sender\nconst row = $input.first().json;                 // commande trouvée, ou {} (alwaysOutputData)\nconst found = !!(row && row.id);\n\nlet decision = 'no_match';\nif (found) {\n  decision = (Number(row.total_bdt) === Number(sms.amount)) ? 'confirm' : 'amount_mismatch';\n}\n\nreturn [{ json: {\n  decision,\n  order_id:     row.id || null,\n  order_number: row.order_number || null,\n  total_bdt:    (row.total_bdt ?? null),\n  email:        (row.shipping_address || {}).email || null,\n  first_name:   (row.shipping_address || {}).firstName || null,\n  trxid:  sms.trxid,\n  amount: sms.amount,\n  sender: sms.sender\n} }];"
+      },
+      "id": "wf7-decide",
+      "name": "Décider (match + montant)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1120, 260]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "typeValidation": "loose" },
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.decision }}",
+              "rightValue": "no_match",
+              "operator": { "type": "string", "operation": "equals" }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf7-if-nomatch",
+      "name": "IF aucune commande",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1340, 260]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "typeValidation": "loose" },
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.decision }}",
+              "rightValue": "confirm",
+              "operator": { "type": "string", "operation": "equals" }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf7-if-confirm",
+      "name": "IF montant exact",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1560, 360]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "tableId": "orders",
+        "filters": {
+          "conditions": [
+            { "keyName": "id", "condition": "eq", "keyValue": "={{ $json.order_id }}" },
+            { "keyName": "payment_status", "condition": "eq", "keyValue": "paiement_a_verifier" }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            { "fieldId": "payment_status", "fieldValue": "paye" },
+            { "fieldId": "status", "fieldValue": "confirmed" },
+            { "fieldId": "verified_by", "fieldValue": "bKash SMS (auto)" },
+            { "fieldId": "verified_at", "fieldValue": "={{ $now.toISO() }}" },
+            { "fieldId": "payment_notes", "fieldValue": "={{ 'Auto-confirmé via SMS bKash — TrxID ' + $json.trxid + ', montant ' + $json.amount + ' BDT, de ' + ($json.sender || '?') }}" }
+          ]
+        }
+      },
+      "id": "wf7-confirm",
+      "name": "Supabase — Confirmer commande",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1780, 300],
+      "credentials": {
+        "supabaseApi": { "id": "", "name": "Supabase French Beauty" }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "-5162751576",
+        "text": "=✅ Paiement AUTO-CONFIRMÉ par SMS\nCommande : {{ $('Décider (match + montant)').item.json.order_number }}\nTrxID : {{ $('Décider (match + montant)').item.json.trxid }}\nMontant : {{ $('Décider (match + montant)').item.json.amount }} BDT (= total)\nDe : {{ $('Décider (match + montant)').item.json.sender }}",
+        "additionalFields": {}
+      },
+      "id": "wf7-tg-ok",
+      "name": "Telegram — Auto-confirmée",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [2020, 300],
+      "continueOnFail": true,
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "telegramApi": { "id": "", "name": "Telegram bKash Bot" }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "-5162751576",
+        "text": "=⚠️ TrxID reconnu mais MONTANT DIFFÉRENT — vérif manuelle, NON confirmé.\nCommande : {{ $json.order_number }} (total {{ $json.total_bdt }} BDT)\nTrxID : {{ $json.trxid }}\nMontant reçu : {{ $json.amount }} BDT\nDe : {{ $json.sender }}",
+        "additionalFields": {}
+      },
+      "id": "wf7-tg-mismatch",
+      "name": "Telegram — Montant différent",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1780, 460],
+      "continueOnFail": true,
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "telegramApi": { "id": "", "name": "Telegram bKash Bot" }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "-5162751576",
+        "text": "=⚠️ SMS bKash reçu mais AUCUNE commande en attente pour ce TrxID — vérif manuelle.\nTrxID : {{ $json.trxid }}\nMontant : {{ $json.amount }} BDT\nDe : {{ $json.sender }}",
+        "additionalFields": {}
+      },
+      "id": "wf7-tg-nomatch",
+      "name": "Telegram — TrxID sans commande",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1560, 160],
+      "continueOnFail": true,
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "telegramApi": { "id": "", "name": "Telegram bKash Bot" }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "-5162751576",
+        "text": "=⚠️ SMS reçu mais format non reconnu (ni TrxID ni montant exploitables) :\n{{ $('Parse bKash SMS').item.json.text }}",
+        "additionalFields": {}
+      },
+      "id": "wf7-tg-unparsed",
+      "name": "Telegram — SMS non reconnu",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [880, 520],
+      "continueOnFail": true,
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "telegramApi": { "id": "", "name": "Telegram bKash Bot" }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook SMS (marchand)": {
+      "main": [[{ "node": "Parse bKash SMS", "type": "main", "index": 0 }]]
+    },
+    "Parse bKash SMS": {
+      "main": [[{ "node": "IF SMS exploitable", "type": "main", "index": 0 }]]
+    },
+    "IF SMS exploitable": {
+      "main": [
+        [{ "node": "Supabase — Chercher commande (TrxID)", "type": "main", "index": 0 }],
+        [{ "node": "Telegram — SMS non reconnu", "type": "main", "index": 0 }]
+      ]
+    },
+    "Supabase — Chercher commande (TrxID)": {
+      "main": [[{ "node": "Décider (match + montant)", "type": "main", "index": 0 }]]
+    },
+    "Décider (match + montant)": {
+      "main": [[{ "node": "IF aucune commande", "type": "main", "index": 0 }]]
+    },
+    "IF aucune commande": {
+      "main": [
+        [{ "node": "Telegram — TrxID sans commande", "type": "main", "index": 0 }],
+        [{ "node": "IF montant exact", "type": "main", "index": 0 }]
+      ]
+    },
+    "IF montant exact": {
+      "main": [
+        [{ "node": "Supabase — Confirmer commande", "type": "main", "index": 0 }],
+        [{ "node": "Telegram — Montant différent", "type": "main", "index": 0 }]
+      ]
+    },
+    "Supabase — Confirmer commande": {
+      "main": [[{ "node": "Telegram — Auto-confirmée", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": { "executionOrder": "v1" },
+  "active": false
+}
