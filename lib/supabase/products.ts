@@ -54,6 +54,7 @@ function toProduct(rec: ProductRow): Product {
     image: rec.image_url ?? '',
     gallery: rec.gallery && rec.gallery.length > 0 ? rec.gallery : undefined,
     badge: rec.is_bestseller ? 'bestseller' : rec.is_new ? 'new' : null,
+    inStock: rec.in_stock,
   };
 }
 
@@ -67,7 +68,10 @@ export async function getAllProducts(): Promise<Product[]> {
 }
 
 export async function getProducts(filters?: ProductFilters): Promise<Product[]> {
-  return filterProducts(await getAllProducts(), filters);
+  // Storefront only shows purchasable products. Out-of-stock rows act as
+  // drafts (e.g. new products awaiting price) and stay hidden until restocked.
+  const inStock = (await getAllProducts()).filter((p) => p.inStock);
+  return filterProducts(inStock, filters);
 }
 
 export async function getProductByRef(ref: number): Promise<Product | null> {
@@ -78,7 +82,10 @@ export async function getProductByRef(ref: number): Promise<Product | null> {
     .eq('ref', ref)
     .maybeSingle();
   if (error || !data) return null;
-  return toProduct(data as ProductRow);
+  const product = toProduct(data as ProductRow);
+  // Draft / out-of-stock products are not publicly reachable.
+  if (!product.inStock) return null;
+  return product;
 }
 
 export async function getAllBrands(): Promise<string[]> {

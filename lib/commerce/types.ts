@@ -11,4 +11,5 @@ export type Product = {
   image: string;
   gallery?: string[];
   badge: string | null;
+  inStock: boolean;
 };

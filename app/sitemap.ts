@@ -26,7 +26,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   let productEntries: MetadataRoute.Sitemap = [];
   try {
-    const products = await getAllProducts();
+    const products = (await getAllProducts()).filter((product) => product.inStock);
     productEntries = products.map((product) => ({
       url: `${SITE_URL}/product/${product.id}`,
       lastModified: now,
