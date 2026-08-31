@@ -15,6 +15,83 @@ export const metadata: Metadata = {
 // figé (l'ancien `FB-${Date.now()}` était gelé au build → toujours le même numéro).
 export const dynamic = 'force-dynamic';
 
+type Tone = 'success' | 'pending' | 'danger';
+
+/**
+ * État affiché en fonction du VRAI statut de paiement. On n'affiche « confirmé »
+ * QUE si le paiement est réellement validé (payment_status = 'paye', ou la commande
+ * a déjà avancé en confirmed/shipped/delivered). Tant que le paiement bKash est en
+ * cours de vérification, on reste honnête : « reçue — vérification en cours ».
+ */
+function paymentView(order: Awaited<ReturnType<typeof getOrderById>>) {
+  const ps = order?.payment_status;
+  const st = order?.status ?? '';
+  const method = order?.payment_method;
+
+  const isPaid = ps === 'paye' || ['confirmed', 'shipped', 'delivered'].includes(st);
+
+  if (isPaid) {
+    return {
+      tone: 'success' as Tone,
+      eyebrow: 'Order confirmed',
+      heading: 'Thank you for your order!',
+      note: null as string | null,
+    };
+  }
+  if (ps === 'refuse') {
+    return {
+      tone: 'danger' as Tone,
+      eyebrow: 'Payment not validated',
+      heading: 'We couldn’t validate your payment',
+      note: 'We could not match your bKash payment for this order. Please contact us so we can help — do not ship or resend money before checking with us.',
+    };
+  }
+  if (method === 'bkash' && ps === 'en_attente_paiement') {
+    return {
+      tone: 'pending' as Tone,
+      eyebrow: 'Order received',
+      heading: 'Complete your bKash payment',
+      note: 'We haven’t received your payment yet. Send the exact amount via bKash and submit your TrxID to confirm your order. Your order is not confirmed until the payment is verified.',
+    };
+  }
+  if (method === 'cod') {
+    return {
+      tone: 'success' as Tone,
+      eyebrow: 'Order placed',
+      heading: 'Thank you for your order!',
+      note: 'You’ll pay on delivery. We’ll be in touch to arrange your order.',
+    };
+  }
+  // bKash TrxID soumis → en cours de vérification (cas par défaut).
+  return {
+    tone: 'pending' as Tone,
+    eyebrow: 'Order received',
+    heading: 'We’re verifying your payment',
+    note: 'Your order is placed and your bKash TrxID has been received. We’re checking it against the payment now — your order is not confirmed yet. You’ll get a confirmation email as soon as the payment is validated.',
+  };
+}
+
+const TONE_STYLES: Record<Tone, { ring: string; icon: string; badge: string; path: string }> = {
+  success: {
+    ring: 'bg-green-100',
+    icon: 'text-green-600',
+    badge: 'bg-highlight text-accent',
+    path: 'M5 13l4 4L19 7', // check
+  },
+  pending: {
+    ring: 'bg-amber-100',
+    icon: 'text-amber-600',
+    badge: 'bg-amber-50 text-amber-700',
+    path: 'M12 8v4l3 3M12 3a9 9 0 100 18 9 9 0 000-18z', // clock
+  },
+  danger: {
+    ring: 'bg-red-100',
+    icon: 'text-red-600',
+    badge: 'bg-red-50 text-red-700',
+    path: 'M6 18L18 6M6 6l12 12', // x
+  },
+};
+
 export default async function OrderConfirmationPage({
   searchParams,
 }: {
@@ -25,10 +102,9 @@ export default async function OrderConfirmationPage({
 
   // Numéro réel FBD-YYMMDD-XXXXX (fallback propre si commande introuvable).
   const orderNumber = order?.order_number ?? '—';
-
-  // Message de paiement contextualisé (bKash manuel = vérification à venir).
-  const awaitingBkashCheck =
-    order?.payment_method === 'bkash' && order?.payment_status === 'paiement_a_verifier';
+  const view = paymentView(order);
+  const tone = TONE_STYLES[view.tone];
+  const isPaid = view.tone === 'success';
 
   return (
     <main className="min-h-screen bg-background text-text">
@@ -36,22 +112,22 @@ export default async function OrderConfirmationPage({
       <section className="mx-auto max-w-4xl px-6 py-20 md:px-8">
         <div className="rounded-[2.5rem] border border-charcoal/10 bg-white p-10 shadow-soft text-center">
           <div className="space-y-6">
-            <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-              <svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+            <div className={`mx-auto w-16 h-16 ${tone.ring} rounded-full flex items-center justify-center`}>
+              <svg className={`w-8 h-8 ${tone.icon}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d={tone.path} />
               </svg>
             </div>
 
             <div className="space-y-2">
-              <p className="text-xs uppercase tracking-[0.35em] text-charcoal/60">Order confirmed</p>
-              <h1 className="text-4xl font-semibold text-black">Thank you for your order!</h1>
+              <p className="text-xs uppercase tracking-[0.35em] text-charcoal/60">{view.eyebrow}</p>
+              <h1 className="text-4xl font-semibold text-black">{view.heading}</h1>
               <p className="text-lg text-charcoal/70">Order number: <span className="font-semibold text-black">{orderNumber}</span></p>
               {order && (
                 <p className="text-sm text-charcoal/60">Total: <span className="font-semibold text-black">{formatBdt(order.total_bdt)}</span></p>
               )}
-              {awaitingBkashCheck && (
-                <p className="mx-auto max-w-md rounded-full bg-highlight px-4 py-2 text-sm font-medium text-accent">
-                  bKash payment received — we are verifying your TrxID. You’ll be confirmed shortly.
+              {view.note && (
+                <p className={`mx-auto max-w-md rounded-2xl px-4 py-3 text-sm font-medium ${tone.badge}`}>
+                  {view.note}
                 </p>
               )}
             </div>
@@ -63,35 +139,28 @@ export default async function OrderConfirmationPage({
                   <div className="w-6 h-6 bg-black rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                     <span className="text-white text-xs font-bold">1</span>
                   </div>
-                  <p>You will receive a confirmation email with your order details.</p>
+                  <p>
+                    {isPaid
+                      ? 'You will receive a confirmation email with your order details.'
+                      : 'We verify your bKash payment, then send you a confirmation email. Your order is only confirmed after this step.'}
+                  </p>
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="w-6 h-6 bg-black rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                     <span className="text-white text-xs font-bold">2</span>
                   </div>
-                  <p>Your order will be carefully prepared in our French warehouses.</p>
+                  <p>Once confirmed, your order is carefully prepared in our French warehouses.</p>
                 </div>
                 <div className="flex items-start gap-3">
                   <div className="w-6 h-6 bg-black rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
                     <span className="text-white text-xs font-bold">3</span>
                   </div>
-                  <p>Shipped within 2-3 business days with real-time tracking.</p>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 bg-black rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                    <span className="text-white text-xs font-bold">4</span>
-                  </div>
-                  <p>Delivered to your door within 7-10 business days in Bangladesh.</p>
+                  <p>Shipped from France with tracking, and delivered to your door in Bangladesh (2–3 weeks).</p>
                 </div>
               </div>
             </div>
 
             <div className="space-y-4">
-              <p className="text-base leading-7 text-charcoal/80 max-w-2xl mx-auto">
-                Your order of authentic French beauty products is now being processed.
-                We will keep you informed at every step of the way.
-              </p>
-
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link
                   href="/shop"
