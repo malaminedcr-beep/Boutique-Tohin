@@ -53,7 +53,7 @@ Les workflows mappent déjà vers ces colonnes réelles.
 - **`Telegram bKash Bot`** (type *Telegram API*) : le **bot token** obtenu via @BotFather (voir la section « Configuration Telegram » plus bas). Utilisé par les notifs **admin** (WF1 + les 2 alertes WF3).
 - **`Resend API`** (type *Header Auth*) : Name = `Authorization`, Value = `Bearer re_xxxxxxxxxxxxxxxxxxxx` (ta clé Resend). Utilisé par les emails **client** (WF2 + WF3). → clé stockée dans n8n, **jamais en clair dans les workflows/GitHub**. Voir la section « Configuration Resend » plus bas.
 
-> **chat_id en dur** : le `chat_id` du groupe admin (`-5162751576`) est écrit **directement dans les 3 nœuds Telegram** (le plan n8n actuel ne licence pas les variables d'environnement — erreur *« Plan lacks license for this feature »*). Si le groupe change un jour, il faudra **modifier manuellement chaque nœud Telegram concerné** (1 dans WF1, 2 dans WF3).
+> **chat_id en dur** : le `chat_id` du groupe admin (`-5162751576`) est écrit **directement dans les 3 nœuds Telegram** (le plan n8n actuel ne licence pas les variables d'environnement — erreur *« Plan lacks license for this feature »*). Si le groupe change un jour, il faudra **modifier manuellement chaque nœud Telegram concerné** (2 dans WF1 : *Notif admin* + *Relance marchand* ; 2 dans WF3 / 4 dans WF7).
 
 Après import, ouvre chaque nœud Airtable/Supabase/Telegram et **sélectionne le credential** (le champ `id` est vide exprès).
 
@@ -65,6 +65,9 @@ Après import, ouvre chaque nœud Airtable/Supabase/Telegram et **sélectionne l
    - Type : HTTP Request · Method : `POST` · URL : l'URL n8n ci-dessus
    - (le filtre `payment_status = paiement_a_verifier` est déjà fait **dans** le workflow, nœud *Filtre*)
 4. Notif admin : le nœud **Telegram — Notif admin** est déjà en place (credential `Telegram bKash Bot` à sélectionner ; `chat_id -5162751576` déjà en dur). Rien à remplacer côté admin.
+5. **Relance marchand (nouveau).** WF1 embarque désormais une boucle de relance : après la notif initiale, un nœud **Attendre 10 min** patiente, puis **Supabase — Revérifier statut** relit l'état réel de la commande. Tant qu'elle est encore `paiement_a_verifier`, un **Telegram — Relance marchand** part vers le groupe admin (message **en anglais** : `⏰ Reminder (n/3): order #… (… BDT, TrxID …) still awaiting verification`). La boucle se répète **toutes les 10 min, max 3 relances (10/20/30 min)** puis s'arrête (anti-spam si tu es absent). Elle **s'arrête immédiatement** dès que la commande quitte `paiement_a_verifier` (confirmée/refusée à la main via Airtable→WF2, ou auto-confirmée par WF7). Le compteur vit dans l'exécution n8n (nœud *Wait* persistant, via `$runIndex`) → **aucune colonne DB ajoutée**. Le flux **client** (email « payment received » immédiat puis email final) est inchangé : la relance ne cible **que le marchand**.
+   - ⚠️ **Nouveau credential requis sur WF1** : le nœud *Supabase — Revérifier statut* utilise **`Supabase French Beauty`** (le même que WF2/WF7). Sélectionne-le après import.
+   - Le nœud *Telegram — Relance marchand* utilise le credential **`Telegram bKash Bot`** (chat_id `-5162751576` en dur, comme les autres).
 
 ### 2. Workflow 2 — validation Airtable → Supabase
 1. Importe `workflow-2`, connecte le credential Supabase, **active**.
@@ -135,7 +138,7 @@ Un **groupe** évite de dupliquer les notifs vers chaque personne.
 4. Dans la réponse JSON, lis `result[].message.chat.id`. Pour un **groupe**, c'est un **nombre négatif**. C'est ton `chat_id`.
 
 ### c) chat_id en dur (limitation du plan n8n)
-Le plan n8n actuel ne permet **pas** les variables d'environnement (*« Plan lacks license for this feature »*). Le `chat_id` du groupe (**`-5162751576`**) est donc écrit **en dur dans les 3 nœuds Telegram** (`workflow-1` : *Telegram — Notif admin* ; `workflow-3` : *Alerte SMS non reconnu* et *Alerte TrxID sans commande*).
+Le plan n8n actuel ne permet **pas** les variables d'environnement (*« Plan lacks license for this feature »*). Le `chat_id` du groupe (**`-5162751576`**) est donc écrit **en dur dans chaque nœud Telegram** (`workflow-1` : *Telegram — Notif admin* **et** *Telegram — Relance marchand* ; `workflow-3` : *Alerte SMS non reconnu* et *Alerte TrxID sans commande* ; `workflow-7` : 4 nœuds d'alerte/confirmation).
 
 > **Si le groupe change**, modifie le champ *Chat ID* de **chacun** de ces 3 nœuds. Le **token** reste, lui, dans le credential `Telegram bKash Bot` (secret).
 

@@ -105,6 +105,113 @@
       "credentials": {
         "httpHeaderAuth": { "id": "", "name": "Resend API" }
       }
+    },
+    {
+      "parameters": {
+        "resume": "timeInterval",
+        "amount": 10,
+        "unit": "minutes",
+        "options": {}
+      },
+      "id": "wf1-wait",
+      "name": "Attendre 10 min",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [980, 600],
+      "webhookId": "wf1-reminder-wait"
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "getAll",
+        "tableId": "orders",
+        "returnAll": true,
+        "filters": {
+          "conditions": [
+            { "keyName": "id", "condition": "eq", "keyValue": "={{ $('Webhook Supabase').item.json.body.record.id }}" }
+          ]
+        }
+      },
+      "id": "wf1-recheck",
+      "name": "Supabase — Revérifier statut",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1200, 600],
+      "alwaysOutputData": true,
+      "credentials": {
+        "supabaseApi": { "id": "", "name": "Supabase French Beauty" }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Relance marchand : après chaque attente de 10 min, on re-lit l'état RÉEL de la\n// commande dans Supabase. Tant qu'elle est encore 'paiement_a_verifier', on relance.\n// Compteur via $runIndex (0 au 1er passage) → reminderNumber 1, 2, 3.\n// Aucune colonne DB : l'état de la boucle vit dans l'exécution n8n (Wait persistant).\n// Max 3 relances (10/20/30 min) puis stop, pour ne pas spammer si le marchand est absent.\nconst row = $input.first() ? ($input.first().json || {}) : {};\nconst stillPending = row.payment_status === 'paiement_a_verifier';\nconst reminderNumber = $runIndex + 1;        // 1, 2, 3\nconst canContinue = reminderNumber < 3;      // relancer encore APRÈS celle-ci ?\nreturn [{ json: { stillPending, reminderNumber, canContinue } }];"
+      },
+      "id": "wf1-decide",
+      "name": "Décider relance",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1420, 600]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "typeValidation": "loose" },
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.stillPending }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "true", "singleValue": true }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf1-if-pending",
+      "name": "IF encore en attente",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1640, 600]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "-5162751576",
+        "text": "=⏰ Reminder ({{ $('Décider relance').item.json.reminderNumber }}/3): order #{{ $('Webhook Supabase').item.json.body.record.order_number }} ({{ $('Webhook Supabase').item.json.body.record.total_bdt }} BDT, TrxID {{ $('Webhook Supabase').item.json.body.record.trxid }}) still awaiting verification",
+        "additionalFields": {}
+      },
+      "id": "wf1-tg-reminder",
+      "name": "Telegram — Relance marchand",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1860, 540],
+      "continueOnFail": true,
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "telegramApi": { "id": "", "name": "Telegram bKash Bot" }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "typeValidation": "loose" },
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $('Décider relance').item.json.canContinue }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "true", "singleValue": true }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf1-if-continue",
+      "name": "IF relance < 3",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [2080, 540]
     }
   ],
   "connections": {
@@ -120,8 +227,33 @@
     "Airtable — Upsert vérification": {
       "main": [[
         { "node": "Telegram — Notif admin", "type": "main", "index": 0 },
-        { "node": "Resend — Paiement reçu", "type": "main", "index": 0 }
+        { "node": "Resend — Paiement reçu", "type": "main", "index": 0 },
+        { "node": "Attendre 10 min", "type": "main", "index": 0 }
       ]]
+    },
+    "Attendre 10 min": {
+      "main": [[{ "node": "Supabase — Revérifier statut", "type": "main", "index": 0 }]]
+    },
+    "Supabase — Revérifier statut": {
+      "main": [[{ "node": "Décider relance", "type": "main", "index": 0 }]]
+    },
+    "Décider relance": {
+      "main": [[{ "node": "IF encore en attente", "type": "main", "index": 0 }]]
+    },
+    "IF encore en attente": {
+      "main": [
+        [{ "node": "Telegram — Relance marchand", "type": "main", "index": 0 }],
+        []
+      ]
+    },
+    "Telegram — Relance marchand": {
+      "main": [[{ "node": "IF relance < 3", "type": "main", "index": 0 }]]
+    },
+    "IF relance < 3": {
+      "main": [
+        [{ "node": "Attendre 10 min", "type": "main", "index": 0 }],
+        []
+      ]
     }
   },
   "settings": { "executionOrder": "v1" },
