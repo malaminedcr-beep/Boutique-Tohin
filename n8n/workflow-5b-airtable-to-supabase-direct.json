@@ -8,7 +8,7 @@
         "tableId": { "__rl": true, "value": "tbl01vfBCqTzkqwRI", "mode": "id" },
         "triggerField": "order_status_modified",
         "additionalFields": {},
-        "pollTimes": { "item": [{ "mode": "everyMinute" }] }
+        "pollTimes": { "item": [{ "mode": "everyX", "value": 15, "unit": "minutes" }] }
       },
       "id": "wf5b-trigger",
       "name": "Airtable Trigger (order_status)",
