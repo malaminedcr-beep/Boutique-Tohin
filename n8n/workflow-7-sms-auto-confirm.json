@@ -141,8 +141,7 @@
         "tableId": "orders",
         "filters": {
           "conditions": [
-            { "keyName": "id", "condition": "eq", "keyValue": "={{ $json.order_id }}" },
-            { "keyName": "payment_status", "condition": "eq", "keyValue": "paiement_a_verifier" }
+            { "keyName": "id", "condition": "eq", "keyValue": "={{ $json.order_id }}" }
           ]
         },
         "fieldsUi": {

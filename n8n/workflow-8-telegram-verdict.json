@@ -1,0 +1,219 @@
+{
+  "name": "bKash 8 — Telegram boutons → verdict (Supabase)",
+  "nodes": [
+    {
+      "parameters": { "updates": ["callback_query"], "additionalFields": {} },
+      "id": "wf8-trigger",
+      "name": "Telegram Trigger (callback)",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.1,
+      "position": [200, 340],
+      "credentials": { "telegramApi": { "id": "", "name": "Telegram account" } }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Décode le clic. callback_data = 'cfm:<order_id>' / 'rej:<order_id>'.\nconst upd = $input.first().json || {};\nconst cq  = upd.callback_query || (upd.body && upd.body.callback_query) || upd || {};\nconst data = String(cq.data || '');\nconst m = data.match(/^(cfm|rej):(.+)$/);\nconst action = m ? (m[1] === 'cfm' ? 'confirm' : 'reject') : null;\nconst orderId = m ? m[2] : null;\nconst from = cq.from || {};\nconst actor = ([from.first_name, from.last_name].filter(Boolean).join(' ') + (from.username ? ' (@' + from.username + ')' : '')).trim() || 'unknown';\nconst msg = cq.message || {};\nreturn [{ json: {\n  action, orderId,\n  verdictLabel: action === 'confirm' ? 'Confirmed' : (action === 'reject' ? 'Rejected' : 'Unknown'),\n  actor,\n  queryId: cq.id || null,\n  chatId: msg.chat ? msg.chat.id : null,\n  messageId: msg.message_id || null,\n  origText: msg.text || ''\n} }];"
+      },
+      "id": "wf8-parse",
+      "name": "Parse callback",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [400, 340]
+    },
+    {
+      "parameters": {
+        "jsCode": "// GARDE-FOU : refuse tout ce qui n'est pas un UUID d'ordre valide.\n// Empêche qu'un callback malformé (orderId vide) n'aboutisse à un update\n// filtré uniquement par statut → qui toucherait TOUTES les commandes en attente.\nconst p = $input.first().json;\nconst id = (p.orderId || '').trim();\nconst UUID = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;\nif (!UUID.test(id)) {\n  throw new Error('WF8 guard: callback_data sans order_id valide -> ' + JSON.stringify(p.orderId));\n}\nreturn [{ json: p }];"
+      },
+      "id": "wf8-guard",
+      "name": "Garde-fou order_id",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [600, 340]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "getAll",
+        "tableId": "orders",
+        "returnAll": true,
+        "filters": {
+          "conditions": [
+            { "keyName": "id", "condition": "eq", "keyValue": "={{ $json.orderId }}" }
+          ]
+        }
+      },
+      "id": "wf8-fetch",
+      "name": "Supabase — Lire la commande",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [800, 340],
+      "alwaysOutputData": true,
+      "credentials": { "supabaseApi": { "id": "", "name": "Supabase French Beauty" } }
+    },
+    {
+      "parameters": {
+        "jsCode": "// N'agir QUE si cette commande précise est encore 'paiement_a_verifier'.\nconst p = $('Parse callback').item.json;\nconst row = $input.first() ? ($input.first().json || {}) : {};\nconst found = !!row.id;\nconst current = row.payment_status;\nconst proceed = found && current === 'paiement_a_verifier';\nreturn [{ json: {\n  proceed, action: p.action, orderId: p.orderId,\n  actor: p.actor, verdictLabel: p.verdictLabel,\n  queryId: p.queryId, chatId: p.chatId, messageId: p.messageId, origText: p.origText,\n  current: current || '(introuvable)'\n} }];"
+      },
+      "id": "wf8-decide",
+      "name": "Décider (encore en attente ?)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1000, 340]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "typeValidation": "loose" },
+          "combinator": "and",
+          "conditions": [
+            { "leftValue": "={{ $json.proceed }}", "rightValue": true, "operator": { "type": "boolean", "operation": "true", "singleValue": true } }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf8-if-proceed",
+      "name": "IF encore en attente",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1200, 340]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "typeValidation": "loose" },
+          "combinator": "and",
+          "conditions": [
+            { "leftValue": "={{ $json.action }}", "rightValue": "confirm", "operator": { "type": "string", "operation": "equals" } }
+          ]
+        },
+        "options": {}
+      },
+      "id": "wf8-if-confirm",
+      "name": "IF confirm",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1400, 280]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "tableId": "orders",
+        "filters": {
+          "conditions": [
+            { "keyName": "id", "condition": "eq", "keyValue": "={{ $json.orderId }}" }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            { "fieldId": "payment_status", "fieldValue": "paye" },
+            { "fieldId": "status", "fieldValue": "confirmed" },
+            { "fieldId": "verified_by", "fieldValue": "={{ 'Telegram: ' + $json.actor }}" },
+            { "fieldId": "verified_at", "fieldValue": "={{ $now.toISO() }}" }
+          ]
+        }
+      },
+      "id": "wf8-confirm",
+      "name": "Supabase — Confirmer (paye+confirmed)",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1620, 220],
+      "credentials": { "supabaseApi": { "id": "", "name": "Supabase French Beauty" } }
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "tableId": "orders",
+        "filters": {
+          "conditions": [
+            { "keyName": "id", "condition": "eq", "keyValue": "={{ $json.orderId }}" }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            { "fieldId": "payment_status", "fieldValue": "refuse" },
+            { "fieldId": "verified_by", "fieldValue": "={{ 'Telegram: ' + $json.actor }}" },
+            { "fieldId": "verified_at", "fieldValue": "={{ $now.toISO() }}" }
+          ]
+        }
+      },
+      "id": "wf8-reject",
+      "name": "Supabase — Rejeter (refuse)",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [1620, 420],
+      "credentials": { "supabaseApi": { "id": "", "name": "Supabase French Beauty" } }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Texte final du message. 'applied' = un update a renvoyé la ligne (order_number présent).\nconst d = $('Décider (encore en attente ?)').item.json;\nconst inp = $input.first() ? ($input.first().json || {}) : {};\nconst applied = !!inp.order_number;\nconst when = $now.setZone('Asia/Dhaka').toFormat('dd LLL yyyy, HH:mm');\nconst icon = d.action === 'confirm' ? '✅' : '❌';\nconst footer = applied\n  ? icon + ' ' + d.verdictLabel + ' by ' + d.actor + ' at ' + when + ' (BST)'\n  : '⚠️ Already handled — no change (order is ' + d.current + '). Clicked by ' + d.actor + ' at ' + when + ' BST';\nreturn [{ json: {\n  newText: (d.origText || '') + '\\n\\n' + footer,\n  chatId: d.chatId, messageId: d.messageId, queryId: d.queryId,\n  toast: applied ? d.verdictLabel : 'Already handled'\n} }];"
+      },
+      "id": "wf8-build",
+      "name": "Build edit",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1860, 340]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "editMessageText",
+        "messageType": "message",
+        "chatId": "={{ $json.chatId }}",
+        "messageId": "={{ $json.messageId }}",
+        "text": "={{ $json.newText }}",
+        "additionalFields": {}
+      },
+      "id": "wf8-edit",
+      "name": "Telegram — Éditer message",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [2060, 340],
+      "continueOnFail": true,
+      "onError": "continueRegularOutput",
+      "credentials": { "telegramApi": { "id": "", "name": "Telegram account" } }
+    },
+    {
+      "parameters": {
+        "resource": "callback",
+        "operation": "answerQuery",
+        "queryId": "={{ $('Build edit').item.json.queryId }}",
+        "additionalFields": { "text": "={{ $('Build edit').item.json.toast }}" }
+      },
+      "id": "wf8-answer",
+      "name": "Telegram — Answer callback",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [2260, 340],
+      "continueOnFail": true,
+      "onError": "continueRegularOutput",
+      "credentials": { "telegramApi": { "id": "", "name": "Telegram account" } }
+    }
+  ],
+  "connections": {
+    "Telegram Trigger (callback)": { "main": [[{ "node": "Parse callback", "type": "main", "index": 0 }]] },
+    "Parse callback": { "main": [[{ "node": "Garde-fou order_id", "type": "main", "index": 0 }]] },
+    "Garde-fou order_id": { "main": [[{ "node": "Supabase — Lire la commande", "type": "main", "index": 0 }]] },
+    "Supabase — Lire la commande": { "main": [[{ "node": "Décider (encore en attente ?)", "type": "main", "index": 0 }]] },
+    "Décider (encore en attente ?)": { "main": [[{ "node": "IF encore en attente", "type": "main", "index": 0 }]] },
+    "IF encore en attente": {
+      "main": [
+        [{ "node": "IF confirm", "type": "main", "index": 0 }],
+        [{ "node": "Build edit", "type": "main", "index": 0 }]
+      ]
+    },
+    "IF confirm": {
+      "main": [
+        [{ "node": "Supabase — Confirmer (paye+confirmed)", "type": "main", "index": 0 }],
+        [{ "node": "Supabase — Rejeter (refuse)", "type": "main", "index": 0 }]
+      ]
+    },
+    "Supabase — Confirmer (paye+confirmed)": { "main": [[{ "node": "Build edit", "type": "main", "index": 0 }]] },
+    "Supabase — Rejeter (refuse)": { "main": [[{ "node": "Build edit", "type": "main", "index": 0 }]] },
+    "Build edit": { "main": [[{ "node": "Telegram — Éditer message", "type": "main", "index": 0 }]] },
+    "Telegram — Éditer message": { "main": [[{ "node": "Telegram — Answer callback", "type": "main", "index": 0 }]] }
+  },
+  "settings": { "executionOrder": "v1" },
+  "active": false
+}
