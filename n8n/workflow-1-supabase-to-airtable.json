@@ -61,6 +61,8 @@
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
       "position": [720, 300],
+      "continueOnFail": true,
+      "onError": "continueRegularOutput",
       "credentials": {
         "airtableTokenApi": { "id": "", "name": "Airtable Personal Access Token account" }
       }
@@ -70,7 +72,30 @@
         "resource": "message",
         "operation": "sendMessage",
         "chatId": "-5162751576",
-        "text": "=🔔 Nouveau paiement à vérifier : {{ $('Webhook Supabase').item.json.body.record.order_number }} — {{ $('Webhook Supabase').item.json.body.record.total_bdt }} BDT — TrxID {{ $('Webhook Supabase').item.json.body.record.trxid }}",
+        "text": "=🔔 New payment to verify: order #{{ $('Webhook Supabase').item.json.body.record.order_number }} — {{ $('Webhook Supabase').item.json.body.record.total_bdt }} BDT — TrxID {{ $('Webhook Supabase').item.json.body.record.trxid }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "✅ Confirm payment",
+                    "additionalFields": {
+                      "callback_data": "=cfm:{{ $('Webhook Supabase').item.json.body.record.id }}"
+                    }
+                  },
+                  {
+                    "text": "❌ Reject payment",
+                    "additionalFields": {
+                      "callback_data": "=rej:{{ $('Webhook Supabase').item.json.body.record.id }}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
         "additionalFields": {}
       },
       "id": "wf1-notif",
@@ -189,7 +214,7 @@
       "continueOnFail": true,
       "onError": "continueRegularOutput",
       "credentials": {
-        "telegramApi": { "id": "", "name": "Telegram bKash Bot" }
+        "telegramApi": { "id": "", "name": "Telegram account" }
       }
     },
     {
