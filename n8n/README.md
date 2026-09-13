@@ -64,7 +64,7 @@ Après import, ouvre chaque nœud Airtable/Supabase/Telegram et **sélectionne l
    - Table : `orders` · Événements : **UPDATE**
    - Type : HTTP Request · Method : `POST` · URL : l'URL n8n ci-dessus
    - (le filtre `payment_status = paiement_a_verifier` est déjà fait **dans** le workflow, nœud *Filtre*)
-4. Notif admin : le nœud **Telegram — Notif admin** est déjà en place (credential `Telegram bKash Bot` à sélectionner ; `chat_id -5162751576` déjà en dur). Rien à remplacer côté admin.
+4. Notif admin : le nœud **Telegram — Notif admin** est déjà en place (credential `Telegram bKash Bot` à sélectionner ; `chat_id -5162751576` déjà en dur). Le message est **en anglais** et porte désormais **2 boutons inline** : **✅ Confirm payment** / **❌ Reject payment** (`callback_data` = `cfm:<order_id>` / `rej:<order_id>`). Le clic est traité par **`workflow-8`** (voir section dédiée). Rien à remplacer côté admin.
 5. **Relance marchand (nouveau).** WF1 embarque désormais une boucle de relance : après la notif initiale, un nœud **Attendre 10 min** patiente, puis **Supabase — Revérifier statut** relit l'état réel de la commande. Tant qu'elle est encore `paiement_a_verifier`, un **Telegram — Relance marchand** part vers le groupe admin (message **en anglais** : `⏰ Reminder (n/3): order #… (… BDT, TrxID …) still awaiting verification`). La boucle se répète **toutes les 10 min, max 3 relances (10/20/30 min)** puis s'arrête (anti-spam si tu es absent). Elle **s'arrête immédiatement** dès que la commande quitte `paiement_a_verifier` (confirmée/refusée à la main via Airtable→WF2, ou auto-confirmée par WF7). Le compteur vit dans l'exécution n8n (nœud *Wait* persistant, via `$runIndex`) → **aucune colonne DB ajoutée**. Le flux **client** (email « payment received » immédiat puis email final) est inchangé : la relance ne cible **que le marchand**.
    - ⚠️ **Nouveau credential requis sur WF1** : le nœud *Supabase — Revérifier statut* utilise **`Supabase French Beauty`** (le même que WF2/WF7). Sélectionne-le après import.
    - Le nœud *Telegram — Relance marchand* utilise le credential **`Telegram bKash Bot`** (chat_id `-5162751576` en dur, comme les autres).
@@ -195,6 +195,25 @@ Pour tester le **chemin succès**, mets d'abord une ligne dans Airtable avec `tr
 - **Expéditeur** : `/from\s+(01\d{9})/i`
 
 > ⚠️ **À reconfirmer avec un VRAI SMS bKash** reçu sur le téléphone marchand — envoie le texte exact et on verrouille le regex sur le format réel.
+
+---
+
+## 🔘 workflow-8 — boutons Telegram → verdict (confirm/reject)
+
+`workflow-8-telegram-verdict.json` traite les clics sur les **boutons inline** de la notif WF1. Un seul clic remplace l'aller-retour manuel par Airtable.
+
+**Chaîne :** *Telegram Trigger (callback_query)* → *Parse callback* (décode `cfm:`/`rej:` + qui a cliqué + coordonnées du message) → *IF confirm* → **Supabase update gardé** (`WHERE id = <order_id> AND payment_status = 'paiement_a_verifier'`) → *Build edit* → *Telegram — Éditer message* → *Telegram — Answer callback*.
+
+- **✅ Confirm** → `payment_status = 'paye'` **+** `status = 'confirmed'` + `verified_by = 'Telegram: <nom du cliqueur>'` + `verified_at`. L'email client « confirmed » part **tout seul** via le pipeline `status → WF4` (le même que WF7 — **ne pas dupliquer l'email ici**).
+- **❌ Reject** → `payment_status = 'refuse'` + `verified_by` + `verified_at`. ⚠️ **Aucun email client** n'est envoyé sur ce chemin : WF4 n'a pas de branche « rejected » et l'email de refus légacy vit sur le chemin Airtable (WF2). Si tu veux un email « rejected » côté client sur le clic Telegram, dis-le et je l'ajoute (branche Resend dans WF8).
+- **Message d'origine édité** (anti double-clic) : après le verdict, la notif est réécrite avec `✅ Confirmed by <nom> at <date BST>` / `❌ Rejected by …` **et les boutons sont retirés**.
+- **Anti-course / double-clic** : le garde `payment_status = 'paiement_a_verifier'` fait que **seul le premier clic** met à jour une ligne. Un 2ᵉ clic (ou une commande déjà traitée par Airtable/WF7) ne réécrit **pas** de faux verdict → message « ⚠️ Already processed — no change » + toast.
+- Dès le verdict, la **boucle de relance de WF1 s'arrête** au prochain re-check (la commande n'est plus `paiement_a_verifier`).
+
+### Étapes
+1. Importe `workflow-8`, relie **`Telegram bKash Bot`** (sur les 3 nœuds Telegram : Trigger, Éditer, Answer) et **`Supabase French Beauty`** (2 nœuds update), **active**.
+2. ⚠️ **Un seul Telegram Trigger par bot.** Le bot utilisé pour la notif WF1 **doit être le même** que celui de WF8 (sinon les callbacks n'arrivent jamais). Les nœuds *sendMessage* (WF1/WF7) coexistent sans souci ; c'est le **Trigger** qui capte les updates — n'en mets pas deux sur le même bot.
+3. Tester : passe une commande test en `paiement_a_verifier` → clique **✅/❌** dans le groupe Telegram → vérifie côté Supabase (`payment_status`/`status`/`verified_by`) et que le message se réécrit avec qui/quand.
 
 ---
 
