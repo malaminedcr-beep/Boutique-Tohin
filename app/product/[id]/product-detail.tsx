@@ -11,10 +11,13 @@ import {
   PRODUCT_DESCRIPTION_FALLBACK,
 } from '../../../lib/i18n/strings';
 
+// Vraie description Supabase si présente, sinon repli sur un texte générique
+// dérivé de la catégorie (produits pas encore rédigés).
 const getDescription = (product: Product) =>
+  product.description?.trim() ||
   product.name +
-  ' - ' +
-  (PRODUCT_CATEGORY_DESCRIPTIONS[product.category] ?? PRODUCT_DESCRIPTION_FALLBACK);
+    ' - ' +
+    (PRODUCT_CATEGORY_DESCRIPTIONS[product.category] ?? PRODUCT_DESCRIPTION_FALLBACK);
 
 export default function ProductDetail({ product }: { product: Product }) {
   const { addItem } = useCart();
@@ -168,7 +171,7 @@ export default function ProductDetail({ product }: { product: Product }) {
                   </div>
                   <div className="space-y-2">
                     <p className="text-3xl font-semibold text-black">{formatBdt(product.priceBdt)}</p>
-                    <p className="text-sm leading-7 text-charcoal/75">{getDescription(product)}</p>
+                    <p className="whitespace-pre-line text-sm leading-7 text-charcoal/75">{getDescription(product)}</p>
                   </div>
                   <div className="space-y-3">
                     <p className="text-sm font-semibold uppercase tracking-[0.3em] text-charcoal/70">Details</p>

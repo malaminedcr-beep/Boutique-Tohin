@@ -48,6 +48,7 @@ function toProduct(rec: ProductRow): Product {
     name: rec.name,
     brand: rec.brand,
     category: rec.category,
+    description: rec.description ?? undefined,
     volume: rec.volume ?? '',
     priceEur: rec.price_eur ?? 0,
     priceBdt: rec.price_bdt,
