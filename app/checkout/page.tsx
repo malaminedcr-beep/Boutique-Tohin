@@ -7,7 +7,7 @@ import { useState } from 'react';
 import { formatBdt as fmt } from '../../lib/format';
 import PaymentPopup from '../../components/checkout/PaymentPopup';
 
-type PaymentMethod = 'cod' | 'bkash' | 'nagad';
+type PaymentMethod = 'bkash';
 
 export default function CheckoutPage() {
   const { state, clearCart } = useCart();
@@ -76,19 +76,13 @@ export default function CheckoutPage() {
       if (!res.ok) throw new Error(result?.error ?? 'Something went wrong. Please try again.');
 
       // bKash manuel : on garde le panier et on ouvre la popup pour le TrxID.
-      // Le panier n'est vidé qu'après soumission réussie du paiement.
-      if (paymentMethod === 'bkash') {
-        setBkashOrder({
-          orderId: result.orderId,
-          orderNumber: result.orderNumber,
-          total: result.total ?? state.total,
-        });
-        setIsProcessing(false);
-        return;
-      }
-
-      clearCart();
-      window.location.href = `/order-confirmation?order=${result.orderId}`;
+      // Le panier n'est vidé qu'après soumission réussie du paiement (PaymentPopup onSuccess).
+      setBkashOrder({
+        orderId: result.orderId,
+        orderNumber: result.orderNumber,
+        total: result.total ?? state.total,
+      });
+      setIsProcessing(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Please try again.');
       setIsProcessing(false);

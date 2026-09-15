@@ -54,14 +54,6 @@ function paymentView(order: Awaited<ReturnType<typeof getOrderById>>) {
       note: 'We haven’t received your payment yet. Send the exact amount via bKash and submit your TrxID to confirm your order. Your order is not confirmed until the payment is verified.',
     };
   }
-  if (method === 'cod') {
-    return {
-      tone: 'success' as Tone,
-      eyebrow: 'Order placed',
-      heading: 'Thank you for your order!',
-      note: 'You’ll pay on delivery. We’ll be in touch to arrange your order.',
-    };
-  }
   // bKash TrxID soumis → en cours de vérification (cas par défaut).
   return {
     tone: 'pending' as Tone,
