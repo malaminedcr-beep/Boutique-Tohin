@@ -10,8 +10,8 @@
  *   NEXT_PUBLIC_LEGAL_DATA_CONTROLLER e.g. "French Beauty BD Ltd, <address>"
  *
  * IMPORTANT: no placeholder fallbacks. Anything unset resolves to null and the
- * corresponding sentence/section is not rendered — we never ship
- * "[TO BE COMPLETED]" to a live legal page.
+ * corresponding sentence/section is not rendered — we never ship unfinished
+ * bracketed placeholders to a live legal page (the pre-build guard enforces this).
  */
 function env(value: string | undefined): string | null {
   const trimmed = value?.trim();
