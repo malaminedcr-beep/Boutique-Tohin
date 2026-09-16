@@ -6,6 +6,9 @@ export type Product = {
   brand: string;
   category: string;
   description?: string;
+  keyFeatures?: string;
+  ingredients?: string;
+  howToUse?: string;
   volume: string;
   priceEur: number;
   priceBdt: number;

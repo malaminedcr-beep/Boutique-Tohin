@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { getProductByRef } from '../../../lib/supabase/products';
+import { getProductByRef, getSimilarProducts } from '../../../lib/supabase/products';
 import {
   PRODUCT_CATEGORY_DESCRIPTIONS,
   PRODUCT_DESCRIPTION_FALLBACK,
@@ -43,6 +43,8 @@ export default async function ProductPage({ params }: { params: { id: string } }
   const product = await getProductByRef(Number(params.id));
   if (!product) notFound();
 
+  const similarProducts = await getSimilarProducts(product.id, product.category);
+
   const description =
     PRODUCT_CATEGORY_DESCRIPTIONS[product.category] ?? PRODUCT_DESCRIPTION_FALLBACK;
 
@@ -69,7 +71,7 @@ export default async function ProductPage({ params }: { params: { id: string } }
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <ProductDetail product={product} />
+      <ProductDetail product={product} similarProducts={similarProducts} />
     </>
   );
 }

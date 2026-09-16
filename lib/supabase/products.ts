@@ -31,6 +31,9 @@ type ProductRow = {
   brand: string;
   category: string;
   description: string | null;
+  key_features: string | null;
+  ingredients: string | null;
+  how_to_use: string | null;
   volume: string | null;
   price_bdt: number;
   price_eur: number | null;
@@ -49,6 +52,9 @@ function toProduct(rec: ProductRow): Product {
     brand: rec.brand,
     category: rec.category,
     description: rec.description ?? undefined,
+    keyFeatures: rec.key_features ?? undefined,
+    ingredients: rec.ingredients ?? undefined,
+    howToUse: rec.how_to_use ?? undefined,
     volume: rec.volume ?? '',
     priceEur: rec.price_eur ?? 0,
     priceBdt: rec.price_bdt,
@@ -92,4 +98,30 @@ export async function getProductByRef(ref: number): Promise<Product | null> {
 export async function getAllBrands(): Promise<string[]> {
   const products = await getAllProducts();
   return Array.from(new Set(products.map((p) => p.brand)));
+}
+
+export async function getSimilarProducts(currentRef: number, category: string, limit = 8): Promise<Product[]> {
+  const { data: same } = await db()
+    .from('products')
+    .select('*')
+    .eq('category', category)
+    .eq('in_stock', true)
+    .neq('ref', currentRef)
+    .limit(limit);
+
+  const results = (same ?? []).map(toProduct);
+
+  if (results.length >= 4) return results.slice(0, limit);
+
+  // Pas assez dans la même catégorie — on complète avec d'autres produits
+  const needed = limit - results.length;
+  const { data: others } = await db()
+    .from('products')
+    .select('*')
+    .eq('in_stock', true)
+    .neq('ref', currentRef)
+    .neq('category', category)
+    .limit(needed);
+
+  return [...results, ...(others ?? []).map(toProduct)];
 }
