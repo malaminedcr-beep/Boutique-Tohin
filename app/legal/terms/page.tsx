@@ -1,5 +1,6 @@
 import LegalShell, { LegalSection } from '../../../components/legal/legal-shell';
 import { pageMetadata } from '../../../lib/seo';
+import { LEGAL } from '../../../lib/legal';
 
 export const metadata = pageMetadata({
   title: 'Terms of Service',
@@ -17,8 +18,8 @@ export default function TermsPage() {
       <LegalSection heading="1. Who we are">
         <p>
           French Beauty BD sells authentic French cosmetics, imported from France,
-          to customers in Bangladesh. Legal entity name, registration number and
-          registered address: <strong>[TO BE COMPLETED]</strong>.
+          to customers in Bangladesh.
+          {LEGAL.entity ? <> Our legal entity, registration and registered address: <strong>{LEGAL.entity}</strong>.</> : null}
         </p>
       </LegalSection>
 
@@ -61,16 +62,20 @@ export default function TermsPage() {
         </p>
       </LegalSection>
 
-      <LegalSection heading="7. Liability">
-        <p><strong>[TO BE COMPLETED: limitation of liability wording — to be validated by a lawyer.]</strong></p>
-      </LegalSection>
+      {LEGAL.liability && (
+        <LegalSection heading="7. Liability">
+          <p>{LEGAL.liability}</p>
+        </LegalSection>
+      )}
 
-      <LegalSection heading="8. Governing law">
-        <p>
-          These terms are governed by the laws of <strong>[TO BE COMPLETED: jurisdiction]</strong>.
-          Disputes will be handled by <strong>[TO BE COMPLETED: competent courts]</strong>.
-        </p>
-      </LegalSection>
+      {(LEGAL.jurisdiction || LEGAL.courts) && (
+        <LegalSection heading="8. Governing law">
+          <p>
+            {LEGAL.jurisdiction ? <>These terms are governed by the laws of <strong>{LEGAL.jurisdiction}</strong>. </> : null}
+            {LEGAL.courts ? <>Disputes will be handled by <strong>{LEGAL.courts}</strong>.</> : null}
+          </p>
+        </LegalSection>
+      )}
     </LegalShell>
   );
 }

@@ -4,7 +4,7 @@ import Link from 'next/link';
 export default function LegalShell({
   title,
   intro,
-  lastUpdated = '[TO BE COMPLETED]',
+  lastUpdated,
   children,
 }: {
   title: string;
@@ -18,9 +18,11 @@ export default function LegalShell({
         <p className="text-[10px] uppercase tracking-[0.35em] text-muted">French Beauty BD</p>
         <h1 className="mt-3 font-serif text-4xl text-ink">{title}</h1>
         {intro && <p className="mt-4 text-sm leading-7 text-muted">{intro}</p>}
-        <p className="mt-2 text-[11px] uppercase tracking-[0.2em] text-muted/70">
-          Last updated: {lastUpdated}
-        </p>
+        {lastUpdated && (
+          <p className="mt-2 text-[11px] uppercase tracking-[0.2em] text-muted/70">
+            Last updated: {lastUpdated}
+          </p>
+        )}
 
         <div className="mt-10 space-y-8">{children}</div>
 

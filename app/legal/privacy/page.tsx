@@ -1,6 +1,7 @@
 import LegalShell, { LegalSection } from '../../../components/legal/legal-shell';
 import { CONTACT } from '../../../lib/contact';
 import { pageMetadata } from '../../../lib/seo';
+import { LEGAL } from '../../../lib/legal';
 
 export const metadata = pageMetadata({
   title: 'Privacy Policy',
@@ -34,14 +35,15 @@ export default function PrivacyPage() {
         <p>
           We share delivery details with our logistics partner in France and the
           local courier in Bangladesh strictly to fulfil your order. We do not sell
-          your data. Third-party processors: <strong>[TO BE COMPLETED: list]</strong>.
+          your data.
+          {LEGAL.processors ? <> Third-party processors: <strong>{LEGAL.processors}</strong>.</> : null}
         </p>
       </LegalSection>
 
       <LegalSection heading="4. Storage & security">
         <p>
           Data is stored on our infrastructure provider (Supabase / Vercel).
-          Retention period: <strong>[TO BE COMPLETED]</strong>.
+          {LEGAL.retention ? <> Retention period: <strong>{LEGAL.retention}</strong>.</> : null}
         </p>
       </LegalSection>
 
@@ -53,7 +55,11 @@ export default function PrivacyPage() {
       </LegalSection>
 
       <LegalSection heading="6. Contact">
-        <p>Data controller: <strong>[TO BE COMPLETED: legal entity + address]</strong>.</p>
+        <p>
+          {LEGAL.dataController ? <>Data controller: <strong>{LEGAL.dataController}</strong>. </> : null}
+          For any privacy request, contact us at{' '}
+          <a href={`mailto:${CONTACT.email}`} className="text-accent hover:underline">{CONTACT.email}</a>.
+        </p>
       </LegalSection>
     </LegalShell>
   );
