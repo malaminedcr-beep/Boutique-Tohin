@@ -97,7 +97,12 @@ export default function ShopClient({
     });
     if (selectedSort === 'price-asc') return [...base].sort((a, b) => a.priceBdt - b.priceBdt);
     if (selectedSort === 'price-desc') return [...base].sort((a, b) => b.priceBdt - a.priceBdt);
-    if (selectedSort === 'new') return base.filter((p) => p.badge === 'new');
+    if (selectedSort === 'new') {
+      // Reorder new arrivals to the front; never drop the rest of the catalogue.
+      return [...base].sort(
+        (a, b) => (b.badge === 'new' ? 1 : 0) - (a.badge === 'new' ? 1 : 0),
+      );
+    }
     return base;
   }, [products, genderQuery, selectedCategory, selectedBrand, selectedPrice, selectedSort]);
 
@@ -150,13 +155,6 @@ export default function ShopClient({
               </option>
             ))}
           </select>
-        </div>
-
-        {/* Availability */}
-        <div className="py-4 border-b border-hairline">
-          <SectionTitle>Availability</SectionTitle>
-          <CheckRow label="In Stock" checked={true} onChange={() => {}} />
-          <CheckRow label="Out of Stock" checked={false} onChange={() => {}} />
         </div>
 
         {/* Price */}
