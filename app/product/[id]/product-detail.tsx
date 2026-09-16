@@ -19,6 +19,20 @@ const getDescription = (product: Product) =>
 
 // ─── Accordion ──────────────────────────────────────────────────────────────
 
+function renderContent(text: string) {
+  return (
+    <div className="text-sm text-charcoal/75">
+      {text.split('\n').map((line, i) => {
+        if (line.startsWith('**') && line.endsWith('**')) {
+          return <p key={i} className={`font-semibold text-black${i > 0 ? ' mt-4' : ''}`}>{line.slice(2, -2)}</p>;
+        }
+        if (line === '') return <div key={i} className="h-2" />;
+        return <p key={i} className="leading-7">{line}</p>;
+      })}
+    </div>
+  );
+}
+
 function AccordionSection({ product }: { product: Product }) {
   const [open, setOpen] = useState<string | null>(null);
 
@@ -50,9 +64,7 @@ function AccordionSection({ product }: { product: Product }) {
             </button>
             {isOpen && (
               <div className="px-8 pb-6">
-                <p className="whitespace-pre-line text-sm leading-7 text-charcoal/75">
-                  {item.content}
-                </p>
+                {renderContent(item.content)}
               </div>
             )}
           </div>
