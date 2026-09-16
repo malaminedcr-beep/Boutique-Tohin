@@ -1,3 +1,9 @@
+export type ProductVariant = {
+  volume: string;
+  priceBdt: number;
+  isDefault: boolean;
+};
+
 /** Shape produit consommée par la vitrine (id numérique = `ref` Supabase). */
 export type Product = {
   id: number;
@@ -16,4 +22,5 @@ export type Product = {
   gallery?: string[];
   badge: string | null;
   inStock: boolean;
+  variants?: ProductVariant[];
 };

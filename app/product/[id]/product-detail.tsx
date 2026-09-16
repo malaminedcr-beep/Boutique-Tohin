@@ -2,7 +2,7 @@
 
 import Header from '../../../components/Header';
 import Link from 'next/link';
-import type { Product } from '../../../lib/commerce/types';
+import type { Product, ProductVariant } from '../../../lib/commerce/types';
 import { useCart } from '../../../lib/cart-context';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { formatBdt } from '../../../lib/format';
@@ -170,6 +170,11 @@ export default function ProductDetail({
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [imgError, setImgError] = useState(false);
 
+  const defaultVariant = product.variants?.find(v => v.isDefault) ?? null;
+  const [selectedVariant, setSelectedVariant] = useState<ProductVariant | null>(defaultVariant);
+  const currentPrice = selectedVariant?.priceBdt ?? product.priceBdt;
+  const currentVolume = selectedVariant?.volume ?? product.volume;
+
   const images = (
     product.gallery && product.gallery.length > 0 ? product.gallery : [product.image]
   ).filter((src) => src && src !== 'placeholder');
@@ -198,9 +203,9 @@ export default function ProductDetail({
         sku: product.sku,
         name: product.name,
         brand: product.brand,
-        volume: product.volume,
+        volume: currentVolume,
         priceEur: product.priceEur,
-        priceBdt: product.priceBdt,
+        priceBdt: currentPrice,
         image: product.image,
       });
     }
@@ -311,10 +316,30 @@ export default function ProductDetail({
                     <div className="space-y-3">
                       <p className="text-xs uppercase tracking-[0.35em] text-charcoal/60">{product.brand}</p>
                       <h1 className="text-4xl font-semibold text-black">{product.name}</h1>
-                      <p className="text-sm uppercase tracking-[0.3em] text-charcoal/70">{product.volume}</p>
+                      <p className="text-sm uppercase tracking-[0.3em] text-charcoal/70">{currentVolume}</p>
                     </div>
+                    {product.variants && product.variants.length > 1 && (
+                      <div className="space-y-2">
+                        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-charcoal/60">Size</p>
+                        <div className="flex flex-wrap gap-2">
+                          {product.variants.map((v) => (
+                            <button
+                              key={v.volume}
+                              onClick={() => setSelectedVariant(v)}
+                              className={`rounded-full border px-4 py-1.5 text-xs font-medium transition ${
+                                selectedVariant?.volume === v.volume
+                                  ? 'border-black bg-black text-white'
+                                  : 'border-charcoal/20 bg-white text-charcoal hover:border-charcoal/50'
+                              }`}
+                            >
+                              {v.volume}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                     <div className="space-y-2">
-                      <p className="text-3xl font-semibold text-black">{formatBdt(product.priceBdt)}</p>
+                      <p className="text-3xl font-semibold text-black">{formatBdt(currentPrice)}</p>
                     </div>
                     <div className="space-y-3">
                       <p className="text-sm font-semibold uppercase tracking-[0.3em] text-charcoal/70">Details</p>
