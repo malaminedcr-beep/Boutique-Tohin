@@ -6,6 +6,7 @@ import type { Product, ProductVariant } from '../../../lib/commerce/types';
 import { useCart } from '../../../lib/cart-context';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { formatBdt } from '../../../lib/format';
+import { categoryLabel } from '../../../lib/categories';
 import {
   PRODUCT_CATEGORY_DESCRIPTIONS,
   PRODUCT_DESCRIPTION_FALLBACK,
@@ -342,7 +343,7 @@ export default function ProductDetail({
                     <div className="space-y-3">
                       <p className="text-sm font-semibold uppercase tracking-[0.3em] text-charcoal/70">Details</p>
                       <ul className="space-y-2 text-sm leading-7 text-charcoal/75">
-                        <li>Category: {product.category.replace('-', ' ')}</li>
+                        <li>Category: {categoryLabel(product.category)}</li>
                         <li>Product reference: {product.sku}</li>
                         <li>Brand: {product.brand}</li>
                         <li>Volume: {product.volume}</li>
