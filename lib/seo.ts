@@ -1,8 +1,13 @@
 import type { Metadata } from 'next';
 
-/** Canonical site origin (no trailing slash). Override via NEXT_PUBLIC_SITE_URL. */
+/**
+ * Canonical site origin (no trailing slash). The canonical host is the apex-www
+ * production domain; the *.vercel.app deployment URL must never be used as the
+ * canonical origin (it would split ranking signals across two domains).
+ * Override via NEXT_PUBLIC_SITE_URL only with another real production origin.
+ */
 export const SITE_URL = (
-  process.env.NEXT_PUBLIC_SITE_URL || 'https://french-beauty-bd.vercel.app'
+  process.env.NEXT_PUBLIC_SITE_URL || 'https://www.frenchbeautybd.com'
 ).replace(/\/$/, '');
 
 export const SITE_NAME = 'French Beauty BD';
