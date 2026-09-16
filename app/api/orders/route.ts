@@ -76,7 +76,7 @@ export async function POST(request: Request) {
   // Read authoritative prices from Supabase (only ~44 products → fetch all).
   const { data: products, error: productsErr } = await supabase
     .from('products')
-    .select('id, slug, name, price_bdt, in_stock');
+    .select('id, slug, name, price_bdt, in_stock, price_status');
   if (productsErr) {
     return NextResponse.json({ error: productsErr.message }, { status: 500 });
   }
@@ -86,6 +86,10 @@ export async function POST(request: Request) {
     const product = bySlug.get(slug);
     if (!product) return badRequest(`Unknown product: ${slug}.`);
     if (!product.in_stock) return badRequest(`Product out of stock: ${slug}.`);
+    // Draft = price not finalised: never orderable, whatever the client sends.
+    if (product.price_status === 'draft') {
+      return badRequest(`Product not available for purchase yet: ${slug}.`);
+    }
   }
 
   let total = 0;
