@@ -42,6 +42,7 @@ type ProductRow = {
   in_stock: boolean;
   is_new: boolean;
   is_bestseller: boolean;
+  price_status: string | null;
   variants: Array<{ volume: string; price_bdt: number; is_default: boolean }> | null;
 };
 
@@ -63,6 +64,7 @@ function toProduct(rec: ProductRow): Product {
     gallery: rec.gallery && rec.gallery.length > 0 ? rec.gallery : undefined,
     badge: rec.is_bestseller ? 'bestseller' : rec.is_new ? 'new' : null,
     inStock: rec.in_stock,
+    priceStatus: rec.price_status ?? undefined,
     variants: rec.variants
       ? rec.variants.map((v: { volume: string; price_bdt: number; is_default: boolean }) => ({
           volume: v.volume,

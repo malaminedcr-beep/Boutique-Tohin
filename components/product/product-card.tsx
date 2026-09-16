@@ -18,6 +18,8 @@ type Product = {
   priceBdt: number;
   image: string;
   badge: string | null;
+  inStock?: boolean;
+  priceStatus?: string;
 };
 
 
@@ -26,6 +28,8 @@ export default function ProductCard({ product }: { product: Product }) {
   const [imgError, setImgError] = useState(false);
   const hasImage = Boolean(product.image && product.image !== 'placeholder');
   const catLabel = categoryLabel(product.category);
+  // Price not finalised → shown but not purchasable.
+  const isDraft = product.priceStatus === 'draft';
 
   const badge =
     product.badge === 'bestseller'
@@ -114,16 +118,22 @@ export default function ProductCard({ product }: { product: Product }) {
         </div>
 
         <p className="text-[13px] font-semibold" style={{ color: '#C9513A' }}>
-          {formatBdt(product.priceBdt)}
+          {isDraft ? 'Price coming soon' : formatBdt(product.priceBdt)}
         </p>
 
-        <button
-          onClick={handleAdd}
-          className="mt-auto w-full cursor-pointer rounded border border-accent py-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-accent transition-all duration-200 hover:bg-accent hover:text-white focus:outline-none focus:ring-2 focus:ring-accent/30"
-          aria-label={`Add ${product.name} to cart`}
-        >
-          Add to Cart
-        </button>
+        {isDraft ? (
+          <span className="mt-auto w-full rounded border border-hairline py-2 text-center text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">
+            Coming Soon
+          </span>
+        ) : (
+          <button
+            onClick={handleAdd}
+            className="mt-auto w-full cursor-pointer rounded border border-accent py-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-accent transition-all duration-200 hover:bg-accent hover:text-white focus:outline-none focus:ring-2 focus:ring-accent/30"
+            aria-label={`Add ${product.name} to cart`}
+          >
+            Add to Cart
+          </button>
+        )}
       </div>
     </div>
   );

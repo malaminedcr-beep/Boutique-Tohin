@@ -163,6 +163,7 @@ export default function ProductDetail({
   similarProducts: Product[];
 }) {
   const { addItem } = useCart();
+  const isDraft = product.priceStatus === 'draft';
   const [quantity, setQuantity] = useState(1);
   const [addedToCart, setAddedToCart] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -196,6 +197,7 @@ export default function ProductDetail({
   }, [lightboxOpen, prev, next]);
 
   const handleAddToCart = () => {
+    if (isDraft) return;
     for (let i = 0; i < quantity; i++) {
       addItem({
         id: product.id,
@@ -337,7 +339,11 @@ export default function ProductDetail({
                       </div>
                     )}
                     <div className="space-y-2">
-                      <p className="text-3xl font-semibold text-black">{formatBdt(currentPrice)}</p>
+                      {isDraft ? (
+                        <p className="text-xl font-semibold text-charcoal/70">Price coming soon</p>
+                      ) : (
+                        <p className="text-3xl font-semibold text-black">{formatBdt(currentPrice)}</p>
+                      )}
                     </div>
                     <div className="space-y-3">
                       <p className="text-sm font-semibold uppercase tracking-[0.3em] text-charcoal/70">Details</p>
@@ -359,31 +365,39 @@ export default function ProductDetail({
                 >
                   Back to shop
                 </Link>
-                <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
+                {isDraft ? (
+                  <div className="flex items-center">
+                    <span className="inline-flex items-center justify-center rounded-full border border-charcoal/15 bg-cream px-6 py-3 text-sm font-semibold text-charcoal/70">
+                      Coming soon — price to be announced
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-4">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                        className="flex h-8 w-8 items-center justify-center rounded-full border border-charcoal/20 bg-white text-sm font-medium text-charcoal hover:border-charcoal/40"
+                      >
+                        -
+                      </button>
+                      <span className="w-8 text-center text-sm font-medium">{quantity}</span>
+                      <button
+                        onClick={() => setQuantity(quantity + 1)}
+                        className="flex h-8 w-8 items-center justify-center rounded-full border border-charcoal/20 bg-white text-sm font-medium text-charcoal hover:border-charcoal/40"
+                      >
+                        +
+                      </button>
+                    </div>
                     <button
-                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                      className="flex h-8 w-8 items-center justify-center rounded-full border border-charcoal/20 bg-white text-sm font-medium text-charcoal hover:border-charcoal/40"
+                      onClick={handleAddToCart}
+                      className={`inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-semibold transition ${
+                        addedToCart ? 'bg-green-600 text-white' : 'bg-black text-white hover:bg-charcoal/90'
+                      }`}
                     >
-                      -
-                    </button>
-                    <span className="w-8 text-center text-sm font-medium">{quantity}</span>
-                    <button
-                      onClick={() => setQuantity(quantity + 1)}
-                      className="flex h-8 w-8 items-center justify-center rounded-full border border-charcoal/20 bg-white text-sm font-medium text-charcoal hover:border-charcoal/40"
-                    >
-                      +
+                      {addedToCart ? 'Added!' : 'Add to Cart'}
                     </button>
                   </div>
-                  <button
-                    onClick={handleAddToCart}
-                    className={`inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-semibold transition ${
-                      addedToCart ? 'bg-green-600 text-white' : 'bg-black text-white hover:bg-charcoal/90'
-                    }`}
-                  >
-                    {addedToCart ? 'Added!' : 'Add to Cart'}
-                  </button>
-                </div>
+                )}
               </div>
             </div>
 

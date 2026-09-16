@@ -22,5 +22,16 @@ export type Product = {
   gallery?: string[];
   badge: string | null;
   inStock: boolean;
+  /**
+   * Pricing lifecycle. 'draft' = price not finalised: the product is shown but
+   * cannot be added to the cart or ordered. Anything else (incl. undefined) is
+   * treated as a normal, purchasable price.
+   */
+  priceStatus?: string;
   variants?: ProductVariant[];
 };
+
+/** A product is only purchasable when in stock AND its price is finalised. */
+export function isPurchasable(product: { inStock: boolean; priceStatus?: string }): boolean {
+  return product.inStock && product.priceStatus !== 'draft';
+}
