@@ -1,10 +1,20 @@
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import ProductCard from '../../components/product/product-card';
-import { CATEGORIES as CATEGORY_SOURCE } from '../../lib/categories';
+import { CATEGORIES as CATEGORY_SOURCE, categoryLabel } from '../../lib/categories';
 import { filterProducts } from '../../lib/commerce/filter';
 import type { Product } from '../../lib/commerce/types';
+
+export type ShopInitialFilters = {
+  category: string;
+  brand: string;
+  price: string;
+  sort: string;
+  gender: string;
+  q: string;
+};
 
 const CATEGORIES = CATEGORY_SOURCE.map((c) => ({ label: c.label, value: c.slug }));
 
@@ -67,26 +77,35 @@ function CheckRow({
 export default function ShopClient({
   products,
   brands,
+  initial,
 }: {
   products: Product[];
   brands: string[];
+  initial: ShopInitialFilters;
 }) {
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedBrand, setSelectedBrand] = useState('');
-  const [selectedPrice, setSelectedPrice] = useState('all');
-  const [selectedSort, setSelectedSort] = useState('popular');
-  const [genderQuery, setGenderQuery] = useState('');
+  const router = useRouter();
+  // Initialise from the URL-derived props (source of truth), not empty state —
+  // so the server-rendered / JS-disabled HTML already shows the active filter.
+  const [selectedCategory, setSelectedCategory] = useState(initial.category);
+  const [selectedBrand, setSelectedBrand] = useState(initial.brand);
+  const [selectedPrice, setSelectedPrice] = useState(initial.price);
+  const [selectedSort, setSelectedSort] = useState(initial.sort);
+  const [genderQuery, setGenderQuery] = useState(initial.gender);
+  const [query, setQuery] = useState(initial.q);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
+  // Keep the URL in sync with the active filters so views are shareable.
   useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const params = new URLSearchParams(window.location.search);
-    setGenderQuery(params.get('gender') ?? '');
-    const cat = params.get('category') ?? '';
-    if (cat && CATEGORIES.some((c) => c.value === cat)) setSelectedCategory(cat);
-    const brand = params.get('brand') ?? '';
-    if (brand && brands.includes(brand)) setSelectedBrand(brand);
-  }, [brands]);
+    const params = new URLSearchParams();
+    if (selectedCategory !== 'all') params.set('category', selectedCategory);
+    if (selectedBrand) params.set('brand', selectedBrand);
+    if (selectedPrice !== 'all') params.set('price', selectedPrice);
+    if (selectedSort !== 'popular') params.set('sort', selectedSort);
+    if (genderQuery) params.set('gender', genderQuery);
+    if (query) params.set('q', query);
+    const qs = params.toString();
+    router.replace(qs ? `/shop?${qs}` : '/shop', { scroll: false });
+  }, [selectedCategory, selectedBrand, selectedPrice, selectedSort, genderQuery, query, router]);
 
   const filteredProducts = useMemo(() => {
     const base = filterProducts(products, {
@@ -94,6 +113,7 @@ export default function ShopClient({
       category: selectedCategory,
       brand: selectedBrand,
       price: selectedPrice,
+      q: query,
     });
     if (selectedSort === 'price-asc') return [...base].sort((a, b) => a.priceBdt - b.priceBdt);
     if (selectedSort === 'price-desc') return [...base].sort((a, b) => b.priceBdt - a.priceBdt);
@@ -106,8 +126,13 @@ export default function ShopClient({
     return base;
   }, [products, genderQuery, selectedCategory, selectedBrand, selectedPrice, selectedSort]);
 
-  const activeCategoryLabel =
-    CATEGORIES.find((c) => c.value === selectedCategory)?.label ?? 'All Products';
+  const activeHeading = query
+    ? `Search: “${query}”`
+    : selectedBrand
+    ? selectedBrand
+    : selectedCategory !== 'all'
+    ? categoryLabel(selectedCategory)
+    : 'All Products';
 
   function clearAll() {
     setSelectedCategory('all');
@@ -115,6 +140,7 @@ export default function ShopClient({
     setSelectedPrice('all');
     setSelectedSort('popular');
     setGenderQuery('');
+    setQuery('');
   }
 
   function toggleCategory(value: string) {
@@ -134,7 +160,7 @@ export default function ShopClient({
         {/* Header */}
         <div className="pb-4 border-b border-hairline">
           <h2 className="text-[13px] font-bold uppercase tracking-[0.18em] text-ink">
-            {activeCategoryLabel}
+            {activeHeading}
           </h2>
           <p className="mt-1 text-[11px] text-muted">
             Showing {filteredProducts.length} Products
@@ -274,9 +300,10 @@ export default function ShopClient({
         {/* Product area */}
         <div className="flex-1 min-w-0 px-5 py-8 md:px-8">
           {/* Top bar */}
-          <div className="mb-6 flex items-center justify-end">
-            <p className="text-[11px] uppercase tracking-[0.2em] text-muted hidden md:block">
-              {filteredProducts.length} Products
+          <div className="mb-6 flex items-end justify-between gap-4">
+            <h1 className="font-serif text-2xl text-ink md:text-3xl">{activeHeading}</h1>
+            <p className="shrink-0 text-[11px] uppercase tracking-[0.2em] text-muted hidden md:block">
+              Showing {filteredProducts.length} Products
             </p>
           </div>
 

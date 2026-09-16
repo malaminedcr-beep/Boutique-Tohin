@@ -20,10 +20,17 @@ export type ProductFilters = {
   category?: string;
   brand?: string;
   price?: string;
+  /** Free-text search across product name + brand. */
+  q?: string;
 };
 
 export function filterProducts(products: Product[], filters?: ProductFilters): Product[] {
+  const query = filters?.q?.trim().toLowerCase();
   return products.filter((product) => {
+    const matchesQuery =
+      !query ||
+      product.name.toLowerCase().includes(query) ||
+      product.brand.toLowerCase().includes(query);
     const genderCategories = filters?.gender
       ? genderCategoryMap[filters.gender as keyof typeof genderCategoryMap]
       : null;
@@ -38,6 +45,6 @@ export function filterProducts(products: Product[], filters?: ProductFilters): P
         : undefined);
     const [min, max] = (lookup ?? [0, Infinity]) as [number, number];
     const matchesPrice = product.priceBdt >= min && product.priceBdt <= max;
-    return matchesGender && matchesCategory && matchesBrand && matchesPrice;
+    return matchesQuery && matchesGender && matchesCategory && matchesBrand && matchesPrice;
   });
 }
