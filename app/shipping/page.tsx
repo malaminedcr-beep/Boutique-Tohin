@@ -1,12 +1,13 @@
-import type { Metadata } from 'next';
 import Link from 'next/link';
 import { CONTACT, whatsappTel } from '../../lib/contact';
+import { pageMetadata } from '../../lib/seo';
 
-export const metadata: Metadata = {
-  title: 'Shipping & Delivery | French Beauty BD',
+export const metadata = pageMetadata({
+  title: 'Shipping & Delivery',
   description:
     'Free nationwide delivery across Bangladesh. Authentic French cosmetics sourced in France and delivered to your door in 2–3 weeks.',
-};
+  path: '/shipping',
+});
 
 const waHref = `https://wa.me/${whatsappTel.replace(/\D/g, '')}`;
 

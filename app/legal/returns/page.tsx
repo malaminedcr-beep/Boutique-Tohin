@@ -1,12 +1,13 @@
-import type { Metadata } from 'next';
 import LegalShell, { LegalSection } from '../../../components/legal/legal-shell';
 import { CONTACT } from '../../../lib/contact';
+import { pageMetadata } from '../../../lib/seo';
 
-export const metadata: Metadata = {
-  title: 'Returns & Refunds | French Beauty BD',
+export const metadata = pageMetadata({
+  title: 'Returns & Refunds',
   description:
     'All sales are final. We do not offer returns or exchanges, but we make it right if your order arrives damaged or incorrect.',
-};
+  path: '/legal/returns',
+});
 
 export default function ReturnsPage() {
   return (

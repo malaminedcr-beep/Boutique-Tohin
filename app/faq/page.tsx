@@ -1,11 +1,12 @@
-import type { Metadata } from 'next';
 import LegalShell, { LegalSection } from '../../components/legal/legal-shell';
 import { CONTACT } from '../../lib/contact';
+import { pageMetadata } from '../../lib/seo';
 
-export const metadata: Metadata = {
-  title: 'FAQ | French Beauty BD',
+export const metadata = pageMetadata({
+  title: 'FAQ',
   description: 'Answers to common questions about products, orders, payment and delivery.',
-};
+  path: '/faq',
+});
 
 export default function FaqPage() {
   return (

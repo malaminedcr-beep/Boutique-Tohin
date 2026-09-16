@@ -1,10 +1,11 @@
-import type { Metadata } from 'next';
 import LegalShell, { LegalSection } from '../../../components/legal/legal-shell';
+import { pageMetadata } from '../../../lib/seo';
 
-export const metadata: Metadata = {
-  title: 'Terms of Service | French Beauty BD',
+export const metadata = pageMetadata({
+  title: 'Terms of Service',
   description: 'The terms governing purchases and use of the French Beauty BD store.',
-};
+  path: '/legal/terms',
+});
 
 export default function TermsPage() {
   return (

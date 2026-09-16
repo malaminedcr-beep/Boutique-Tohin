@@ -1,11 +1,12 @@
-import type { Metadata } from 'next';
 import LegalShell, { LegalSection } from '../../../components/legal/legal-shell';
 import { CONTACT } from '../../../lib/contact';
+import { pageMetadata } from '../../../lib/seo';
 
-export const metadata: Metadata = {
-  title: 'Privacy Policy | French Beauty BD',
+export const metadata = pageMetadata({
+  title: 'Privacy Policy',
   description: 'How French Beauty BD collects, uses and protects your personal data.',
-};
+  path: '/legal/privacy',
+});
 
 export default function PrivacyPage() {
   return (
