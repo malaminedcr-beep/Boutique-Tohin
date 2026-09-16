@@ -34,8 +34,6 @@ function renderContent(text: string) {
 }
 
 function AccordionSection({ product }: { product: Product }) {
-  const [open, setOpen] = useState<string | null>(null);
-
   const items = [
     { key: 'description', label: 'Description', content: getDescription(product) },
     ...(product.keyFeatures ? [{ key: 'key-features', label: 'Key Features', content: product.keyFeatures }] : []),
@@ -45,31 +43,31 @@ function AccordionSection({ product }: { product: Product }) {
 
   if (items.length === 0) return null;
 
+  // Native <details> keeps every panel's content in the server-rendered DOM
+  // (indexable, and it opens/closes without JavaScript). The first panel is
+  // open by default so key copy is visible on load.
   return (
     <div className="overflow-hidden rounded-[2.5rem] border border-charcoal/10 bg-white shadow-sm">
-      {items.map((item, i) => {
-        const isOpen = open === item.key;
-        return (
-          <div key={item.key} className={i > 0 ? 'border-t border-charcoal/10' : ''}>
-            <button
-              onClick={() => setOpen(isOpen ? null : item.key)}
-              className="flex w-full items-center justify-between px-8 py-5 text-left"
-            >
-              <span className="text-sm font-semibold uppercase tracking-[0.25em] text-black">
-                {item.label}
-              </span>
-              <span className="ml-4 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-charcoal/20 text-sm font-medium text-charcoal/60 transition-transform duration-200">
-                {isOpen ? '−' : '+'}
-              </span>
-            </button>
-            {isOpen && (
-              <div className="px-8 pb-6">
-                {renderContent(item.content)}
-              </div>
-            )}
+      {items.map((item, i) => (
+        <details
+          key={item.key}
+          open={i === 0}
+          className={`group ${i > 0 ? 'border-t border-charcoal/10' : ''}`}
+        >
+          <summary className="flex w-full cursor-pointer items-center justify-between px-8 py-5 text-left list-none [&::-webkit-details-marker]:hidden">
+            <span className="text-sm font-semibold uppercase tracking-[0.25em] text-black">
+              {item.label}
+            </span>
+            <span className="ml-4 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border border-charcoal/20 text-sm font-medium text-charcoal/60">
+              <span className="[details[open]_&]:hidden">+</span>
+              <span className="hidden [details[open]_&]:inline">−</span>
+            </span>
+          </summary>
+          <div className="px-8 pb-6">
+            {renderContent(item.content)}
           </div>
-        );
-      })}
+        </details>
+      ))}
     </div>
   );
 }
