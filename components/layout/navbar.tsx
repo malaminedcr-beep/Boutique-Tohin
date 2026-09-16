@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useCart } from '../../lib/cart-context';
 import { CATEGORIES, categoryHref } from '../../lib/categories';
@@ -11,9 +12,18 @@ const navCategories = CATEGORIES.map((c) => ({
 }));
 
 export default function Navbar() {
+  const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchVal, setSearchVal] = useState('');
   const { state } = useCart();
+
+  function submitSearch(e: React.FormEvent) {
+    e.preventDefault();
+    const q = searchVal.trim();
+    if (!q) return;
+    setMobileOpen(false);
+    router.push(`/shop?q=${encodeURIComponent(q)}`);
+  }
 
   return (
     <header className="sticky top-0 z-40 border-b border-hairline bg-canvas/95 backdrop-blur-md">
@@ -42,18 +52,22 @@ export default function Navbar() {
 
         {/* Droite: search + cart */}
         <div className="flex items-center gap-4">
-          <div className="relative hidden max-w-[320px] md:block">
+          <form onSubmit={submitSearch} role="search" className="relative hidden max-w-[320px] md:block">
             <input
-              type="text"
+              type="search"
+              name="q"
+              aria-label="Search products"
               placeholder="Search products..."
               value={searchVal}
               onChange={(e) => setSearchVal(e.target.value)}
               className="w-[280px] border border-hairline bg-surface px-4 py-2 pr-10 text-[12px] text-ink placeholder:text-muted/40 outline-none focus:border-accent/40 transition-colors"
             />
-            <svg className="pointer-events-none absolute right-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-            </svg>
-          </div>
+            <button type="submit" aria-label="Search" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted transition-colors hover:text-accent">
+              <svg className="h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </button>
+          </form>
 
           <Link
             href="/account"
@@ -100,13 +114,17 @@ export default function Navbar() {
 
       {mobileOpen && (
         <div className="border-t border-hairline bg-surface px-6 py-5 md:hidden">
-          <div className="mb-4">
+          <form onSubmit={submitSearch} role="search" className="mb-4">
             <input
-              type="text"
+              type="search"
+              name="q"
+              aria-label="Search products"
               placeholder="Search..."
+              value={searchVal}
+              onChange={(e) => setSearchVal(e.target.value)}
               className="w-full border border-hairline bg-canvas px-4 py-2.5 text-[12px] text-ink placeholder:text-muted/40 outline-none"
             />
-          </div>
+          </form>
           <div className="space-y-1">
             {navCategories.map((item) => (
               <Link
