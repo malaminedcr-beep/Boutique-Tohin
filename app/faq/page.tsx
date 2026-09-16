@@ -42,8 +42,8 @@ export default function FaqPage() {
 
       <LegalSection heading="How do I contact you?">
         <p>
-          Email <a href={`mailto:${CONTACT.email}`} className="text-accent hover:underline">{CONTACT.email}</a>{' '}
-          or WhatsApp {CONTACT.whatsapp}.
+          Email <a href={`mailto:${CONTACT.email}`} className="text-accent hover:underline">{CONTACT.email}</a>
+          {CONTACT.whatsapp ? <> or WhatsApp {CONTACT.whatsapp}</> : null}.
         </p>
       </LegalSection>
     </LegalShell>

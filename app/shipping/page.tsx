@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { CONTACT, whatsappTel } from '../../lib/contact';
+import { CONTACT, whatsappLink } from '../../lib/contact';
 import { pageMetadata } from '../../lib/seo';
 
 export const metadata = pageMetadata({
@@ -8,8 +8,6 @@ export const metadata = pageMetadata({
     'Free nationwide delivery across Bangladesh. Authentic French cosmetics sourced in France and delivered to your door in 2–3 weeks.',
   path: '/shipping',
 });
-
-const waHref = `https://wa.me/${whatsappTel.replace(/\D/g, '')}`;
 
 /* ── Inline icon set (stroke, inherits accent via currentColor) ──────────── */
 const icons = {
@@ -223,14 +221,16 @@ export default function ShippingPage() {
             >
               Email us
             </a>
-            <a
-              href={waHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex w-full items-center justify-center rounded-none border border-ink/20 bg-surface px-8 py-3.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink transition-colors hover:border-accent hover:text-accent sm:w-auto"
-            >
-              WhatsApp
-            </a>
+            {whatsappLink && (
+              <a
+                href={whatsappLink}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex w-full items-center justify-center rounded-none border border-ink/20 bg-surface px-8 py-3.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink transition-colors hover:border-accent hover:text-accent sm:w-auto"
+              >
+                WhatsApp
+              </a>
+            )}
           </div>
         </div>
 

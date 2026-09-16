@@ -43,9 +43,9 @@ export default function ReturnsPage() {
 
       <LegalSection heading="4. How to reach us">
         <p>
-          Email <a href={`mailto:${CONTACT.email}`} className="text-accent hover:underline">{CONTACT.email}</a>{' '}
-          or message us on WhatsApp at {CONTACT.whatsapp} with your order number, and
-          we will help as quickly as we can.
+          Email <a href={`mailto:${CONTACT.email}`} className="text-accent hover:underline">{CONTACT.email}</a>
+          {CONTACT.whatsapp ? <> or message us on WhatsApp at {CONTACT.whatsapp}</> : null}{' '}
+          with your order number, and we will help as quickly as we can.
         </p>
       </LegalSection>
     </LegalShell>

@@ -171,7 +171,12 @@ export default async function OrderConfirmationPage({
 
             <div className="pt-6 border-t border-charcoal/10">
               <p className="text-sm text-charcoal/60">
-                Questions? Contact our customer service at <a href={`tel:${whatsappTel}`} className="text-black hover:text-gold transition-colors">{CONTACT.whatsapp}</a>
+                Questions? Contact our customer service at{' '}
+                {whatsappTel && CONTACT.whatsapp ? (
+                  <a href={`tel:${whatsappTel}`} className="text-black hover:text-gold transition-colors">{CONTACT.whatsapp}</a>
+                ) : (
+                  <a href={`mailto:${CONTACT.email}`} className="text-black hover:text-gold transition-colors">{CONTACT.email}</a>
+                )}
               </p>
             </div>
           </div>

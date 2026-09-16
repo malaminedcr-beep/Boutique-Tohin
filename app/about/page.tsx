@@ -49,10 +49,12 @@ export default function AboutPage() {
               For any question about our products, your orders or our brand selection, get in touch with us directly.
             </p>
             <div className="mt-8 grid gap-6 sm:grid-cols-3">
-              <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-charcoal/60">WhatsApp</p>
-                <p className="mt-2 text-base font-medium text-black">{CONTACT.whatsapp}</p>
-              </div>
+              {CONTACT.whatsapp && (
+                <div>
+                  <p className="text-xs uppercase tracking-[0.3em] text-charcoal/60">WhatsApp</p>
+                  <p className="mt-2 text-base font-medium text-black">{CONTACT.whatsapp}</p>
+                </div>
+              )}
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-charcoal/60">Email</p>
                 <p className="mt-2 text-base font-medium text-black">{CONTACT.email}</p>
