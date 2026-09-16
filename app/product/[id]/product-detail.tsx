@@ -250,8 +250,8 @@ export default function ProductDetail({
       <section className="mx-auto max-w-6xl px-6 py-20 md:px-8">
         <div className="space-y-10">
 
-          {/* Main product block */}
-          <div className="grid gap-12 items-start">
+          {/* Main product grid */}
+          <div className="grid gap-12 lg:grid-cols-[1.2fr_0.8fr] items-start">
             <div className="space-y-8">
               <div className="rounded-[2.5rem] border border-charcoal/10 bg-white p-8 shadow-sm">
                 <div className="grid gap-8 lg:grid-cols-[1.3fr_0.7fr]">
@@ -352,10 +352,10 @@ export default function ProductDetail({
               </div>
             </div>
 
-          </div>
+            {/* Accordion — colonne droite (ancienne place de Additional details) */}
+            <AccordionSection product={product} />
 
-          {/* Accordion — Description / Key Features / Ingredients / How to Use */}
-          <AccordionSection product={product} />
+          </div>
 
           {/* Similar Items carousel */}
           {similarProducts.length > 0 && (
