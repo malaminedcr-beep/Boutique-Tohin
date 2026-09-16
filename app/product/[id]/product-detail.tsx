@@ -250,8 +250,8 @@ export default function ProductDetail({
       <section className="mx-auto max-w-6xl px-6 py-20 md:px-8">
         <div className="space-y-10">
 
-          {/* Main product grid */}
-          <div className="grid gap-12 lg:grid-cols-[1.2fr_0.8fr] items-start">
+          {/* Main product block */}
+          <div className="grid gap-12 items-start">
             <div className="space-y-8">
               <div className="rounded-[2.5rem] border border-charcoal/10 bg-white p-8 shadow-sm">
                 <div className="grid gap-8 lg:grid-cols-[1.3fr_0.7fr]">
@@ -352,22 +352,6 @@ export default function ProductDetail({
               </div>
             </div>
 
-            <aside className="space-y-6 rounded-[2.5rem] border border-charcoal/10 bg-white p-8 shadow-sm">
-              <div>
-                <h2 className="text-lg font-semibold text-black">Additional details</h2>
-                <p className="mt-3 text-sm leading-7 text-charcoal/75">
-                  Every product is selected to offer a premium cosmetic experience, tailored to the specific needs of Bangladesh.
-                </p>
-              </div>
-              <div className="space-y-4 rounded-3xl bg-cream p-6">
-                <p className="text-xs uppercase tracking-[0.3em] text-charcoal/60">Service</p>
-                <ul className="space-y-3 text-sm leading-7 text-charcoal/75">
-                  <li>Free, secure delivery nationwide.</li>
-                  <li>After-sales support on WhatsApp and email.</li>
-                  <li>Authenticity guaranteed on every item.</li>
-                </ul>
-              </div>
-            </aside>
           </div>
 
           {/* Accordion — Description / Key Features / Ingredients / How to Use */}
