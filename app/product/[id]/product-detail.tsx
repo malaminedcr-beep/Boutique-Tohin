@@ -88,14 +88,14 @@ function SimilarCard({ product }: { product: Product }) {
         {hasImage ? (
           <img
             src={product.image}
-            alt={product.name}
+            alt=""
             onError={() => setImgError(true)}
             className="h-full w-full object-contain p-4 transition-transform duration-300 group-hover:scale-105"
           />
         ) : (
-          <div className="flex h-full items-center justify-center">
-            <span className="font-serif text-4xl italic" style={{ color: '#DDD6CF' }}>
-              {product.brand.charAt(0)}
+          <div className="flex h-full items-center justify-center p-3 text-center">
+            <span className="font-serif text-sm italic leading-snug text-muted">
+              {product.name}
             </span>
           </div>
         )}
@@ -287,12 +287,11 @@ export default function ProductDetail({
                     ) : (
                       <div
                         role="img"
-                        aria-label={product.name}
-                        className="flex aspect-square w-full items-center justify-center rounded-[2rem] border border-black/10 bg-cream"
+                        aria-label={`${product.brand} ${product.name}`}
+                        className="flex aspect-square w-full flex-col items-center justify-center gap-2 rounded-[2rem] border border-black/10 bg-cream p-6 text-center"
                       >
-                        <span className="font-serif text-7xl italic" style={{ color: '#DDD6CF' }}>
-                          {product.brand.charAt(0)}
-                        </span>
+                        <span className="text-xs uppercase tracking-[0.3em] text-charcoal/50">{product.brand}</span>
+                        <span className="font-serif text-2xl italic text-charcoal/60">{product.name}</span>
                       </div>
                     )}
 

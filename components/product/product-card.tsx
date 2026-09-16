@@ -83,10 +83,13 @@ export default function ProductCard({ product }: { product: Product }) {
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 25vw, 20vw"
             />
           ) : (
-            <div className="flex h-full items-center justify-center">
-              <span className="font-serif text-5xl italic" style={{ color: '#DDD6CF' }}>
-                {product.brand.charAt(0)}
-              </span>
+            <div
+              role="img"
+              aria-label={`${product.brand} ${product.name}`}
+              className="flex h-full flex-col items-center justify-center gap-1.5 p-4 text-center"
+            >
+              <span className="text-[9px] uppercase tracking-[0.25em] text-muted">{product.brand}</span>
+              <span className="font-serif text-sm italic leading-snug text-muted">{product.name}</span>
             </div>
           )}
 
