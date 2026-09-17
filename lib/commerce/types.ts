@@ -9,6 +9,8 @@ export type Product = {
   id: number;
   sku: string;
   name: string;
+  /** French packaging name, shown as a discreet subtitle when it differs from `name`. */
+  nameFr?: string;
   brand: string;
   category: string;
   description?: string;

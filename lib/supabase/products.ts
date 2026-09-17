@@ -28,6 +28,7 @@ type ProductRow = {
   sku: string;
   slug: string;
   name: string;
+  name_fr: string | null;
   brand: string;
   category: string;
   description: string | null;
@@ -51,6 +52,7 @@ function toProduct(rec: ProductRow): Product {
     id: rec.ref,
     sku: rec.sku,
     name: rec.name,
+    nameFr: rec.name_fr ?? undefined,
     brand: rec.brand,
     category: rec.category,
     description: rec.description ?? undefined,

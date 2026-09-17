@@ -68,7 +68,7 @@ export async function POST(
     // 23505 = violation de contrainte unique -> ce TrxID a déjà servi.
     if ((error as any).code === '23505') {
       return NextResponse.json(
-        { error: 'Ce TrxID a déjà été utilisé. Vérifiez votre code ou contactez-nous.' },
+        { error: 'This TrxID has already been used. Please check your code or contact us.' },
         { status: 409 },
       );
     }
@@ -78,7 +78,7 @@ export async function POST(
   // Aucune ligne mise à jour : commande introuvable OU déjà soumise/traitée.
   if (!data) {
     return NextResponse.json(
-      { error: 'Paiement déjà soumis pour cette commande, ou commande introuvable.' },
+      { error: 'Payment already submitted for this order, or order not found.' },
       { status: 409 },
     );
   }

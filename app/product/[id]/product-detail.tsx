@@ -316,6 +316,9 @@ export default function ProductDetail({
                     <div className="space-y-3">
                       <p className="text-xs uppercase tracking-[0.35em] text-charcoal/60">{product.brand}</p>
                       <h1 className="text-4xl font-semibold text-black">{product.name}</h1>
+                      {product.nameFr && product.nameFr !== product.name && (
+                        <p className="text-sm italic text-charcoal/50">{product.nameFr}</p>
+                      )}
                       <p className="text-sm uppercase tracking-[0.3em] text-charcoal/70">{currentVolume}</p>
                     </div>
                     {product.variants && product.variants.length > 1 && (
@@ -352,6 +355,9 @@ export default function ProductDetail({
                         <li>Product reference: {product.sku}</li>
                         <li>Brand: {product.brand}</li>
                         <li>Volume: {product.volume}</li>
+                        {product.nameFr && product.nameFr !== product.name && (
+                          <li>As labelled in France: {product.nameFr}</li>
+                        )}
                       </ul>
                     </div>
                   </div>
