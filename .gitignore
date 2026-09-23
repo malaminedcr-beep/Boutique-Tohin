@@ -28,3 +28,14 @@ image
 
 # Réglages Claude Code personnels (non versionnés)
 .claude/settings.local.json
+
+# Images produit téléchargées / pages web enregistrées à la racine
+# (les vrais assets vivent dans public/images ; ceci évite de polluer les commits)
+/*.avif
+/*.webp
+/*.jpg
+/*.jpeg
+/*.png
+/*.html
+/*_files/
+/télécharger*
