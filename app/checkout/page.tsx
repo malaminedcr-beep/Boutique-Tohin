@@ -6,8 +6,7 @@ import { useCart } from '../../lib/cart-context';
 import { useState } from 'react';
 import { formatBdt as fmt } from '../../lib/format';
 import PaymentPopup from '../../components/checkout/PaymentPopup';
-
-type PaymentMethod = 'bkash';
+import { PAYMENT_METHOD_LABEL, type PaymentMethod } from '../../lib/bkash';
 
 export default function CheckoutPage() {
   const { state, clearCart } = useCart();
@@ -18,8 +17,8 @@ export default function CheckoutPage() {
     phone: '',
     address: '',
   });
-  // bKash est la seule méthode de paiement.
-  const paymentMethod: PaymentMethod = 'bkash';
+  // bKash (défaut) ou Nagad — paiement mobile manuel, même destinataire.
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('bkash');
   const [isProcessing, setIsProcessing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // Popup bKash (paiement manuel) : ouverte après création de la commande.
@@ -90,7 +89,7 @@ export default function CheckoutPage() {
   };
 
   const btnLabel = () =>
-    isProcessing ? 'Processing…' : `Pay with bKash — ${fmt(state.total)}`;
+    isProcessing ? 'Processing…' : `Pay with ${PAYMENT_METHOD_LABEL[paymentMethod]} — ${fmt(state.total)}`;
 
   const btnClass = () =>
     isProcessing ? 'bg-gray-400 cursor-not-allowed' : 'bg-pink-600 hover:bg-pink-700';
@@ -147,17 +146,32 @@ export default function CheckoutPage() {
                 </div>
               </div>
 
-              {/* ── Paiement ── */}
+              {/* ── Payment ── */}
               <div className="rounded-[2rem] border border-charcoal/10 bg-white p-6 shadow-soft">
                 <h2 className="text-lg font-semibold text-black mb-6">Payment</h2>
-
-                {/* bKash — seule méthode de paiement, sélectionnée par défaut */}
-                <div className="flex items-center gap-3 rounded-xl border border-pink-500 bg-pink-50 p-4">
-                  <div className="flex h-8 w-8 items-center justify-center rounded bg-pink-600 text-sm font-bold text-white">b</div>
-                  <div>
-                    <div className="font-medium text-black">bKash</div>
-                    <div className="text-xs text-charcoal/60">Mobile banking</div>
-                  </div>
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {(['bkash', 'nagad'] as PaymentMethod[]).map((m) => {
+                    const selected = paymentMethod === m;
+                    const ring = m === 'bkash' ? 'border-pink-500 bg-pink-50' : 'border-orange-500 bg-orange-50';
+                    const dot = m === 'bkash' ? 'bg-pink-600' : 'bg-orange-500';
+                    return (
+                      <button
+                        key={m}
+                        type="button"
+                        onClick={() => setPaymentMethod(m)}
+                        aria-pressed={selected}
+                        className={`flex items-center gap-3 rounded-xl border p-4 text-left transition ${selected ? ring : 'border-charcoal/15 hover:border-charcoal/40'}`}
+                      >
+                        <div className={`flex h-8 w-8 items-center justify-center rounded text-sm font-bold text-white ${dot}`}>
+                          {PAYMENT_METHOD_LABEL[m].charAt(0)}
+                        </div>
+                        <div>
+                          <div className="font-medium text-black">{PAYMENT_METHOD_LABEL[m]}</div>
+                          <div className="text-xs text-charcoal/60">Mobile banking</div>
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -217,6 +231,7 @@ export default function CheckoutPage() {
       {bkashOrder && (
         <PaymentPopup
           open
+          method={paymentMethod}
           orderId={bkashOrder.orderId}
           orderNumber={bkashOrder.orderNumber}
           totalBdt={bkashOrder.total}

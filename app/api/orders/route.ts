@@ -2,11 +2,10 @@ import { NextResponse } from 'next/server';
 import { createAdminSupabase } from '../../../lib/supabase/admin';
 import { getVerifiedUser } from '../../../lib/supabase/server';
 import { pushOrderToAirtable } from '../../../lib/airtable';
-import { BKASH_RECEIVER_NUMBER } from '../../../lib/bkash';
+import { PAYMENT_RECEIVER_NUMBER, isPaymentMethod } from '../../../lib/bkash';
 
 export const dynamic = 'force-dynamic';
 
-const PAYMENT_METHODS = ['cod', 'bkash', 'nagad'] as const;
 const REQUIRED_ADDRESS_FIELDS = [
   'firstName',
   'lastName',
@@ -39,7 +38,7 @@ export async function POST(request: Request) {
   if (!Array.isArray(items) || items.length === 0) {
     return badRequest('Cart is empty.');
   }
-  if (!PAYMENT_METHODS.includes(paymentMethod)) {
+  if (!isPaymentMethod(paymentMethod)) {
     return badRequest('Invalid payment method.');
   }
   if (
@@ -112,8 +111,8 @@ export async function POST(request: Request) {
       payment_status: 'en_attente_paiement',
       total_bdt: total,
       shipping_address: shippingAddress,
-      // Pour bKash (manuel) : on mémorise le numéro à créditer dès la création.
-      bkash_receiver_number: paymentMethod === 'bkash' ? BKASH_RECEIVER_NUMBER : null,
+      // bKash & Nagad (manuel) : même numéro destinataire, mémorisé dès la création.
+      bkash_receiver_number: PAYMENT_RECEIVER_NUMBER,
     })
     .select('id, order_number')
     .single();

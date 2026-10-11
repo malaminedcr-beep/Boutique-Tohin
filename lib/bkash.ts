@@ -1,38 +1,49 @@
 /**
- * Configuration du paiement bKash MANUEL (French Beauty BD).
+ * Manual mobile-payment config (French Beauty BD) — shared by bKash & Nagad.
  *
- * Pas de compte marchand / API bKash : le client envoie l'argent « Send Money »
- * vers un numéro personnel fixe, puis colle son TrxID sur le site. L'admin
- * vérifie le TrxID à la main dans /admin/paiements.
+ * No merchant API: the customer sends money ("Send Money") to a fixed personal
+ * wallet, then uploads a screenshot of the confirmation. bKash and Nagad use the
+ * SAME receiver number/name — a single source of truth, no per-method duplication.
  *
- * Infos publiques (affichées au client dans la popup de paiement) :
- *   - BKASH_RECEIVER_NUMBER : numéro bKash local classique (format 01XXXXXXXXX,
- *     11 chiffres, zéro initial, SANS indicatif +880 — c'est le format que le
- *     client bangladais saisit dans son app bKash).
- *   - BKASH_RECEIVER_NAME   : nom du titulaire du compte.
- *
- * Ces valeurs ne sont pas secrètes (le client doit les voir), d'où le choix de
- * simples constantes plutôt que des variables d'environnement.
+ * These values are public (the customer must see them), hence plain constants.
  */
 
-/** Numéro bKash (personnel) qui reçoit les paiements « Send Money ». Format local 01XXXXXXXXX. */
-export const BKASH_RECEIVER_NUMBER = '01764267322';
+export type PaymentMethod = 'bkash' | 'nagad';
 
-/** Nom du titulaire du compte bKash (affiché au client pour rassurer). */
-export const BKASH_RECEIVER_NAME = 'MD. SHOZIB';
+/** Server/client whitelist of accepted payment methods. */
+export const PAYMENT_METHODS: readonly PaymentMethod[] = ['bkash', 'nagad'] as const;
 
-/** Type de compte bKash à utiliser côté client (Send Money vers un perso). */
-export const BKASH_ACCOUNT_TYPE = 'Personal';
+export function isPaymentMethod(v: unknown): v is PaymentMethod {
+  return v === 'bkash' || v === 'nagad';
+}
 
-/** Longueur minimale plausible d'un TrxID bKash (10 caractères alphanumériques). */
+/** Shared "Send Money" receiver — identical for bKash and Nagad. */
+export const PAYMENT_RECEIVER_NUMBER = '01764267322';
+export const PAYMENT_RECEIVER_NAME = 'MD. SHOZIB';
+
+/** Account type to use on the customer side (Send Money to a personal wallet). */
+export const PAYMENT_ACCOUNT_TYPE = 'Personal';
+
+/** Display label per method (used in UI, Telegram, slip, emails). */
+export const PAYMENT_METHOD_LABEL: Record<PaymentMethod, string> = {
+  bkash: 'bKash',
+  nagad: 'Nagad',
+};
+
+// ── Back-compat aliases (older imports still resolve to the shared values) ──
+export const BKASH_RECEIVER_NUMBER = PAYMENT_RECEIVER_NUMBER;
+export const BKASH_RECEIVER_NAME = PAYMENT_RECEIVER_NAME;
+export const BKASH_ACCOUNT_TYPE = PAYMENT_ACCOUNT_TYPE;
+
+/** Minimal plausible TrxID length (alphanumeric code from bKash/Nagad). */
 export const TRXID_MIN_LENGTH = 8;
 
-/** Normalise un TrxID saisi : trim + majuscules (les TrxID bKash sont en MAJ). */
+/** Normalise a TrxID: trim + uppercase (bKash/Nagad TrxIDs are uppercase). */
 export function normalizeTrxId(raw: string): string {
   return raw.trim().toUpperCase();
 }
 
-/** Validation basique côté client/serveur d'un TrxID avant soumission. */
+/** Basic client/server validation of a TrxID before submission. */
 export function isPlausibleTrxId(raw: string): boolean {
   const t = normalizeTrxId(raw);
   return /^[A-Z0-9]+$/.test(t) && t.length >= TRXID_MIN_LENGTH && t.length <= 24;

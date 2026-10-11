@@ -3,14 +3,17 @@
 import { useEffect, useState } from 'react';
 import { formatBdt } from '../../lib/format';
 import {
-  BKASH_ACCOUNT_TYPE,
-  BKASH_RECEIVER_NAME,
-  BKASH_RECEIVER_NUMBER,
+  PAYMENT_ACCOUNT_TYPE,
+  PAYMENT_RECEIVER_NAME,
+  PAYMENT_RECEIVER_NUMBER,
+  PAYMENT_METHOD_LABEL,
   normalizeTrxId,
+  type PaymentMethod,
 } from '../../lib/bkash';
 
 type Props = {
   open: boolean;
+  method: PaymentMethod;
   orderId: string;
   orderNumber: string;
   totalBdt: number;
@@ -64,12 +67,15 @@ function InfoRow({ label, value, mono }: { label: string; value: string; mono?: 
 
 export default function PaymentPopup({
   open,
+  method,
   orderId,
   orderNumber,
   totalBdt,
   onClose,
   onSuccess,
 }: Props) {
+  const label = PAYMENT_METHOD_LABEL[method];
+  const accentDot = method === 'bkash' ? 'bg-pink-600' : 'bg-orange-500';
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [trxid, setTrxid] = useState('');
@@ -157,12 +163,12 @@ export default function PaymentPopup({
         {/* ── Header ── */}
         <div className="flex items-center justify-between gap-3 border-b border-hairline bg-surface px-5 py-4">
           <div className="flex items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-pink-600 text-sm font-bold text-white">
-              b
+            <span className={`flex h-8 w-8 items-center justify-center rounded-lg text-sm font-bold text-white ${accentDot}`}>
+              {label.charAt(0)}
             </span>
             <div>
               <h2 id="bkash-popup-title" className="font-serif text-lg font-semibold text-ink">
-                bKash Payment
+                {label} Payment
               </h2>
               <p className="text-[11px] text-muted">Order {orderNumber}</p>
             </div>
@@ -189,15 +195,15 @@ export default function PaymentPopup({
 
           {/* Info to copy */}
           <div className="space-y-2">
-            <InfoRow label="bKash number (Send Money)" value={BKASH_RECEIVER_NUMBER} mono />
-            <InfoRow label="Recipient name" value={BKASH_RECEIVER_NAME} />
+            <InfoRow label={`${label} number (Send Money)`} value={PAYMENT_RECEIVER_NUMBER} mono />
+            <InfoRow label="Recipient name" value={PAYMENT_RECEIVER_NAME} />
             <InfoRow label="Order number" value={orderNumber} mono />
           </div>
 
           {/* Numbered instructions */}
           <ol className="space-y-2 rounded-2xl border border-hairline bg-surface px-4 py-4 text-sm text-ink">
             {[
-              <>Open the <span className="font-semibold">bKash</span> app and choose <span className="font-semibold">“Send Money”</span> ({BKASH_ACCOUNT_TYPE}).</>,
+              <>Open the <span className="font-semibold">{label}</span> app and choose <span className="font-semibold">“Send Money”</span> ({PAYMENT_ACCOUNT_TYPE}).</>,
               <>Send exactly <span className="font-semibold text-accent">{formatBdt(totalBdt)}</span> to the number above.</>,
               <>Take a <span className="font-semibold">screenshot</span> of the bKash confirmation.</>,
               <>Upload that screenshot below, then submit.</>,
@@ -253,7 +259,7 @@ export default function PaymentPopup({
             {/* TrxID (optional) */}
             <div>
               <label htmlFor="trxid" className="mb-1.5 block text-sm font-medium text-ink">
-                bKash TrxID <span className="font-normal text-muted">— optional</span>
+                {label} TrxID <span className="font-normal text-muted">— optional</span>
               </label>
               <input
                 id="trxid"
