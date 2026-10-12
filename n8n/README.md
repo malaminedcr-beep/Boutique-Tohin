@@ -126,8 +126,8 @@ Le **PAT Airtable**, la **service_role Supabase**, le **bot token Telegram** et 
 ### a) Créer le bot via @BotFather
 1. Dans Telegram, ouvre **[@BotFather](https://t.me/BotFather)** → commande `/newbot`.
 2. Donne un **nom** (ex : `French Beauty bKash`) puis un **username** finissant par `bot` (ex : `fb_bkash_bot`).
-3. BotFather renvoie un **token** du type `123456789:AAExxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`.
-   → Ce token va dans le credential n8n **`Telegram bKash Bot`** (jamais en clair dans les workflows).
+3. BotFather renvoie un **token** (format `<ID>:<SECRET>`) — ne jamais le committer en clair.
+   → Ce token va dans le credential n8n **`Telegram bKash Bot`** (jamais en clair dans les workflows ni le dépôt).
 
 ### b) Récupérer le chat_id (méthode groupe — recommandée)
 Un **groupe** évite de dupliquer les notifs vers chaque personne.
