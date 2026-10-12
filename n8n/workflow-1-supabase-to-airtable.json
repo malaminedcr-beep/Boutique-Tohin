@@ -26,7 +26,7 @@
       "name": "Filtre paiement_a_verifier",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [440, 300]
+      "position": [430, 300]
     },
     {
       "parameters": {
@@ -43,26 +43,22 @@
       "name": "IF capture présente",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [680, 160]
+      "position": [650, 180]
     },
     {
       "parameters": {
-        "method": "POST",
-        "url": "=https://ujcxhukiwgxwgyiuoryt.supabase.co/storage/v1/object/sign/payment-proofs/{{ $('Webhook Supabase').item.json.body.record.payment_proof_path }}",
+        "method": "GET",
+        "url": "=https://ujcxhukiwgxwgyiuoryt.supabase.co/storage/v1/object/payment-proofs/{{ $('Webhook Supabase').item.json.body.record.payment_proof_path }}",
         "authentication": "predefinedCredentialType",
         "nodeCredentialType": "supabaseApi",
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={{ { \"expiresIn\": 3600 } }}",
-        "options": {}
+        "options": { "response": { "response": { "responseFormat": "file", "outputPropertyName": "data" } } }
       },
-      "id": "wf1-sign",
-      "name": "Supabase — Signed URL capture",
+      "id": "wf1-download",
+      "name": "Download proof (service-role)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [900, 100],
-      "continueOnFail": true,
-      "onError": "continueRegularOutput",
+      "position": [880, 100],
+      "onError": "continueErrorOutput",
       "credentials": { "supabaseApi": { "id": "", "name": "Supabase French Beauty" } }
     },
     {
@@ -70,8 +66,8 @@
         "resource": "message",
         "operation": "sendPhoto",
         "chatId": "-1004376461095",
-        "binaryData": false,
-        "file": "={{ 'https://ujcxhukiwgxwgyiuoryt.supabase.co/storage/v1' + $json.signedURL }}",
+        "binaryData": true,
+        "binaryPropertyName": "data",
         "additionalFields": {
           "caption": "=🧾 New payment to verify\nOrder #{{ $('Webhook Supabase').item.json.body.record.order_number }}\nMethod: {{ $('Webhook Supabase').item.json.body.record.payment_method === 'nagad' ? 'Nagad' : 'bKash' }}\nExpected: {{ $('Webhook Supabase').item.json.body.record.total_bdt }} BDT\nCustomer: {{ ($('Webhook Supabase').item.json.body.record.shipping_address || {}).firstName }} {{ ($('Webhook Supabase').item.json.body.record.shipping_address || {}).lastName }}\nPhone: {{ ($('Webhook Supabase').item.json.body.record.shipping_address || {}).phone }}\nTrxID: {{ $('Webhook Supabase').item.json.body.record.trxid || '(not provided)' }}\n\nReply:  {{ $('Webhook Supabase').item.json.body.record.order_number }} ✅  to confirm,   {{ $('Webhook Supabase').item.json.body.record.order_number }} ❌  to reject"
         }
@@ -81,6 +77,22 @@
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [1120, 100],
+      "onError": "continueErrorOutput",
+      "credentials": { "telegramApi": { "id": "", "name": "Telegram account" } }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "-1004376461095",
+        "text": "=⚠️ Screenshot could not be sent for {{ $('Webhook Supabase').item.json.body.record.order_number }} — check the admin.\nOrder #{{ $('Webhook Supabase').item.json.body.record.order_number }} · {{ $('Webhook Supabase').item.json.body.record.payment_method === 'nagad' ? 'Nagad' : 'bKash' }} · {{ $('Webhook Supabase').item.json.body.record.total_bdt }} BDT · TrxID {{ $('Webhook Supabase').item.json.body.record.trxid || '(not provided)' }}\n\nReply:  {{ $('Webhook Supabase').item.json.body.record.order_number }} ✅  to confirm,   {{ $('Webhook Supabase').item.json.body.record.order_number }} ❌  to reject",
+        "additionalFields": {}
+      },
+      "id": "wf1-photo-fail",
+      "name": "Telegram — Screenshot failed",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1120, 280],
       "continueOnFail": true,
       "onError": "continueRegularOutput",
       "credentials": { "telegramApi": { "id": "", "name": "Telegram account" } }
@@ -97,7 +109,7 @@
       "name": "Telegram — Notif texte (repli)",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
-      "position": [1120, 260],
+      "position": [880, 300],
       "continueOnFail": true,
       "onError": "continueRegularOutput",
       "credentials": { "telegramApi": { "id": "", "name": "Telegram account" } }
@@ -114,7 +126,7 @@
       "name": "Slip PDF (service-role)",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [680, 420],
+      "position": [1360, 200],
       "continueOnFail": true,
       "onError": "continueRegularOutput",
       "credentials": { "supabaseApi": { "id": "", "name": "Supabase French Beauty" } }
@@ -132,7 +144,7 @@
       "name": "Telegram — Slip document",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
-      "position": [900, 420],
+      "position": [1580, 200],
       "continueOnFail": true,
       "onError": "continueRegularOutput",
       "credentials": { "telegramApi": { "id": "", "name": "Telegram account" } }
@@ -152,7 +164,7 @@
       "name": "Resend — Paiement reçu",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [680, 560],
+      "position": [650, 440],
       "continueOnFail": true,
       "onError": "continueRegularOutput",
       "credentials": { "httpHeaderAuth": { "id": "", "name": "Resend API" } }
@@ -163,7 +175,7 @@
       "name": "Attendre 10 min",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
-      "position": [680, 700],
+      "position": [650, 600],
       "webhookId": "wf1-reminder-wait"
     },
     {
@@ -178,19 +190,19 @@
       "name": "Supabase — Revérifier statut",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
-      "position": [900, 700],
+      "position": [880, 600],
       "alwaysOutputData": true,
       "credentials": { "supabaseApi": { "id": "", "name": "Supabase French Beauty" } }
     },
     {
       "parameters": {
-        "jsCode": "// Relance marchand : re-lecture de l'état réel. Tant que 'paiement_a_verifier', on relance.\n// Max 3 relances (10/20/30 min). L'état de boucle vit dans l'exécution n8n (Wait persistant).\nconst row = $input.first() ? ($input.first().json || {}) : {};\nconst stillPending = row.payment_status === 'paiement_a_verifier';\nconst reminderNumber = $runIndex + 1;\nconst canContinue = reminderNumber < 3;\nreturn [{ json: { stillPending, reminderNumber, canContinue } }];"
+        "jsCode": "const row = $input.first() ? ($input.first().json || {}) : {};\nconst stillPending = row.payment_status === 'paiement_a_verifier';\nconst reminderNumber = $runIndex + 1;\nconst canContinue = reminderNumber < 3;\nreturn [{ json: { stillPending, reminderNumber, canContinue } }];"
       },
       "id": "wf1-decide",
       "name": "Décider relance",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1120, 700]
+      "position": [1100, 600]
     },
     {
       "parameters": {
@@ -201,7 +213,7 @@
       "name": "IF encore en attente",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [1340, 700]
+      "position": [1320, 600]
     },
     {
       "parameters": {
@@ -215,7 +227,7 @@
       "name": "Telegram — Relance marchand",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
-      "position": [1560, 640],
+      "position": [1540, 560],
       "continueOnFail": true,
       "onError": "continueRegularOutput",
       "credentials": { "telegramApi": { "id": "", "name": "Telegram account" } }
@@ -229,7 +241,7 @@
       "name": "IF relance < 3",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [1780, 640]
+      "position": [1760, 560]
     }
   ],
   "connections": {
@@ -238,7 +250,6 @@
       "main": [
         [
           { "node": "IF capture présente", "type": "main", "index": 0 },
-          { "node": "Slip PDF (service-role)", "type": "main", "index": 0 },
           { "node": "Resend — Paiement reçu", "type": "main", "index": 0 },
           { "node": "Attendre 10 min", "type": "main", "index": 0 }
         ],
@@ -247,11 +258,24 @@
     },
     "IF capture présente": {
       "main": [
-        [{ "node": "Supabase — Signed URL capture", "type": "main", "index": 0 }],
+        [{ "node": "Download proof (service-role)", "type": "main", "index": 0 }],
         [{ "node": "Telegram — Notif texte (repli)", "type": "main", "index": 0 }]
       ]
     },
-    "Supabase — Signed URL capture": { "main": [[{ "node": "Telegram — Notif photo", "type": "main", "index": 0 }]] },
+    "Download proof (service-role)": {
+      "main": [
+        [{ "node": "Telegram — Notif photo", "type": "main", "index": 0 }],
+        [{ "node": "Telegram — Screenshot failed", "type": "main", "index": 0 }]
+      ]
+    },
+    "Telegram — Notif photo": {
+      "main": [
+        [{ "node": "Slip PDF (service-role)", "type": "main", "index": 0 }],
+        [{ "node": "Telegram — Screenshot failed", "type": "main", "index": 0 }]
+      ]
+    },
+    "Telegram — Screenshot failed": { "main": [[{ "node": "Slip PDF (service-role)", "type": "main", "index": 0 }]] },
+    "Telegram — Notif texte (repli)": { "main": [[{ "node": "Slip PDF (service-role)", "type": "main", "index": 0 }]] },
     "Slip PDF (service-role)": { "main": [[{ "node": "Telegram — Slip document", "type": "main", "index": 0 }]] },
     "Attendre 10 min": { "main": [[{ "node": "Supabase — Revérifier statut", "type": "main", "index": 0 }]] },
     "Supabase — Revérifier statut": { "main": [[{ "node": "Décider relance", "type": "main", "index": 0 }]] },
