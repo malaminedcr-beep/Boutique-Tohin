@@ -160,7 +160,7 @@
       "parameters": {
         "resource": "message",
         "operation": "sendMessage",
-        "chatId": "-5162751576",
+        "chatId": "-1004376461095",
         "text": "=⚠️ SMS reçu mais format non reconnu : {{ $('Extraire TrxID (regex)').item.json.text }}",
         "additionalFields": {}
       },
@@ -179,7 +179,7 @@
       "parameters": {
         "resource": "message",
         "operation": "sendMessage",
-        "chatId": "-5162751576",
+        "chatId": "-1004376461095",
         "text": "=⚠️ TrxID reçu par SMS sans commande correspondante — vérification manuelle nécessaire.\nTrxID : {{ $('Extraire TrxID (regex)').item.json.trxid }}\nMontant : {{ $('Extraire TrxID (regex)').item.json.amount }} BDT\nExpéditeur : {{ $('Extraire TrxID (regex)').item.json.sender }}",
         "additionalFields": {}
       },

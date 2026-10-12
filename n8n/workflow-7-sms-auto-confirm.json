@@ -167,7 +167,7 @@
       "parameters": {
         "resource": "message",
         "operation": "sendMessage",
-        "chatId": "-5162751576",
+        "chatId": "-1004376461095",
         "text": "=✅ Paiement AUTO-CONFIRMÉ par SMS\nCommande : {{ $('Décider (match + montant)').item.json.order_number }}\nTrxID : {{ $('Décider (match + montant)').item.json.trxid }}\nMontant : {{ $('Décider (match + montant)').item.json.amount }} BDT (= total)\nDe : {{ $('Décider (match + montant)').item.json.sender }}",
         "additionalFields": {}
       },
@@ -186,7 +186,7 @@
       "parameters": {
         "resource": "message",
         "operation": "sendMessage",
-        "chatId": "-5162751576",
+        "chatId": "-1004376461095",
         "text": "=⚠️ TrxID reconnu mais MONTANT DIFFÉRENT — vérif manuelle, NON confirmé.\nCommande : {{ $json.order_number }} (total {{ $json.total_bdt }} BDT)\nTrxID : {{ $json.trxid }}\nMontant reçu : {{ $json.amount }} BDT\nDe : {{ $json.sender }}",
         "additionalFields": {}
       },
@@ -205,7 +205,7 @@
       "parameters": {
         "resource": "message",
         "operation": "sendMessage",
-        "chatId": "-5162751576",
+        "chatId": "-1004376461095",
         "text": "=⚠️ SMS bKash reçu mais AUCUNE commande en attente pour ce TrxID — vérif manuelle.\nTrxID : {{ $json.trxid }}\nMontant : {{ $json.amount }} BDT\nDe : {{ $json.sender }}",
         "additionalFields": {}
       },
@@ -224,7 +224,7 @@
       "parameters": {
         "resource": "message",
         "operation": "sendMessage",
-        "chatId": "-5162751576",
+        "chatId": "-1004376461095",
         "text": "=⚠️ SMS reçu mais format non reconnu (ni TrxID ni montant exploitables) :\n{{ $('Parse bKash SMS').item.json.text }}",
         "additionalFields": {}
       },

@@ -69,7 +69,7 @@
       "parameters": {
         "resource": "message",
         "operation": "sendPhoto",
-        "chatId": "-5162751576",
+        "chatId": "-1004376461095",
         "binaryData": false,
         "file": "={{ 'https://ujcxhukiwgxwgyiuoryt.supabase.co/storage/v1' + $json.signedURL }}",
         "additionalFields": {
@@ -89,7 +89,7 @@
       "parameters": {
         "resource": "message",
         "operation": "sendMessage",
-        "chatId": "-5162751576",
+        "chatId": "-1004376461095",
         "text": "=🔔 New payment to verify (no screenshot attached)\nOrder #{{ $('Webhook Supabase').item.json.body.record.order_number }}\nMethod: {{ $('Webhook Supabase').item.json.body.record.payment_method === 'nagad' ? 'Nagad' : 'bKash' }}\nExpected: {{ $('Webhook Supabase').item.json.body.record.total_bdt }} BDT\nTrxID: {{ $('Webhook Supabase').item.json.body.record.trxid || '(not provided)' }}\n\nReply:  {{ $('Webhook Supabase').item.json.body.record.order_number }} ✅  to confirm,   {{ $('Webhook Supabase').item.json.body.record.order_number }} ❌  to reject",
         "additionalFields": {}
       },
@@ -123,7 +123,7 @@
       "parameters": {
         "resource": "message",
         "operation": "sendDocument",
-        "chatId": "-5162751576",
+        "chatId": "-1004376461095",
         "binaryData": true,
         "binaryPropertyName": "data",
         "additionalFields": { "caption": "=Order slip #{{ $('Webhook Supabase').item.json.body.record.order_number }}" }
@@ -207,7 +207,7 @@
       "parameters": {
         "resource": "message",
         "operation": "sendMessage",
-        "chatId": "-5162751576",
+        "chatId": "-1004376461095",
         "text": "=⏰ Reminder ({{ $('Décider relance').item.json.reminderNumber }}/3): order #{{ $('Webhook Supabase').item.json.body.record.order_number }} ({{ $('Webhook Supabase').item.json.body.record.total_bdt }} BDT) still awaiting verification. Reply {{ $('Webhook Supabase').item.json.body.record.order_number }} ✅ or ❌.",
         "additionalFields": {}
       },
