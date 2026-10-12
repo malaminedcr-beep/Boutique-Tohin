@@ -2,34 +2,69 @@
   "name": "bKash 8b — Typed validation (<order> ✅/❌) → verdict",
   "nodes": [
     {
-      "parameters": { "updates": ["message"], "additionalFields": {} },
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
       "id": "wf8b-trigger",
       "name": "Telegram Trigger (message)",
       "type": "n8n-nodes-base.telegramTrigger",
       "typeVersion": 1.1,
-      "position": [180, 360],
-      "credentials": { "telegramApi": { "id": "", "name": "Telegram account" } }
+      "position": [
+        180,
+        360
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "",
+          "name": "Telegram account"
+        }
+      }
     },
     {
       "parameters": {
-        "jsCode": "// Parse a group message. Only the authorized group is processed; everything\n// that is not /id or a '<order#> ✅/❌' verdict is ignored silently.\nconst upd = $input.first().json || {};\nconst msg = upd.message || (upd.body && upd.body.message) || {};\nconst chat = msg.chat || {};\nconst from = msg.from || {};\nconst text = (msg.text || '').trim();\nconst chatId = chat.id;\nconst messageId = msg.message_id;\nconst fromId = from.id;\nconst fromName = ([from.first_name, from.last_name].filter(Boolean).join(' ') + (from.username ? ' (@' + from.username + ')' : '')).trim() || 'unknown';\n\nconst ALLOWED_CHAT = -5162751576;\nif (chatId !== ALLOWED_CHAT) { return []; }            // ignore other chats\n\n// Temporary helper: anyone in the group can get their numeric id.\nif (/^\\/id\\b/i.test(text)) {\n  return [{ json: { kind: 'id', replyText: 'Your ID: ' + fromId + ' (' + (from.first_name || '') + ')', chatId, messageId } }];\n}\n\n// Verdict: \"<order#> ✅\" or \"<order#> ❌\" (tolerate spaces / case).\nconst m = text.match(/^\\s*([A-Za-z0-9-]+)\\s*(✅|❌)\\s*$/);\nif (!m) { return []; }                                  // ignore anything else\nconst orderNumber = m[1].toUpperCase();\nconst action = m[2] === '✅' ? 'confirm' : 'reject';\n\n// Authorization: numeric Telegram ids in the n8n env var TG_AUTHORIZED_IDS\n// (comma/space separated). Fail-safe: missing env -> nobody authorized.\nconst raw = (($env && $env.TG_AUTHORIZED_IDS) || '').toString();\nconst allowed = raw.split(/[ ,]+/).filter(Boolean);\nconst authorized = allowed.includes(String(fromId));\nif (!authorized) {\n  return [{ json: { kind: 'unauth', replyText: '🚫 Not authorized.', chatId, messageId } }];\n}\nreturn [{ json: { kind: 'verdict', orderNumber, action, chatId, messageId, fromName } }];"
+        "jsCode": "// Parse a group message. Only the authorized group is processed; everything\n// that is not /id or a '<order#> ✅/❌' verdict is ignored silently.\nconst upd = $input.first().json || {};\nconst msg = upd.message || (upd.body && upd.body.message) || {};\nconst chat = msg.chat || {};\nconst from = msg.from || {};\nconst text = (msg.text || '').trim();\nconst chatId = chat.id;\nconst messageId = msg.message_id;\nconst fromName = ([from.first_name, from.last_name].filter(Boolean).join(' ') + (from.username ? ' (@' + from.username + ')' : '')).trim() || 'unknown';\nconst fromId = from.id;\n\nconst ALLOWED_CHAT = -5162751576;\nif (chatId !== ALLOWED_CHAT) { return []; }            // ignore other chats\n\n// Temporary helper: anyone in the group can get their numeric id.\nif (/^\\/id\b/i.test(text)) {\n  return [{ json: { kind: 'id', replyText: 'Your ID: ' + fromId + ' (' + (from.first_name || '') + ')', chatId, messageId } }];\n}\n\n// Verdict: \"<order#> ✅\" or \"<order#> ❌\" (tolerate spaces / case).\nconst m = text.match(/^\\s*([A-Za-z0-9-]+)\\s*(✅|❌)\\s*$/);\nif (!m) { return []; }                                  // ignore anything else\nconst orderNumber = m[1].toUpperCase();\nconst action = m[2] === '✅' ? 'confirm' : 'reject';\n\n// Authorized Telegram ids (an id is not secret) — in-workflow constant, no VPS/env.\nconst AUTHORIZED_IDS = ['1467933699'];   // Malamine; add associate id here (via /id)\nconst authorized = AUTHORIZED_IDS.includes(String(fromId));\nif (!authorized) {\n  return [{ json: { kind: 'unauth', replyText: '🚫 Not authorized.', chatId, messageId } }];\n}\nreturn [{ json: { kind: 'verdict', orderNumber, action, chatId, messageId, fromName } }];"
       },
       "id": "wf8b-parse",
       "name": "Parse message",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [400, 360]
+      "position": [
+        400,
+        360
+      ]
     },
     {
       "parameters": {
-        "conditions": { "options": { "caseSensitive": true, "typeValidation": "loose" }, "combinator": "and", "conditions": [ { "leftValue": "={{ $json.kind }}", "rightValue": "verdict", "operator": { "type": "string", "operation": "equals" } } ] },
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.kind }}",
+              "rightValue": "verdict",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        },
         "options": {}
       },
       "id": "wf8b-is-verdict",
       "name": "IF verdict",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [620, 360]
+      "position": [
+        620,
+        360
+      ]
     },
     {
       "parameters": {
@@ -37,15 +72,31 @@
         "operation": "getAll",
         "tableId": "orders",
         "returnAll": true,
-        "filters": { "conditions": [ { "keyName": "order_number", "condition": "eq", "keyValue": "={{ $json.orderNumber }}" } ] }
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "order_number",
+              "condition": "eq",
+              "keyValue": "={{ $json.orderNumber }}"
+            }
+          ]
+        }
       },
       "id": "wf8b-lookup",
       "name": "Supabase — Lookup by order_number",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
-      "position": [840, 300],
+      "position": [
+        840,
+        300
+      ],
       "alwaysOutputData": true,
-      "credentials": { "supabaseApi": { "id": "", "name": "Supabase French Beauty" } }
+      "credentials": {
+        "supabaseApi": {
+          "id": "",
+          "name": "Supabase French Beauty"
+        }
+      }
     },
     {
       "parameters": {
@@ -55,77 +106,183 @@
       "name": "Decide verdict",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1060, 300]
+      "position": [
+        1060,
+        300
+      ]
     },
     {
       "parameters": {
-        "conditions": { "options": { "caseSensitive": true, "typeValidation": "loose" }, "combinator": "and", "conditions": [ { "leftValue": "={{ $json.proceed }}", "rightValue": true, "operator": { "type": "boolean", "operation": "true", "singleValue": true } } ] },
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.proceed }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ]
+        },
         "options": {}
       },
       "id": "wf8b-if-proceed",
       "name": "IF proceed",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [1280, 300]
+      "position": [
+        1280,
+        300
+      ]
     },
     {
       "parameters": {
-        "conditions": { "options": { "caseSensitive": true, "typeValidation": "loose" }, "combinator": "and", "conditions": [ { "leftValue": "={{ $json.action }}", "rightValue": "confirm", "operator": { "type": "string", "operation": "equals" } } ] },
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "confirm",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ]
+        },
         "options": {}
       },
       "id": "wf8b-if-confirm",
       "name": "IF confirm",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [1500, 240]
+      "position": [
+        1500,
+        240
+      ]
     },
     {
       "parameters": {
         "resource": "row",
         "operation": "update",
         "tableId": "orders",
-        "filters": { "conditions": [
-          { "keyName": "id", "condition": "eq", "keyValue": "={{ $('Decide verdict').item.json.orderId }}" },
-          { "keyName": "payment_status", "condition": "eq", "keyValue": "paiement_a_verifier" }
-        ] },
-        "fieldsUi": { "fieldValues": [
-          { "fieldId": "payment_status", "fieldValue": "paye" },
-          { "fieldId": "status", "fieldValue": "confirmed" },
-          { "fieldId": "verified_by", "fieldValue": "={{ 'Telegram: ' + $('Decide verdict').item.json.fromName }}" },
-          { "fieldId": "verified_at", "fieldValue": "={{ $now.toISO() }}" }
-        ] }
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('Decide verdict').item.json.orderId }}"
+            },
+            {
+              "keyName": "payment_status",
+              "condition": "eq",
+              "keyValue": "paiement_a_verifier"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "payment_status",
+              "fieldValue": "paye"
+            },
+            {
+              "fieldId": "status",
+              "fieldValue": "confirmed"
+            },
+            {
+              "fieldId": "verified_by",
+              "fieldValue": "={{ 'Telegram: ' + $('Decide verdict').item.json.fromName }}"
+            },
+            {
+              "fieldId": "verified_at",
+              "fieldValue": "={{ $now.toISO() }}"
+            }
+          ]
+        }
       },
       "id": "wf8b-confirm",
       "name": "Supabase — Confirm (paye+confirmed)",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
-      "position": [1720, 180],
+      "position": [
+        1720,
+        180
+      ],
       "alwaysOutputData": true,
-      "credentials": { "supabaseApi": { "id": "", "name": "Supabase French Beauty" } }
+      "credentials": {
+        "supabaseApi": {
+          "id": "",
+          "name": "Supabase French Beauty"
+        }
+      }
     },
     {
       "parameters": {
         "resource": "row",
         "operation": "update",
         "tableId": "orders",
-        "filters": { "conditions": [
-          { "keyName": "id", "condition": "eq", "keyValue": "={{ $('Decide verdict').item.json.orderId }}" },
-          { "keyName": "payment_status", "condition": "eq", "keyValue": "paiement_a_verifier" }
-        ] },
-        "fieldsUi": { "fieldValues": [
-          { "fieldId": "payment_status", "fieldValue": "refuse" },
-          { "fieldId": "payment_rejected_at", "fieldValue": "={{ $now.toISO() }}" },
-          { "fieldId": "verified_by", "fieldValue": "={{ 'Telegram: ' + $('Decide verdict').item.json.fromName }}" },
-          { "fieldId": "verified_at", "fieldValue": "={{ $now.toISO() }}" }
-        ] }
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('Decide verdict').item.json.orderId }}"
+            },
+            {
+              "keyName": "payment_status",
+              "condition": "eq",
+              "keyValue": "paiement_a_verifier"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "payment_status",
+              "fieldValue": "refuse"
+            },
+            {
+              "fieldId": "payment_rejected_at",
+              "fieldValue": "={{ $now.toISO() }}"
+            },
+            {
+              "fieldId": "verified_by",
+              "fieldValue": "={{ 'Telegram: ' + $('Decide verdict').item.json.fromName }}"
+            },
+            {
+              "fieldId": "verified_at",
+              "fieldValue": "={{ $now.toISO() }}"
+            }
+          ]
+        }
       },
       "id": "wf8b-reject",
       "name": "Supabase — Reject (refuse)",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
-      "position": [1720, 360],
+      "position": [
+        1720,
+        360
+      ],
       "alwaysOutputData": true,
-      "credentials": { "supabaseApi": { "id": "", "name": "Supabase French Beauty" } }
+      "credentials": {
+        "supabaseApi": {
+          "id": "",
+          "name": "Supabase French Beauty"
+        }
+      }
     },
     {
       "parameters": {
@@ -142,10 +299,18 @@
       "name": "Resend — Refus",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [1940, 360],
+      "position": [
+        1940,
+        360
+      ],
       "continueOnFail": true,
       "onError": "continueRegularOutput",
-      "credentials": { "httpHeaderAuth": { "id": "", "name": "Resend API" } }
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "",
+          "name": "Resend API"
+        }
+      }
     },
     {
       "parameters": {
@@ -155,7 +320,10 @@
       "name": "Build confirm reply",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1940, 180]
+      "position": [
+        1940,
+        180
+      ]
     },
     {
       "parameters": {
@@ -165,7 +333,10 @@
       "name": "Build reject reply",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [2160, 360]
+      "position": [
+        2160,
+        360
+      ]
     },
     {
       "parameters": {
@@ -179,41 +350,177 @@
       "name": "Reply to group",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
-      "position": [2380, 300],
+      "position": [
+        2380,
+        300
+      ],
       "continueOnFail": true,
       "onError": "continueRegularOutput",
-      "credentials": { "telegramApi": { "id": "", "name": "Telegram account" } }
+      "credentials": {
+        "telegramApi": {
+          "id": "",
+          "name": "Telegram account"
+        }
+      }
     }
   ],
   "connections": {
-    "Telegram Trigger (message)": { "main": [[{ "node": "Parse message", "type": "main", "index": 0 }]] },
-    "Parse message": { "main": [[{ "node": "IF verdict", "type": "main", "index": 0 }]] },
-    "IF verdict": {
+    "Telegram Trigger (message)": {
       "main": [
-        [{ "node": "Supabase — Lookup by order_number", "type": "main", "index": 0 }],
-        [{ "node": "Reply to group", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Parse message",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
-    "Supabase — Lookup by order_number": { "main": [[{ "node": "Decide verdict", "type": "main", "index": 0 }]] },
-    "Decide verdict": { "main": [[{ "node": "IF proceed", "type": "main", "index": 0 }]] },
+    "Parse message": {
+      "main": [
+        [
+          {
+            "node": "IF verdict",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF verdict": {
+      "main": [
+        [
+          {
+            "node": "Supabase — Lookup by order_number",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply to group",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase — Lookup by order_number": {
+      "main": [
+        [
+          {
+            "node": "Decide verdict",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Decide verdict": {
+      "main": [
+        [
+          {
+            "node": "IF proceed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
     "IF proceed": {
       "main": [
-        [{ "node": "IF confirm", "type": "main", "index": 0 }],
-        [{ "node": "Reply to group", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "IF confirm",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reply to group",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "IF confirm": {
       "main": [
-        [{ "node": "Supabase — Confirm (paye+confirmed)", "type": "main", "index": 0 }],
-        [{ "node": "Supabase — Reject (refuse)", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Supabase — Confirm (paye+confirmed)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Supabase — Reject (refuse)",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
-    "Supabase — Confirm (paye+confirmed)": { "main": [[{ "node": "Build confirm reply", "type": "main", "index": 0 }]] },
-    "Supabase — Reject (refuse)": { "main": [[{ "node": "Resend — Refus", "type": "main", "index": 0 }]] },
-    "Resend — Refus": { "main": [[{ "node": "Build reject reply", "type": "main", "index": 0 }]] },
-    "Build confirm reply": { "main": [[{ "node": "Reply to group", "type": "main", "index": 0 }]] },
-    "Build reject reply": { "main": [[{ "node": "Reply to group", "type": "main", "index": 0 }]] }
+    "Supabase — Confirm (paye+confirmed)": {
+      "main": [
+        [
+          {
+            "node": "Build confirm reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase — Reject (refuse)": {
+      "main": [
+        [
+          {
+            "node": "Resend — Refus",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resend — Refus": {
+      "main": [
+        [
+          {
+            "node": "Build reject reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build confirm reply": {
+      "main": [
+        [
+          {
+            "node": "Reply to group",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build reject reply": {
+      "main": [
+        [
+          {
+            "node": "Reply to group",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
   },
-  "settings": { "executionOrder": "v1" },
+  "settings": {
+    "executionOrder": "v1"
+  },
   "active": false
 }
