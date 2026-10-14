@@ -3,13 +3,23 @@
   "nodes": [
     {
       "parameters": {
-        "rule": { "interval": [ { "field": "hours", "hoursInterval": 1 } ] }
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 1
+            }
+          ]
+        }
       },
       "id": "wf9-cron",
       "name": "Every hour",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
-      "position": [220, 300]
+      "position": [
+        220,
+        300
+      ]
     },
     {
       "parameters": {
@@ -17,57 +27,156 @@
         "operation": "getAll",
         "tableId": "orders",
         "returnAll": true,
-        "filters": { "conditions": [
-          { "keyName": "payment_status", "condition": "eq", "keyValue": "refuse" },
-          { "keyName": "payment_rejected_at", "condition": "lt", "keyValue": "={{ $now.minus({ hours: 24 }).toISO() }}" }
-        ] }
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "payment_status",
+              "condition": "eq",
+              "keyValue": "refuse"
+            },
+            {
+              "keyName": "payment_rejected_at",
+              "condition": "lt",
+              "keyValue": "={{ $now.minus({ hours: 24 }).toISO() }}"
+            }
+          ]
+        }
       },
       "id": "wf9-find",
       "name": "Supabase — Rejected > 24h",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
-      "position": [460, 300],
+      "position": [
+        460,
+        300
+      ],
       "alwaysOutputData": true,
-      "credentials": { "supabaseApi": { "id": "", "name": "Supabase French Beauty" } }
+      "credentials": {
+        "supabaseApi": {
+          "id": "",
+          "name": "Supabase French Beauty"
+        }
+      }
     },
     {
       "parameters": {
-        "conditions": { "options": { "caseSensitive": true, "typeValidation": "loose" }, "combinator": "and", "conditions": [ { "leftValue": "={{ $json.id }}", "rightValue": "", "operator": { "type": "string", "operation": "notEmpty", "singleValue": true } } ] },
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ]
+        },
         "options": {}
       },
       "id": "wf9-guard",
       "name": "IF has id",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2,
-      "position": [680, 300]
+      "position": [
+        680,
+        300
+      ]
     },
     {
       "parameters": {
         "resource": "row",
         "operation": "update",
         "tableId": "orders",
-        "filters": { "conditions": [
-          { "keyName": "id", "condition": "eq", "keyValue": "={{ $json.id }}" },
-          { "keyName": "payment_status", "condition": "eq", "keyValue": "refuse" }
-        ] },
-        "fieldsUi": { "fieldValues": [
-          { "fieldId": "status", "fieldValue": "cancelled" }
-        ] }
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $json.id }}"
+            },
+            {
+              "keyName": "payment_status",
+              "condition": "eq",
+              "keyValue": "refuse"
+            },
+            {
+              "keyName": "payment_rejected_at",
+              "condition": "lt",
+              "keyValue": "={{ $now.minus({ hours: 24 }).toISO() }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "status",
+              "fieldValue": "cancelled"
+            }
+          ]
+        }
       },
       "id": "wf9-cancel",
       "name": "Supabase — Cancel (status=cancelled)",
       "type": "n8n-nodes-base.supabase",
       "typeVersion": 1,
-      "position": [900, 300],
+      "position": [
+        900,
+        300
+      ],
       "alwaysOutputData": true,
-      "credentials": { "supabaseApi": { "id": "", "name": "Supabase French Beauty" } }
+      "credentials": {
+        "supabaseApi": {
+          "id": "",
+          "name": "Supabase French Beauty"
+        }
+      }
     }
   ],
   "connections": {
-    "Every hour": { "main": [[{ "node": "Supabase — Rejected > 24h", "type": "main", "index": 0 }]] },
-    "Supabase — Rejected > 24h": { "main": [[{ "node": "IF has id", "type": "main", "index": 0 }]] },
-    "IF has id": { "main": [[{ "node": "Supabase — Cancel (status=cancelled)", "type": "main", "index": 0 }], []] }
+    "Every hour": {
+      "main": [
+        [
+          {
+            "node": "Supabase — Rejected > 24h",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase — Rejected > 24h": {
+      "main": [
+        [
+          {
+            "node": "IF has id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF has id": {
+      "main": [
+        [
+          {
+            "node": "Supabase — Cancel (status=cancelled)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
   },
-  "settings": { "executionOrder": "v1" },
+  "settings": {
+    "executionOrder": "v1"
+  },
   "active": false
 }
