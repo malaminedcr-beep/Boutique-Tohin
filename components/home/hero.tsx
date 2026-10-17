@@ -20,7 +20,7 @@ type Slide = {
 const SLIDES: Slide[] = [
   {
     key: 'monoi',
-    image: '/images/hero/hero-monoi-v3.jpg',
+    image: '/images/hero/hero-monoi-v4.jpg',
     eyebrow: 'Scent of Summer',
     title: 'Nourished Skin, Island Glow',
     subtitle: '98% natural origin — Monoï de Tahiti body milk for silky, sun-kissed skin.',
@@ -31,7 +31,7 @@ const SLIDES: Slide[] = [
   },
   {
     key: 'effaclar',
-    image: '/images/hero/hero-effaclar-v3.jpg',
+    image: '/images/hero/hero-effaclar-v4.jpg',
     eyebrow: 'Dermatologist Recommended',
     title: 'Clear Skin, Every Day',
     subtitle: 'Effaclar Serum — a daily peeling that visibly reduces imperfections.',
