@@ -20,7 +20,7 @@ type Slide = {
 const SLIDES: Slide[] = [
   {
     key: 'monoi',
-    image: '/images/hero/hero-monoi-v2.jpg',
+    image: '/images/hero/hero-monoi-v3.jpg',
     eyebrow: 'Scent of Summer',
     title: 'Nourished Skin, Island Glow',
     subtitle: '98% natural origin — Monoï de Tahiti body milk for silky, sun-kissed skin.',
@@ -31,7 +31,7 @@ const SLIDES: Slide[] = [
   },
   {
     key: 'effaclar',
-    image: '/images/hero/hero-effaclar-v2.jpg',
+    image: '/images/hero/hero-effaclar-v3.jpg',
     eyebrow: 'Dermatologist Recommended',
     title: 'Clear Skin, Every Day',
     subtitle: 'Effaclar Serum — a daily peeling that visibly reduces imperfections.',
@@ -42,7 +42,7 @@ const SLIDES: Slide[] = [
   },
   {
     key: 'mineral89',
-    image: '/images/hero/hero-mineral89-v2.jpg',
+    image: '/images/hero/hero-mineral89-v3.jpg',
     eyebrow: 'New Arrival',
     title: 'Born From French Volcanoes',
     subtitle: '89 minerals. One drop of instant, lasting hydration.',
@@ -149,6 +149,7 @@ export default function Hero() {
               alt=""
               fill
               priority
+              quality={90}
               sizes="100vw"
               className="object-cover"
               style={{ objectPosition: slide.objectPosition }}
