@@ -8,41 +8,57 @@ import { AnimatePresence, motion, type Variants } from 'motion/react';
 type Slide = {
   key: string;
   image: string;
+  /** Empty side of the artwork where the text sits. */
+  side: 'left' | 'right';
+  /** 'dark' = dark text on light artwork · 'light' = light text on dark artwork. */
+  theme: 'dark' | 'light';
   eyebrow: string;
   title: string;
   subtitle: string;
   cta: string;
   href: string;
-  /** Focus point kept in frame when the image is cropped. */
+  /** Focus point kept in frame when the banner is cropped (mobile). */
   objectPosition: string;
+  /** Legibility scrim on the text side. */
+  scrim: string;
 };
 
 const SLIDES: Slide[] = [
   {
     key: 'monoi',
     image: '/images/hero/hero-monoi-v4.jpg',
+    side: 'left',
+    theme: 'dark',
     eyebrow: 'Scent of Summer',
     title: 'Nourished Skin, Island Glow',
     subtitle: '98% natural origin — Monoï de Tahiti body milk for silky, sun-kissed skin.',
     cta: 'Shop Now',
     href: '/product/16',
-    // Bottle sits on the right of the frame — keep it in view on narrow crops.
+    // Bottle sits on the right — keep it in view on narrow crops.
     objectPosition: 'right center',
+    scrim:
+      'linear-gradient(to right, rgba(251,248,245,0.92) 0%, rgba(251,248,245,0.55) 34%, transparent 62%)',
   },
   {
     key: 'effaclar',
     image: '/images/hero/hero-effaclar-v4.jpg',
+    side: 'left',
+    theme: 'dark',
     eyebrow: 'Dermatologist Recommended',
     title: 'Clear Skin, Every Day',
     subtitle: 'Effaclar Serum — a daily peeling that visibly reduces imperfections.',
     cta: 'Shop Now',
     href: '/product/42',
-    // Serum bottle is far right — anchor right so mobile shows the product, not just the water.
+    // Serum bottle is far right — anchor right so mobile shows the product.
     objectPosition: 'right center',
+    scrim:
+      'linear-gradient(to right, rgba(251,248,245,0.92) 0%, rgba(251,248,245,0.55) 34%, transparent 62%)',
   },
   {
     key: 'mineral89',
     image: '/images/hero/hero-mineral89-v3.jpg',
+    side: 'right',
+    theme: 'light',
     eyebrow: 'New Arrival',
     title: 'Born From French Volcanoes',
     subtitle: '89 minerals. One drop of instant, lasting hydration.',
@@ -50,6 +66,8 @@ const SLIDES: Slide[] = [
     href: '/product/30',
     // Vichy bottle sits left of centre — bias left so it isn't clipped on mobile.
     objectPosition: '15% center',
+    scrim:
+      'linear-gradient(to left, rgba(6,14,26,0.82) 0%, rgba(6,14,26,0.45) 34%, transparent 62%)',
   },
 ];
 
@@ -69,7 +87,7 @@ const imageVariants: Variants = {
 // Text block: fade in and lift slightly (on load and on every slide change).
 const panelVariants: Variants = {
   enter: { opacity: 0, y: 18 },
-  center: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut', delay: 0.05 } },
+  center: { opacity: 1, y: 0, transition: { duration: 0.35, ease: 'easeOut', delay: 0.1 } },
   exit: { opacity: 0, y: 0, transition: { duration: 0.2, ease: 'easeOut' } },
 };
 
@@ -121,6 +139,7 @@ export default function Hero() {
   };
 
   const slide = SLIDES[index];
+  const lightText = slide.theme === 'light';
 
   return (
     <section
@@ -132,7 +151,7 @@ export default function Hero() {
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
-      {/* ── Image, full-width, clean (no text) ─────────────────────── */}
+      {/* ── Full-bleed artwork with text overlaid ──────────────────── */}
       <div className="relative aspect-[4/5] w-full overflow-hidden bg-canvas sm:aspect-[16/10] lg:aspect-[16/7]">
         <AnimatePresence custom={direction}>
           <motion.div
@@ -154,6 +173,74 @@ export default function Hero() {
               className="object-cover"
               style={{ objectPosition: slide.objectPosition }}
             />
+            {/* Legibility scrim on the text side. */}
+            <div aria-hidden className="absolute inset-0" style={{ background: slide.scrim }} />
+          </motion.div>
+        </AnimatePresence>
+
+        {/* Text overlay (clicks pass through except the CTA). */}
+        <AnimatePresence custom={direction}>
+          <motion.div
+            key={slide.key}
+            variants={panelVariants}
+            initial="enter"
+            animate="center"
+            exit="exit"
+            className={`pointer-events-none absolute inset-0 z-10 flex items-center ${
+              slide.side === 'right' ? 'justify-end' : 'justify-start'
+            }`}
+          >
+            <div
+              className={`flex max-w-[82%] flex-col gap-4 px-6 sm:max-w-[60%] sm:px-10 md:max-w-[46%] md:px-14 lg:px-20 ${
+                slide.side === 'right' ? 'items-end text-right' : 'items-start text-left'
+              }`}
+            >
+              {/* Framed eyebrow label. */}
+              <span
+                className={`border px-3 py-1.5 text-[10px] uppercase tracking-[0.25em] ${
+                  lightText ? 'border-white/40 text-white/85' : 'border-ink/25 text-ink/70'
+                }`}
+              >
+                {slide.eyebrow}
+              </span>
+
+              {/* Title */}
+              <h1
+                className={`font-serif font-semibold ${lightText ? 'text-white' : 'text-ink'}`}
+                style={{
+                  fontSize: 'clamp(2rem, 4.2vw, 3.5rem)',
+                  lineHeight: 1.1,
+                  letterSpacing: '-0.01em',
+                }}
+              >
+                {slide.title}
+              </h1>
+
+              {/* Subtitle */}
+              <p
+                className={`max-w-xl text-sm leading-7 sm:text-base ${
+                  lightText ? 'text-white/85' : 'text-muted'
+                }`}
+                style={{ fontFamily: 'var(--font-sans)' }}
+              >
+                {slide.subtitle}
+              </p>
+
+              {/* CTA — solid accent rectangle, sharp corners, micro-interaction. */}
+              <motion.div
+                whileHover={{ scale: 1.03 }}
+                whileTap={{ scale: 0.97 }}
+                transition={{ duration: 0.2, ease: 'easeOut' }}
+                className="pointer-events-auto mt-1 inline-block"
+              >
+                <Link
+                  href={slide.href}
+                  className="inline-flex cursor-pointer items-center rounded-none bg-accent px-9 py-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-white shadow-sm transition-colors hover:bg-accent/90"
+                >
+                  {slide.cta}
+                </Link>
+              </motion.div>
+            </div>
           </motion.div>
         </AnimatePresence>
 
@@ -178,66 +265,10 @@ export default function Hero() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </button>
-      </div>
 
-      {/* ── Content block, full-width, light background, left-aligned ── */}
-      <div className="relative min-h-[300px] bg-surface md:min-h-[280px]">
-        <AnimatePresence custom={direction}>
-          <motion.div
-            key={slide.key}
-            variants={panelVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            className="absolute inset-0 flex items-center"
-          >
-            <div className="mx-auto flex w-full min-w-0 max-w-7xl flex-col gap-5 px-6 pb-16 pt-10 text-left sm:px-8 md:px-12 md:pb-14 lg:px-16">
-              {/* Framed label */}
-              <span className="self-start border border-ink/25 px-3 py-1.5 text-[10px] uppercase tracking-[0.25em] text-ink/70">
-                {slide.eyebrow}
-              </span>
-
-              {/* Title */}
-              <h1
-                className="font-serif font-semibold text-ink"
-                style={{
-                  fontSize: 'clamp(2rem, 4.2vw, 3.5rem)',
-                  lineHeight: 1.1,
-                  letterSpacing: '-0.01em',
-                }}
-              >
-                {slide.title}
-              </h1>
-
-              {/* Subtitle */}
-              <p
-                className="min-w-0 max-w-xl text-sm leading-7 text-muted sm:text-base"
-                style={{ fontFamily: 'var(--font-sans)' }}
-              >
-                {slide.subtitle}
-              </p>
-
-              {/* CTA — solid black rectangle, sharp corners, micro-interaction. */}
-              <motion.div
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
-                transition={{ duration: 0.2, ease: 'easeOut' }}
-                className="mt-1 inline-block self-start"
-              >
-                <Link
-                  href={slide.href}
-                  className="inline-flex cursor-pointer items-center rounded-none bg-ink px-9 py-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-white transition-colors hover:bg-ink/90"
-                >
-                  {slide.cta}
-                </Link>
-              </motion.div>
-            </div>
-          </motion.div>
-        </AnimatePresence>
-
-        {/* Dots — persistent, aligned to the content's left edge. */}
-        <div className="pointer-events-none absolute bottom-6 left-0 right-0 z-10">
-          <div className="mx-auto flex max-w-7xl px-6 sm:px-8 md:px-12 lg:px-16">
+        {/* Dots. */}
+        <div className="pointer-events-none absolute bottom-6 left-0 right-0 z-20">
+          <div className="mx-auto flex max-w-7xl px-6 sm:px-10 md:px-14 lg:px-20">
             <div className="pointer-events-auto flex items-center gap-2.5">
               {SLIDES.map((s, i) => (
                 <motion.button
@@ -248,7 +279,9 @@ export default function Hero() {
                   aria-current={i === index}
                   animate={{ width: i === index ? 24 : 8 }}
                   transition={{ duration: 0.3, ease: 'easeOut' }}
-                  className={`h-2 rounded-full ${i === index ? 'bg-accent' : 'bg-ink/20'}`}
+                  className={`h-2 rounded-full ${
+                    i === index ? 'bg-accent' : lightText ? 'bg-white/40' : 'bg-ink/20'
+                  }`}
                 />
               ))}
             </div>
