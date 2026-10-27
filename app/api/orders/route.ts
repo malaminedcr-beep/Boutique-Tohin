@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createAdminSupabase } from '../../../lib/supabase/admin';
 import { getVerifiedUser } from '../../../lib/supabase/server';
-import { pushOrderToAirtable } from '../../../lib/airtable';
 import { PAYMENT_RECEIVER_NUMBER, isPaymentMethod } from '../../../lib/bkash';
 
 export const dynamic = 'force-dynamic';
@@ -132,22 +131,6 @@ export async function POST(request: Request) {
     await supabase.from('orders').delete().eq('id', order.id);
     return NextResponse.json({ error: itemsErr.message }, { status: 500 });
   }
-
-  // Miroir vers Airtable (best-effort, ne bloque jamais la commande).
-  await pushOrderToAirtable({
-    id: order.id,
-    client: `${shippingAddress.firstName} ${shippingAddress.lastName}`.trim(),
-    email: shippingAddress.email,
-    phone: shippingAddress.phone,
-    city: shippingAddress.city,
-    address: [shippingAddress.address, shippingAddress.postalCode].filter(Boolean).join(' '),
-    total_bdt: total,
-    payment_method: paymentMethod,
-    payment_status: 'en_attente_paiement',
-    status: 'pending',
-    products: requested.map((r) => `${bySlug.get(r.slug)!.name} x${r.quantity}`).join('\n'),
-    created_at: new Date().toISOString(),
-  });
 
   return NextResponse.json({ orderId: order.id, orderNumber: order.order_number, total });
 }
