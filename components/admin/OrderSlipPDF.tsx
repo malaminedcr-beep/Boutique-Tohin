@@ -333,7 +333,12 @@ export default function OrderSlipPDF({ order }: { order: Order }) {
                 ) : null}
                 {buyUrl && verifiedOn ? (
                   <Text style={s.tdSourceMeta}>
-                    {item.source_ok === false ? '⚠ link down' : '✓ verified'} {SHORT_DATE(verifiedOn)}
+                    {item.source_ok === true
+                      ? '✓ live'
+                      : item.source_ok === false
+                        ? '⚠ dead link — find another'
+                        : '• could not verify (open to check)'}{' '}
+                    {SHORT_DATE(verifiedOn)}
                   </Text>
                 ) : null}
               </View>

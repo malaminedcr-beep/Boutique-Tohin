@@ -43,9 +43,12 @@ export async function POST(
   const results = await Promise.all(
     items.map(async (it: any) => {
       const url: string | null = it.products?.source_url ?? null;
+      // source_ok : true = vivant · false = mort (404/410) · null = non vérifiable
+      // (403 anti-bot, 429, 5xx, timeout) — on ne crie pas « mort » à tort.
       let ok: boolean | null = null;
       if (url) {
-        ok = await isReachable(url);
+        const verdict = await classify(url);
+        ok = verdict === 'live' ? true : verdict === 'dead' ? false : null;
       }
       const { error: upErr } = await supabase
         .from('order_items')
@@ -64,15 +67,23 @@ export async function POST(
     checkedAt,
     total: results.length,
     withLink: results.filter((r) => r.url).length,
-    reachable: results.filter((r) => r.ok === true).length,
-    unreachable: results.filter((r) => r.ok === false).length,
+    live: results.filter((r) => r.ok === true).length,
+    dead: results.filter((r) => r.ok === false).length,
+    unverifiable: results.filter((r) => r.url && r.ok === null).length,
     results,
   };
   return NextResponse.json(summary);
 }
 
-/** True if the URL answers < 400. Tries HEAD, falls back to GET. 10s timeout. */
-async function isReachable(url: string): Promise<boolean> {
+type Verdict = 'live' | 'dead' | 'unknown';
+
+/**
+ * Classe un lien : 'live' (<400), 'dead' (404/410 — page supprimée), ou
+ * 'unknown' (403 anti-bot, 429, 5xx, timeout, erreur réseau). Tente HEAD puis
+ * GET, 10s par tentative. Ne jamais marquer « dead » sur un simple blocage bot.
+ */
+async function classify(url: string): Promise<Verdict> {
+  let sawBlock = false;
   for (const method of ['HEAD', 'GET'] as const) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 10_000);
@@ -82,21 +93,19 @@ async function isReachable(url: string): Promise<boolean> {
         redirect: 'follow',
         signal: controller.signal,
         headers: {
-          // Certains revendeurs renvoient 403 aux requêtes sans UA « navigateur ».
           'User-Agent':
-            'Mozilla/5.0 (compatible; FrenchBeautyBD-OrderBot/1.0; +https://www.frenchbeautybd.com)',
+            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Safari/537.36',
         },
       });
       clearTimeout(timer);
-      if (res.status < 400) return true;
-      // HEAD parfois interdit (405) : on laisse la boucle tenter le GET.
-      if (method === 'HEAD' && (res.status === 405 || res.status === 403)) continue;
-      return false;
+      if (res.status < 400) return 'live';
+      if (res.status === 404 || res.status === 410) return 'dead';
+      // 403/405/429/5xx : bloqué ou indécis — retente en GET, sinon 'unknown'.
+      sawBlock = true;
     } catch {
       clearTimeout(timer);
-      // HEAD a échoué : tente le GET ; si le GET échoue aussi → injoignable.
-      if (method === 'GET') return false;
+      sawBlock = true;
     }
   }
-  return false;
+  return sawBlock ? 'unknown' : 'dead';
 }
