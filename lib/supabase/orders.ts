@@ -7,7 +7,7 @@ import type { Order } from '../types/orders';
  * components stay unchanged. SERVER-ONLY.
  */
 const ORDER_SELECT =
-  '*, order_items ( id, order_id, product_id, quantity, unit_price_bdt, products ( name, brand ) )';
+  '*, order_items ( id, order_id, product_id, quantity, unit_price_bdt, source_url, source_ok, source_price_eur, source_checked_at, products ( name, brand, source_url ) )';
 
 function mapOrder(rec: any): Order {
   const items = rec.order_items ?? [];
@@ -34,8 +34,12 @@ function mapOrder(rec: any): Order {
       quantity: it.quantity,
       unit_price_bdt: it.unit_price_bdt,
       product: it.products
-        ? { name: it.products.name, brand: it.products.brand }
+        ? { name: it.products.name, brand: it.products.brand, source_url: it.products.source_url ?? null }
         : null,
+      source_url: it.source_url ?? null,
+      source_ok: it.source_ok ?? null,
+      source_price_eur: it.source_price_eur ?? null,
+      source_checked_at: it.source_checked_at ?? null,
     })),
   };
 }

@@ -17,7 +17,13 @@ export type OrderItem = {
   product: {
     name: string;
     brand: string;
+    source_url: string | null;
   } | null;
+  // Snapshot du sourcing vérifié au moment du passage en 'confirmed' (WF4).
+  source_url: string | null;
+  source_ok: boolean | null;
+  source_price_eur: number | null;
+  source_checked_at: string | null;
 };
 
 export type PaymentStatus =

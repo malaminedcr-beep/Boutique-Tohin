@@ -1,4 +1,4 @@
-import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
+import { Document, Page, Text, View, Link, StyleSheet } from '@react-pdf/renderer';
 import type { Order } from '../../lib/types/orders';
 
 const ACCENT = '#C9513A';
@@ -135,6 +135,17 @@ const s = StyleSheet.create({
     fontSize: 6,
     color: MUTED,
   },
+  tdSource: {
+    fontSize: 6,
+    color: ACCENT,
+    marginTop: 1.5,
+    textDecoration: 'none',
+  },
+  tdSourceMeta: {
+    fontSize: 5.5,
+    color: MUTED,
+    marginTop: 0.5,
+  },
   // ── Total ────────────────────────────────────
   totalBlock: {
     marginTop: 10,
@@ -231,6 +242,18 @@ const s = StyleSheet.create({
 
 const fmt = (n: number) => `৳${n.toLocaleString('en-US')}`;
 
+// Hôte lisible d'une URL d'achat (ex. "yves-rocher.fr"), sans planter si invalide.
+const HOST = (url: string) => {
+  try {
+    return new URL(url).host.replace(/^www\./, '');
+  } catch {
+    return url;
+  }
+};
+
+const SHORT_DATE = (iso: string) =>
+  new Date(iso).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit' });
+
 const SHORT_ID = (id: string) => id.split('-')[0].toUpperCase();
 
 const FORMAT_DATE = (iso: string) =>
@@ -294,17 +317,32 @@ export default function OrderSlipPDF({ order }: { order: Order }) {
             <Text style={[s.thText, s.colPrice]}>Unit price</Text>
             <Text style={[s.thText, s.colTotal]}>Subtotal</Text>
           </View>
-          {items.map((item, idx) => (
+          {items.map((item, idx) => {
+            // Lien d'achat : snapshot vérifié (WF4) en priorité, sinon référence produit.
+            const buyUrl = item.source_url ?? item.product?.source_url ?? null;
+            const verifiedOn = item.source_checked_at;
+            return (
             <View key={item.id} style={idx % 2 === 1 ? s.tableRowAlt : s.tableRow}>
               <View style={s.colProduct}>
                 <Text style={s.tdText}>{item.product?.name ?? '—'}</Text>
                 <Text style={s.tdBrand}>{item.product?.brand ?? ''}</Text>
+                {buyUrl ? (
+                  <Link src={buyUrl} style={s.tdSource}>
+                    Buy ▸ {HOST(buyUrl)}
+                  </Link>
+                ) : null}
+                {buyUrl && verifiedOn ? (
+                  <Text style={s.tdSourceMeta}>
+                    {item.source_ok === false ? '⚠ link down' : '✓ verified'} {SHORT_DATE(verifiedOn)}
+                  </Text>
+                ) : null}
               </View>
               <Text style={[s.tdText, s.colQty]}>{item.quantity}</Text>
               <Text style={[s.tdText, s.colPrice]}>{fmt(item.unit_price_bdt)}</Text>
               <Text style={[s.tdText, s.colTotal]}>{fmt(item.unit_price_bdt * item.quantity)}</Text>
             </View>
-          ))}
+            );
+          })}
         </View>
 
         {/* ── TOTAL ── */}
