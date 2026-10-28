@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createElement, type ReactElement } from 'react';
 import { renderToBuffer, type DocumentProps } from '@react-pdf/renderer';
 import { getOrderById } from '../../../../../lib/supabase/orders';
+import { classifySourceUrl, verdictToOk } from '../../../../../lib/verify-source';
 import OrderSlipPDF from '../../../../../components/admin/OrderSlipPDF';
 
 export const runtime = 'nodejs';
@@ -27,6 +28,18 @@ export async function GET(
   if (!order) {
     return NextResponse.json({ error: 'Order not found' }, { status: 404 });
   }
+
+  // Vérifie les liens d'achat EN DIRECT à chaque génération (le site le moins
+  // cher / la dispo peuvent évoluer). Tests en parallèle, timeout court.
+  const checkedAt = new Date().toISOString();
+  await Promise.all(
+    order.order_items.map(async (item) => {
+      const url = item.product?.source_url ?? null;
+      item.source_url = url;
+      item.source_checked_at = url ? checkedAt : null;
+      item.source_ok = url ? verdictToOk(await classifySourceUrl(url)) : null;
+    }),
+  );
 
   const doc = createElement(OrderSlipPDF, { order }) as unknown as ReactElement<DocumentProps>;
   const pdf = await renderToBuffer(doc);

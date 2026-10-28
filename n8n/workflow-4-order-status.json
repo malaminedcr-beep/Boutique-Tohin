@@ -99,25 +99,6 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "=https://www.frenchbeautybd.com/api/orders/{{ $json.body.record.id }}/verify-sources",
-        "authentication": "predefinedCredentialType",
-        "nodeCredentialType": "supabaseApi",
-        "options": {}
-      },
-      "id": "wf4-verify-sources",
-      "name": "Verify purchase links",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.2,
-      "position": [740, -20],
-      "continueOnFail": true,
-      "onError": "continueRegularOutput",
-      "credentials": {
-        "supabaseApi": { "id": "", "name": "Supabase French Beauty" }
-      }
-    },
-    {
-      "parameters": {
-        "method": "POST",
         "url": "https://api.resend.com/emails",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
@@ -166,10 +147,7 @@
     },
     "Switch order_status": {
       "main": [
-        [
-          { "node": "Resend — Confirmed", "type": "main", "index": 0 },
-          { "node": "Verify purchase links", "type": "main", "index": 0 }
-        ],
+        [{ "node": "Resend — Confirmed", "type": "main", "index": 0 }],
         [{ "node": "Resend — Shipped", "type": "main", "index": 0 }],
         [{ "node": "Resend — Delivered", "type": "main", "index": 0 }]
       ]
