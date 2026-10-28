@@ -240,7 +240,9 @@ const s = StyleSheet.create({
   },
 });
 
-const fmt = (n: number) => `৳${n.toLocaleString('en-US')}`;
+// Helvetica (police react-pdf par défaut) ne contient pas le signe ৳ — il
+// s'affiche comme un caractère parasite. On écrit "BDT" en clair.
+const fmt = (n: number) => `BDT ${n.toLocaleString('en-US')}`;
 
 // Hôte lisible d'une URL d'achat (ex. "yves-rocher.fr"), sans planter si invalide.
 const HOST = (url: string) => {
@@ -328,7 +330,7 @@ export default function OrderSlipPDF({ order }: { order: Order }) {
                 <Text style={s.tdBrand}>{item.product?.brand ?? ''}</Text>
                 {buyUrl ? (
                   <Link src={buyUrl} style={s.tdSource}>
-                    Buy ▸ {HOST(buyUrl)}
+                    Buy &gt; {HOST(buyUrl)}
                   </Link>
                 ) : null}
                 {buyUrl && verifiedOn ? (
