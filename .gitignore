@@ -39,3 +39,6 @@ image
 /*.html
 /*_files/
 /télécharger*
+
+# Local test artifacts
+slip-test.pdf
