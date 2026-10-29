@@ -336,10 +336,10 @@ export default function OrderSlipPDF({ order }: { order: Order }) {
                 {buyUrl && verifiedOn ? (
                   <Text style={s.tdSourceMeta}>
                     {item.source_ok === true
-                      ? '✓ live'
+                      ? 'link live'
                       : item.source_ok === false
-                        ? '⚠ dead link — find another'
-                        : '• could not verify (open to check)'}{' '}
+                        ? 'DEAD LINK - replace'
+                        : 'unverified - open to check'}{' '}
                     {SHORT_DATE(verifiedOn)}
                   </Text>
                 ) : null}
