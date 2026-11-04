@@ -110,12 +110,32 @@ export default function ShopClient({
   const [selectedBrands, setSelectedBrands] = useState<string[]>(initial.brands);
   const [prices, setPrices] = useState<string[]>(initial.prices);
   const [sort, setSort] = useState(initial.sort);
-  const [gender] = useState(initial.gender);
-  const [query] = useState(initial.q);
+  const [gender, setGender] = useState(initial.gender);
+  const [query, setQuery] = useState(initial.q);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  // Keep the URL in sync WITHOUT a server round-trip (history API, not router) —
-  // instant filtering client-side, shareable/bookmarkable URL, clean history.
+  // Parse filter state from a URL query string (validated against known values).
+  function readFilters(search: string): ShopInitialFilters {
+    const sp = new URLSearchParams(search);
+    const take = (key: string, ok: (v: string) => boolean) =>
+      (sp.get(key) ?? '')
+        .split(',')
+        .map((s) => s.trim())
+        .filter((v) => v && ok(v));
+    return {
+      categories: take('category', (v) => CATEGORIES.some((c) => c.value === v)),
+      brands: take('brand', (v) => brands.includes(v)),
+      prices: take('price', (v) => v in PRICE_BOUNDS),
+      sort: sp.get('sort') || 'popular',
+      gender: sp.get('gender') || '',
+      q: (sp.get('q') || '').trim(),
+    };
+  }
+
+  // Sync filters → URL with a history ENTRY per change (history.pushState), so
+  // Back/Forward step through the filter history. Guard: only push when the URL
+  // actually changes — skips the initial mount and Back/Forward-driven updates
+  // (those already match the current URL), which also prevents a loop.
   useEffect(() => {
     const params = new URLSearchParams();
     if (categories.length) params.set('category', categories.join(','));
@@ -125,8 +145,25 @@ export default function ShopClient({
     if (gender) params.set('gender', gender);
     if (query) params.set('q', query);
     const qs = params.toString();
-    window.history.replaceState(null, '', qs ? `/shop?${qs}` : '/shop');
+    if (qs === window.location.search.replace(/^\?/, '')) return;
+    window.history.pushState(null, '', qs ? `/shop?${qs}` : '/shop');
   }, [categories, selectedBrands, prices, sort, gender, query]);
+
+  // Back/Forward: restore the filter state from the URL the browser navigated to.
+  useEffect(() => {
+    const onPop = () => {
+      const f = readFilters(window.location.search);
+      setCategories(f.categories);
+      setSelectedBrands(f.brands);
+      setPrices(f.prices);
+      setSort(f.sort);
+      setGender(f.gender);
+      setQuery(f.q);
+    };
+    window.addEventListener('popstate', onPop);
+    return () => window.removeEventListener('popstate', onPop);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [brands]);
 
   const filteredProducts = useMemo(() => {
     const q = query.trim().toLowerCase();
