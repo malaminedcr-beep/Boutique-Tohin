@@ -49,14 +49,21 @@ export default async function ShopPage({
   const [products, brands] = await Promise.all([getProducts(), getAllBrands()]);
 
   // The URL is the source of truth: validate searchParams here (server) so the
-  // initial render — and the JS-disabled HTML — reflects the active filter.
+  // initial render — and the JS-disabled HTML — reflect the active filters.
+  // Groups are multi-select (comma-separated); only known values are kept.
+  const VALID_PRICES = new Set(['0-2000', '2000-3000', '3000-99999']);
+  const split = (v?: string) =>
+    (v ?? '')
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+
   const initial = {
-    category:
-      searchParams?.category && CATEGORIES.some((c) => c.slug === searchParams.category)
-        ? searchParams.category
-        : 'all',
-    brand: searchParams?.brand && brands.includes(searchParams.brand) ? searchParams.brand : '',
-    price: searchParams?.price ?? 'all',
+    categories: split(searchParams?.category).filter((c) =>
+      CATEGORIES.some((cat) => cat.slug === c),
+    ),
+    brands: split(searchParams?.brand).filter((b) => brands.includes(b)),
+    prices: split(searchParams?.price).filter((p) => VALID_PRICES.has(p)),
     sort: searchParams?.sort ?? 'popular',
     gender: searchParams?.gender ?? '',
     q: searchParams?.q?.trim() ?? '',

@@ -1,16 +1,14 @@
 'use client';
 
 import { useMemo, useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
 import ProductCard from '../../components/product/product-card';
 import { CATEGORIES as CATEGORY_SOURCE, categoryLabel } from '../../lib/categories';
-import { filterProducts } from '../../lib/commerce/filter';
 import type { Product } from '../../lib/commerce/types';
 
 export type ShopInitialFilters = {
-  category: string;
-  brand: string;
-  price: string;
+  categories: string[];
+  brands: string[];
+  prices: string[];
   sort: string;
   gender: string;
   q: string;
@@ -24,12 +22,33 @@ const PRICE_RANGES = [
   { label: '৳3,000+', value: '3000-99999' },
 ];
 
+// Non-overlapping, half-open bounds [min, max) — a product falls in exactly one.
+const PRICE_BOUNDS: Record<string, [number, number]> = {
+  '0-2000': [0, 2000],
+  '2000-3000': [2000, 3000],
+  '3000-99999': [3000, Infinity],
+};
+
 const SORT_OPTIONS = [
   { label: 'Popular', value: 'popular' },
   { label: 'New Arrivals', value: 'new' },
   { label: 'Price: Low to High', value: 'price-asc' },
   { label: 'Price: High to Low', value: 'price-desc' },
 ];
+
+// For/Gender → categories map (gender is URL-driven, no sidebar control).
+const GENDER_CATEGORIES: Record<string, string[]> = {
+  homme: ['body-care', 'deodorants'],
+  femme: ['face-care', 'body-care', 'hair-care', 'deodorants'],
+};
+
+function inAnyPrice(price: number, ranges: string[]): boolean {
+  if (ranges.length === 0) return true;
+  return ranges.some((r) => {
+    const [min, max] = PRICE_BOUNDS[r] ?? [0, Infinity];
+    return price >= min && (max === Infinity ? true : price < max);
+  });
+}
 
 /* ── small helpers ── */
 
@@ -52,7 +71,9 @@ function CheckRow({
 }) {
   return (
     <label className="group flex cursor-pointer items-center gap-2.5 py-[5px]">
+      <input type="checkbox" checked={checked} onChange={onChange} className="sr-only" />
       <span
+        aria-hidden
         className="flex h-[15px] w-[15px] shrink-0 items-center justify-center rounded-[3px] border transition-colors duration-150"
         style={{
           borderColor: checked ? '#C9513A' : '#D4CECC',
@@ -83,74 +104,77 @@ export default function ShopClient({
   brands: string[];
   initial: ShopInitialFilters;
 }) {
-  const router = useRouter();
-  // Initialise from the URL-derived props (source of truth), not empty state —
-  // so the server-rendered / JS-disabled HTML already shows the active filter.
-  const [selectedCategory, setSelectedCategory] = useState(initial.category);
-  const [selectedBrand, setSelectedBrand] = useState(initial.brand);
-  const [selectedPrice, setSelectedPrice] = useState(initial.price);
-  const [selectedSort, setSelectedSort] = useState(initial.sort);
-  const [genderQuery, setGenderQuery] = useState(initial.gender);
-  const [query, setQuery] = useState(initial.q);
+  // Multi-select state (OR within a group, AND between groups). Initialised from
+  // the URL-derived props so the server HTML and the first client render match.
+  const [categories, setCategories] = useState<string[]>(initial.categories);
+  const [selectedBrands, setSelectedBrands] = useState<string[]>(initial.brands);
+  const [prices, setPrices] = useState<string[]>(initial.prices);
+  const [sort, setSort] = useState(initial.sort);
+  const [gender] = useState(initial.gender);
+  const [query] = useState(initial.q);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  // Keep the URL in sync with the active filters so views are shareable.
+  // Keep the URL in sync WITHOUT a server round-trip (history API, not router) —
+  // instant filtering client-side, shareable/bookmarkable URL, clean history.
   useEffect(() => {
     const params = new URLSearchParams();
-    if (selectedCategory !== 'all') params.set('category', selectedCategory);
-    if (selectedBrand) params.set('brand', selectedBrand);
-    if (selectedPrice !== 'all') params.set('price', selectedPrice);
-    if (selectedSort !== 'popular') params.set('sort', selectedSort);
-    if (genderQuery) params.set('gender', genderQuery);
+    if (categories.length) params.set('category', categories.join(','));
+    if (selectedBrands.length) params.set('brand', selectedBrands.join(','));
+    if (prices.length) params.set('price', prices.join(','));
+    if (sort !== 'popular') params.set('sort', sort);
+    if (gender) params.set('gender', gender);
     if (query) params.set('q', query);
     const qs = params.toString();
-    router.replace(qs ? `/shop?${qs}` : '/shop', { scroll: false });
-  }, [selectedCategory, selectedBrand, selectedPrice, selectedSort, genderQuery, query, router]);
+    window.history.replaceState(null, '', qs ? `/shop?${qs}` : '/shop');
+  }, [categories, selectedBrands, prices, sort, gender, query]);
 
   const filteredProducts = useMemo(() => {
-    const base = filterProducts(products, {
-      gender: genderQuery,
-      category: selectedCategory,
-      brand: selectedBrand,
-      price: selectedPrice,
-      q: query,
+    const q = query.trim().toLowerCase();
+    const genderCats = gender ? GENDER_CATEGORIES[gender] : null;
+    const base = products.filter((p) => {
+      const matchesQuery =
+        !q || p.name.toLowerCase().includes(q) || p.brand.toLowerCase().includes(q);
+      const matchesGender = !genderCats || genderCats.includes(p.category);
+      const matchesCategory = categories.length === 0 || categories.includes(p.category);
+      const matchesBrand = selectedBrands.length === 0 || selectedBrands.includes(p.brand);
+      const matchesPrice = inAnyPrice(p.priceBdt, prices);
+      return matchesQuery && matchesGender && matchesCategory && matchesBrand && matchesPrice;
     });
-    if (selectedSort === 'price-asc') return [...base].sort((a, b) => a.priceBdt - b.priceBdt);
-    if (selectedSort === 'price-desc') return [...base].sort((a, b) => b.priceBdt - a.priceBdt);
-    if (selectedSort === 'new') {
-      // Reorder new arrivals to the front; never drop the rest of the catalogue.
-      return [...base].sort(
-        (a, b) => (b.badge === 'new' ? 1 : 0) - (a.badge === 'new' ? 1 : 0),
-      );
+    if (sort === 'price-asc') return [...base].sort((a, b) => a.priceBdt - b.priceBdt);
+    if (sort === 'price-desc') return [...base].sort((a, b) => b.priceBdt - a.priceBdt);
+    if (sort === 'new') {
+      return [...base].sort((a, b) => (b.badge === 'new' ? 1 : 0) - (a.badge === 'new' ? 1 : 0));
     }
     return base;
-  }, [products, genderQuery, selectedCategory, selectedBrand, selectedPrice, selectedSort]);
+  }, [products, query, gender, categories, selectedBrands, prices, sort]);
 
   const activeHeading = query
     ? `Search: “${query}”`
-    : selectedBrand
-    ? selectedBrand
-    : selectedCategory !== 'all'
-    ? categoryLabel(selectedCategory)
+    : categories.length === 1 && selectedBrands.length === 0
+    ? categoryLabel(categories[0])
+    : selectedBrands.length === 1 && categories.length === 0
+    ? selectedBrands[0]
     : 'All Products';
 
+  const hasActiveFilters =
+    categories.length > 0 ||
+    selectedBrands.length > 0 ||
+    prices.length > 0 ||
+    sort !== 'popular' ||
+    !!query ||
+    !!gender;
+
   function clearAll() {
-    setSelectedCategory('all');
-    setSelectedBrand('');
-    setSelectedPrice('all');
-    setSelectedSort('popular');
-    setGenderQuery('');
-    setQuery('');
+    setCategories([]);
+    setSelectedBrands([]);
+    setPrices([]);
+    setSort('popular');
+    // gender & query are URL-seeded and read-only in the UI; clearing the
+    // checkbox groups + sort is the "reset" the sidebar controls expose.
   }
 
-  function toggleCategory(value: string) {
-    setSelectedCategory((prev) => (prev === value ? 'all' : value));
-  }
-  function togglePrice(value: string) {
-    setSelectedPrice((prev) => (prev === value ? 'all' : value));
-  }
-  function toggleBrand(value: string) {
-    setSelectedBrand((prev) => (prev === value ? '' : value));
+  function toggle(list: string[], setList: (v: string[]) => void, value: string) {
+    setList(list.includes(value) ? list.filter((v) => v !== value) : [...list, value]);
   }
 
   /* ── sidebar inner content (rendered in both desktop & drawer) ── */
@@ -171,8 +195,8 @@ export default function ShopClient({
         <div className="py-4 border-b border-hairline">
           <SectionTitle>Sort by</SectionTitle>
           <select
-            value={selectedSort}
-            onChange={(e) => setSelectedSort(e.target.value)}
+            value={sort}
+            onChange={(e) => setSort(e.target.value)}
             className="w-full cursor-pointer rounded border border-hairline bg-white px-3 py-2 text-[12px] text-ink transition-colors focus:border-accent focus:outline-none"
           >
             {SORT_OPTIONS.map((opt) => (
@@ -190,8 +214,8 @@ export default function ShopClient({
             <CheckRow
               key={r.value}
               label={r.label}
-              checked={selectedPrice === r.value}
-              onChange={() => togglePrice(r.value)}
+              checked={prices.includes(r.value)}
+              onChange={() => toggle(prices, setPrices, r.value)}
             />
           ))}
         </div>
@@ -203,8 +227,8 @@ export default function ShopClient({
             <CheckRow
               key={cat.value}
               label={cat.label}
-              checked={selectedCategory === cat.value}
-              onChange={() => toggleCategory(cat.value)}
+              checked={categories.includes(cat.value)}
+              onChange={() => toggle(categories, setCategories, cat.value)}
             />
           ))}
         </div>
@@ -216,8 +240,8 @@ export default function ShopClient({
             <CheckRow
               key={brand}
               label={brand}
-              checked={selectedBrand === brand}
-              onChange={() => toggleBrand(brand)}
+              checked={selectedBrands.includes(brand)}
+              onChange={() => toggle(selectedBrands, setSelectedBrands, brand)}
             />
           ))}
         </div>
@@ -226,7 +250,8 @@ export default function ShopClient({
         <div className="pt-5">
           <button
             onClick={clearAll}
-            className="cursor-pointer text-[11px] font-semibold uppercase tracking-[0.18em] text-accent transition-colors hover:underline"
+            disabled={!hasActiveFilters}
+            className="cursor-pointer text-[11px] font-semibold uppercase tracking-[0.18em] text-accent transition-colors hover:underline disabled:cursor-default disabled:text-muted disabled:no-underline"
           >
             Clear all
           </button>
@@ -280,6 +305,13 @@ export default function ShopClient({
               </button>
             </div>
             {renderSidebar()}
+            {/* Apply/close — mobile convenience */}
+            <button
+              onClick={() => setDrawerOpen(false)}
+              className="mt-6 w-full border border-ink bg-ink px-6 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-white transition-colors hover:bg-accent hover:border-accent"
+            >
+              Show {filteredProducts.length} Products
+            </button>
           </aside>
         </div>
       )}
@@ -310,7 +342,15 @@ export default function ShopClient({
           {filteredProducts.length === 0 ? (
             <div className="rounded-lg border border-hairline bg-white p-16 text-center">
               <p className="font-serif text-xl italic text-ink">No products found</p>
-              <p className="mt-3 text-sm text-muted">Try adjusting your filters.</p>
+              <p className="mt-3 text-sm text-muted">Try adjusting or clearing your filters.</p>
+              {hasActiveFilters && (
+                <button
+                  onClick={clearAll}
+                  className="mt-5 inline-flex cursor-pointer items-center border border-ink px-6 py-2.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-ink transition-colors hover:bg-ink hover:text-white"
+                >
+                  Clear all filters
+                </button>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
