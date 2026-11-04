@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { getBrowserSupabase } from '../../../lib/supabase/client';
+import { validatePassword, PASSWORD_MIN_LENGTH, PASSWORD_HINT } from '../../../lib/password-policy';
 
 export default function ResetPasswordPage() {
   const router = useRouter();
@@ -37,6 +38,11 @@ export default function ResetPasswordPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!ready) return;
+    const pwError = validatePassword(password);
+    if (pwError) {
+      setError(pwError);
+      return;
+    }
     if (password !== confirm) {
       setError('Passwords do not match.');
       return;
@@ -119,10 +125,11 @@ export default function ResetPasswordPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                minLength={8}
-                placeholder="••••••••  (min. 8 characters)"
+                minLength={PASSWORD_MIN_LENGTH}
+                placeholder="••••••••••"
                 className="w-full border border-hairline bg-surface px-4 py-3 text-sm text-ink placeholder:text-muted/40 outline-none focus:border-accent transition-colors"
               />
+              <p className="mt-1.5 text-[11px] leading-snug text-muted">{PASSWORD_HINT}</p>
             </div>
             <div>
               <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.15em] text-muted">

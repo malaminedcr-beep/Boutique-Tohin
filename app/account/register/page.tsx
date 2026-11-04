@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { getBrowserSupabase } from '../../../lib/supabase/client';
+import { validatePassword, PASSWORD_MIN_LENGTH, PASSWORD_HINT } from '../../../lib/password-policy';
 
 export default function RegisterPage() {
   const [fullName, setFullName] = useState('');
@@ -16,6 +17,13 @@ export default function RegisterPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
+
+    const pwError = validatePassword(password);
+    if (pwError) {
+      setError(pwError);
+      setLoading(false);
+      return;
+    }
 
     const { error: signUpError } = await getBrowserSupabase().auth.signUp({
       email,
@@ -117,10 +125,11 @@ export default function RegisterPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                minLength={8}
-                placeholder="••••••••  (min. 8 characters)"
+                minLength={PASSWORD_MIN_LENGTH}
+                placeholder="••••••••••"
                 className="w-full border border-hairline bg-surface px-4 py-3 text-sm text-ink placeholder:text-muted/40 outline-none focus:border-accent transition-colors"
               />
+              <p className="mt-1.5 text-[11px] leading-snug text-muted">{PASSWORD_HINT}</p>
             </div>
             <button
               type="submit"
