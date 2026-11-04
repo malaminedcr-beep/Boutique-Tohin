@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { getBrowserSupabase } from '../../../lib/supabase/client';
 import { validatePassword, PASSWORD_MIN_LENGTH, PASSWORD_HINT } from '../../../lib/password-policy';
 
 export default function RegisterPage() {
@@ -18,6 +17,7 @@ export default function RegisterPage() {
     setLoading(true);
     setError(null);
 
+    // Retour immédiat côté front ; la règle est RE-imposée côté serveur.
     const pwError = validatePassword(password);
     if (pwError) {
       setError(pwError);
@@ -25,17 +25,21 @@ export default function RegisterPage() {
       return;
     }
 
-    const { error: signUpError } = await getBrowserSupabase().auth.signUp({
-      email,
-      password,
-      options: {
-        data: { full_name: fullName },
-        emailRedirectTo:
-          typeof window !== 'undefined' ? `${window.location.origin}/account/login` : undefined,
-      },
-    });
-    if (signUpError) {
-      setError(signUpError.message || 'Registration failed.');
+    let res: Response;
+    try {
+      res = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, fullName }),
+      });
+    } catch {
+      setError('Network error. Please try again.');
+      setLoading(false);
+      return;
+    }
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setError(data.error || 'Registration failed.');
       setLoading(false);
       return;
     }
