@@ -171,29 +171,29 @@ export default function Hero() {
             initial="enter"
             animate="center"
             exit="exit"
-            className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-start px-6 pt-8 text-center md:items-start md:justify-center md:px-14 md:pt-0 md:text-left lg:px-20"
+            className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-start px-6 pt-5 text-center md:items-start md:justify-center md:px-14 md:pt-0 md:text-left lg:px-20"
           >
-            <div className="flex w-full max-w-md flex-col items-center gap-3.5 md:max-w-[46%] md:items-start">
+            <div className="flex w-full max-w-md flex-col items-center gap-2.5 md:max-w-[46%] md:items-start md:gap-4">
               {/* Framed eyebrow label. */}
-              <span className="self-center border border-ink/25 px-3 py-1.5 text-[10px] uppercase tracking-[0.25em] text-ink/70 md:self-start">
+              <span className="self-center border border-ink/25 px-3 py-1 text-[10px] uppercase tracking-[0.25em] text-ink/70 md:self-start md:py-1.5">
                 {slide.eyebrow}
               </span>
 
-              {/* Title */}
+              {/* Title — smaller on mobile so the text clears the product. */}
               <h1
                 className="font-serif font-semibold text-ink"
                 style={{
-                  fontSize: 'clamp(1.7rem, 5vw, 3.35rem)',
-                  lineHeight: 1.1,
+                  fontSize: 'clamp(1.4rem, 4.6vw, 3.35rem)',
+                  lineHeight: 1.12,
                   letterSpacing: '-0.01em',
                 }}
               >
                 {slide.title}
               </h1>
 
-              {/* Subtitle */}
+              {/* Subtitle — hidden on mobile (no room above the product), shown on desktop. */}
               <p
-                className="max-w-sm text-sm leading-7 text-muted md:max-w-xl md:text-base"
+                className="hidden max-w-sm text-sm leading-7 text-muted md:block md:max-w-xl md:text-base"
                 style={{ fontFamily: 'var(--font-sans)' }}
               >
                 {slide.subtitle}
@@ -204,11 +204,11 @@ export default function Hero() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 transition={{ duration: 0.2, ease: 'easeOut' }}
-                className="pointer-events-auto mt-1 w-full md:w-auto"
+                className="pointer-events-auto mt-0.5 w-full md:mt-1 md:w-auto"
               >
                 <Link
                   href={slide.href}
-                  className="flex w-full cursor-pointer items-center justify-center rounded-none bg-accent px-9 py-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-white shadow-sm transition-colors hover:bg-accent/90 md:inline-flex md:w-auto"
+                  className="flex w-full cursor-pointer items-center justify-center rounded-none bg-accent px-9 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-white shadow-sm transition-colors hover:bg-accent/90 md:inline-flex md:w-auto md:py-4"
                 >
                   {slide.cta}
                 </Link>
