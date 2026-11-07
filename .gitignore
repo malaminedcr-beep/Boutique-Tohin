@@ -42,3 +42,6 @@ image
 
 # Local test artifacts
 slip-test.pdf
+
+# Hero generation drafts (review only, not shipped)
+public/hero/drafts/

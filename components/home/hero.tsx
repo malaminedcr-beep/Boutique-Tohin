@@ -1,73 +1,52 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import Image from 'next/image';
 import Link from 'next/link';
 import { AnimatePresence, motion, type Variants } from 'motion/react';
 
 type Slide = {
   key: string;
-  image: string;
-  /** Empty side of the artwork where the text sits. */
-  side: 'left' | 'right';
-  /** 'dark' = dark text on light artwork · 'light' = light text on dark artwork. */
-  theme: 'dark' | 'light';
+  /** 4:5 artwork for mobile (clean empty space at the TOP for text). */
+  portrait: string;
+  /** 16:9 artwork for desktop (clean empty space on the LEFT for text). */
+  landscape: string;
   eyebrow: string;
   title: string;
   subtitle: string;
   cta: string;
   href: string;
-  /** Focus point kept in frame when the banner is cropped (mobile). */
-  objectPosition: string;
-  /** Legibility scrim on the text side. */
-  scrim: string;
 };
 
 const SLIDES: Slide[] = [
   {
     key: 'monoi',
-    image: '/images/hero/hero-monoi-v4.jpg',
-    side: 'left',
-    theme: 'dark',
+    portrait: '/hero/monoi-portrait.webp',
+    landscape: '/hero/monoi-landscape.webp',
     eyebrow: 'Scent of Summer',
     title: 'Nourished Skin, Island Glow',
     subtitle: '98% natural origin — Monoï de Tahiti body milk for silky, sun-kissed skin.',
     cta: 'Shop Now',
     href: '/product/16',
-    // Bottle sits on the right — keep it in view on narrow crops.
-    objectPosition: 'right center',
-    scrim:
-      'linear-gradient(to right, rgba(251,248,245,0.92) 0%, rgba(251,248,245,0.55) 34%, transparent 62%)',
   },
   {
     key: 'effaclar',
-    image: '/images/hero/hero-effaclar-v4.jpg',
-    side: 'left',
-    theme: 'dark',
+    portrait: '/hero/effaclar-portrait.webp',
+    landscape: '/hero/effaclar-landscape.webp',
     eyebrow: 'Dermatologist Recommended',
     title: 'Clear Skin, Every Day',
     subtitle: 'Effaclar Serum — a daily peeling that visibly reduces imperfections.',
     cta: 'Shop Now',
     href: '/product/42',
-    // Serum bottle is far right — anchor right so mobile shows the product.
-    objectPosition: 'right center',
-    scrim:
-      'linear-gradient(to right, rgba(251,248,245,0.92) 0%, rgba(251,248,245,0.55) 34%, transparent 62%)',
   },
   {
     key: 'mineral89',
-    image: '/images/hero/hero-mineral89-v3.jpg',
-    side: 'right',
-    theme: 'light',
+    portrait: '/hero/mineral89-portrait.webp',
+    landscape: '/hero/mineral89-landscape.webp',
     eyebrow: 'New Arrival',
     title: 'Born From French Volcanoes',
     subtitle: '89 minerals. One drop of instant, lasting hydration.',
     cta: 'Discover',
     href: '/product/30',
-    // Vichy bottle sits left of centre — bias left so it isn't clipped on mobile.
-    objectPosition: '15% center',
-    scrim:
-      'linear-gradient(to left, rgba(6,14,26,0.82) 0%, rgba(6,14,26,0.45) 34%, transparent 62%)',
   },
 ];
 
@@ -139,7 +118,6 @@ export default function Hero() {
   };
 
   const slide = SLIDES[index];
-  const lightText = slide.theme === 'light';
 
   return (
     <section
@@ -151,8 +129,8 @@ export default function Hero() {
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
-      {/* ── Full-bleed artwork with text overlaid ──────────────────── */}
-      <div className="relative aspect-[4/5] w-full overflow-hidden bg-canvas sm:aspect-[16/10] lg:aspect-[16/7]">
+      {/* ── Full-bleed artwork: 4:5 on mobile, 16:9 on desktop ── */}
+      <div className="relative aspect-[4/5] w-full overflow-hidden bg-canvas md:aspect-[16/9]">
         <AnimatePresence custom={direction}>
           <motion.div
             key={slide.key}
@@ -163,22 +141,29 @@ export default function Hero() {
             exit="exit"
             className="absolute inset-0"
           >
-            <Image
-              src={slide.image}
-              alt=""
-              fill
-              priority
-              quality={90}
-              sizes="100vw"
-              className="object-cover"
-              style={{ objectPosition: slide.objectPosition }}
+            {/* Art direction: portrait on mobile, landscape on desktop. */}
+            <picture>
+              <source media="(min-width: 768px)" srcSet={slide.landscape} />
+              <img
+                src={slide.portrait}
+                alt=""
+                className="absolute inset-0 h-full w-full object-cover"
+              />
+            </picture>
+
+            {/* Legibility scrim: fades from the TOP on mobile, from the LEFT on desktop. */}
+            <div
+              aria-hidden
+              className="absolute inset-x-0 top-0 h-[58%] bg-gradient-to-b from-canvas/90 via-canvas/35 to-transparent md:hidden"
             />
-            {/* Legibility scrim on the text side. */}
-            <div aria-hidden className="absolute inset-0" style={{ background: slide.scrim }} />
+            <div
+              aria-hidden
+              className="absolute inset-y-0 left-0 hidden w-[62%] bg-gradient-to-r from-canvas/92 via-canvas/45 to-transparent md:block"
+            />
           </motion.div>
         </AnimatePresence>
 
-        {/* Text overlay (clicks pass through except the CTA). */}
+        {/* Text overlay — TOP on mobile, LEFT-centered on desktop. */}
         <AnimatePresence custom={direction}>
           <motion.div
             key={slide.key}
@@ -186,29 +171,19 @@ export default function Hero() {
             initial="enter"
             animate="center"
             exit="exit"
-            className={`pointer-events-none absolute inset-0 z-10 flex items-center ${
-              slide.side === 'right' ? 'justify-end' : 'justify-start'
-            }`}
+            className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-start px-6 pt-8 text-center md:items-start md:justify-center md:px-14 md:pt-0 md:text-left lg:px-20"
           >
-            <div
-              className={`flex max-w-[82%] flex-col gap-4 px-6 sm:max-w-[60%] sm:px-10 md:max-w-[46%] md:px-14 lg:px-20 ${
-                slide.side === 'right' ? 'items-end text-right' : 'items-start text-left'
-              }`}
-            >
+            <div className="flex w-full max-w-md flex-col items-center gap-3.5 md:max-w-[46%] md:items-start">
               {/* Framed eyebrow label. */}
-              <span
-                className={`border px-3 py-1.5 text-[10px] uppercase tracking-[0.25em] ${
-                  lightText ? 'border-white/40 text-white/85' : 'border-ink/25 text-ink/70'
-                }`}
-              >
+              <span className="self-center border border-ink/25 px-3 py-1.5 text-[10px] uppercase tracking-[0.25em] text-ink/70 md:self-start">
                 {slide.eyebrow}
               </span>
 
               {/* Title */}
               <h1
-                className={`font-serif font-semibold ${lightText ? 'text-white' : 'text-ink'}`}
+                className="font-serif font-semibold text-ink"
                 style={{
-                  fontSize: 'clamp(2rem, 4.2vw, 3.5rem)',
+                  fontSize: 'clamp(1.7rem, 5vw, 3.35rem)',
                   lineHeight: 1.1,
                   letterSpacing: '-0.01em',
                 }}
@@ -218,24 +193,22 @@ export default function Hero() {
 
               {/* Subtitle */}
               <p
-                className={`max-w-xl text-sm leading-7 sm:text-base ${
-                  lightText ? 'text-white/85' : 'text-muted'
-                }`}
+                className="max-w-sm text-sm leading-7 text-muted md:max-w-xl md:text-base"
                 style={{ fontFamily: 'var(--font-sans)' }}
               >
                 {slide.subtitle}
               </p>
 
-              {/* CTA — solid accent rectangle, sharp corners, micro-interaction. */}
+              {/* CTA — full width on mobile, inline on desktop. */}
               <motion.div
-                whileHover={{ scale: 1.03 }}
-                whileTap={{ scale: 0.97 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 transition={{ duration: 0.2, ease: 'easeOut' }}
-                className="pointer-events-auto mt-1 inline-block"
+                className="pointer-events-auto mt-1 w-full md:w-auto"
               >
                 <Link
                   href={slide.href}
-                  className="inline-flex cursor-pointer items-center rounded-none bg-accent px-9 py-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-white shadow-sm transition-colors hover:bg-accent/90"
+                  className="flex w-full cursor-pointer items-center justify-center rounded-none bg-accent px-9 py-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-white shadow-sm transition-colors hover:bg-accent/90 md:inline-flex md:w-auto"
                 >
                   {slide.cta}
                 </Link>
@@ -268,7 +241,7 @@ export default function Hero() {
 
         {/* Dots. */}
         <div className="pointer-events-none absolute bottom-6 left-0 right-0 z-20">
-          <div className="mx-auto flex max-w-7xl px-6 sm:px-10 md:px-14 lg:px-20">
+          <div className="mx-auto flex max-w-7xl justify-center px-6 md:justify-start md:px-14 lg:px-20">
             <div className="pointer-events-auto flex items-center gap-2.5">
               {SLIDES.map((s, i) => (
                 <motion.button
@@ -279,9 +252,7 @@ export default function Hero() {
                   aria-current={i === index}
                   animate={{ width: i === index ? 24 : 8 }}
                   transition={{ duration: 0.3, ease: 'easeOut' }}
-                  className={`h-2 rounded-full ${
-                    i === index ? 'bg-accent' : lightText ? 'bg-white/40' : 'bg-ink/20'
-                  }`}
+                  className={`h-2 rounded-full ${i === index ? 'bg-accent' : 'bg-ink/25'}`}
                 />
               ))}
             </div>
