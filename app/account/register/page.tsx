@@ -58,13 +58,13 @@ export default function RegisterPage() {
               </svg>
             </div>
             <div>
-              <p className="mb-1 text-[10px] uppercase tracking-[0.35em] text-muted">Registration successful</p>
-              <h1 className="font-serif text-3xl uppercase tracking-widest text-ink">Account created!</h1>
+              <p className="mb-1 text-[10px] uppercase tracking-[0.35em] text-muted">Almost there</p>
+              <h1 className="font-serif text-3xl uppercase tracking-widest text-ink">Confirm your email</h1>
             </div>
-            <p className="text-sm text-muted">
-              Your account <span className="font-semibold text-ink">{email}</span> has been
-              created.<br />
-              You can now sign in.
+            <p className="text-sm text-muted leading-relaxed">
+              We&apos;ve sent a confirmation link to{' '}
+              <span className="font-semibold text-ink">{email}</span>.<br />
+              Click it to activate your account, then sign in.
             </p>
             <Link
               href="/account/login"

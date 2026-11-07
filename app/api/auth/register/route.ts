@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createAdminSupabase } from '../../../../lib/supabase/admin';
+import { getServerSupabase } from '../../../../lib/supabase/server';
 import { validatePassword } from '../../../../lib/password-policy';
 
 export const dynamic = 'force-dynamic';
@@ -13,10 +14,10 @@ function clientIp(request: Request): string {
 }
 
 /**
- * Inscription côté serveur. Le compte est créé DÉJÀ CONFIRMÉ via le client
- * service-role (`email_confirm: true`) tant que le SMTP custom n'est pas
- * branché (le flux email par défaut échouait). Protégé par un honeypot et un
- * rate-limit de 5 inscriptions / IP / heure. Règle de mot de passe imposée ici.
+ * Inscription côté serveur. Crée le compte via `signUp` → Supabase envoie l'email
+ * de confirmation (SMTP custom Resend). Le lien pointe sur /auth/callback (échange
+ * du code → session). Protégé par un honeypot et un rate-limit 5/IP/heure. Règle
+ * de mot de passe imposée ici (pas seulement au front).
  */
 export async function POST(request: Request) {
   let body: any;
@@ -26,10 +27,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Invalid request.' }, { status: 400 });
   }
 
-  // Honeypot — un champ caché que seuls les bots remplissent. Si rempli, on
-  // fait semblant de réussir sans rien créer (ne révèle pas le piège).
+  // Honeypot — champ caché que seuls les bots remplissent → faux succès silencieux.
   if (String(body?.company ?? '').trim() !== '') {
-    return NextResponse.json({ ok: true });
+    return NextResponse.json({ ok: true, needsConfirmation: true });
   }
 
   const email = String(body?.email ?? '').trim().toLowerCase();
@@ -45,14 +45,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: pwError }, { status: 400 });
   }
 
+  // Rate-limit : 5 inscriptions max par IP par heure (table service-role only).
   let admin;
   try {
     admin = createAdminSupabase();
   } catch {
     return NextResponse.json({ error: 'Server is not configured for sign-up.' }, { status: 500 });
   }
-
-  // Rate-limit : 5 inscriptions max par IP par heure.
   const ip = clientIp(request);
   const since = new Date(Date.now() - 60 * 60 * 1000).toISOString();
   const { count } = await admin
@@ -68,21 +67,25 @@ export async function POST(request: Request) {
   }
   await admin.from('signup_throttle').insert({ ip });
 
-  const { error } = await admin.auth.admin.createUser({
+  // Real sign-up → confirmation email via Resend SMTP; link lands on /auth/callback.
+  const origin =
+    request.headers.get('origin') ||
+    process.env.NEXT_PUBLIC_SITE_URL ||
+    'https://www.frenchbeautybd.com';
+
+  const supabase = getServerSupabase();
+  const { error } = await supabase.auth.signUp({
     email,
     password,
-    email_confirm: true, // bypass the (unconfigured) confirmation email for now
-    user_metadata: { full_name: fullName },
+    options: {
+      data: { full_name: fullName },
+      emailRedirectTo: `${origin}/auth/callback?next=/account`,
+    },
   });
 
   if (error) {
     const msg = (error.message || '').toLowerCase();
-    if (
-      (error as any).status === 422 ||
-      msg.includes('already') ||
-      msg.includes('registered') ||
-      msg.includes('exists')
-    ) {
+    if (msg.includes('already') || msg.includes('registered')) {
       return NextResponse.json(
         { error: 'This email is already registered. Please sign in instead.' },
         { status: 409 },
@@ -91,5 +94,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: error.message || 'Registration failed.' }, { status: 400 });
   }
 
-  return NextResponse.json({ ok: true });
+  // Confirm-email is on → the account must be verified via the email link.
+  return NextResponse.json({ ok: true, needsConfirmation: true });
 }

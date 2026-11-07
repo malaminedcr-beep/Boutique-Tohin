@@ -15,9 +15,10 @@ export default function ForgotPasswordPage() {
     setLoading(true);
     setError(null);
 
-    const { error: resetError } = await getBrowserSupabase().auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/account/reset-password`,
-    });
+    const { error: resetError } = await getBrowserSupabase().auth.resetPasswordForEmail(
+      email.trim().toLowerCase(),
+      { redirectTo: `${window.location.origin}/auth/callback?next=/account/reset-password` },
+    );
     if (resetError) {
       setError(resetError.message || 'Could not send the reset link.');
       setLoading(false);
