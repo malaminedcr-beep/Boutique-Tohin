@@ -8,6 +8,7 @@ export default function RegisterPage() {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [company, setCompany] = useState(''); // honeypot — stays empty for humans
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -30,7 +31,7 @@ export default function RegisterPage() {
       res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email, password, fullName }),
+        body: JSON.stringify({ email, password, fullName, company }),
       });
     } catch {
       setError('Network error. Please try again.');
@@ -94,6 +95,17 @@ export default function RegisterPage() {
           )}
 
           <form onSubmit={handleSubmit} className="space-y-5">
+            {/* Honeypot — hidden from humans; bots that fill it are dropped. */}
+            <input
+              type="text"
+              name="company"
+              value={company}
+              onChange={(e) => setCompany(e.target.value)}
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+              className="absolute left-[-9999px] top-auto h-0 w-0 overflow-hidden opacity-0"
+            />
             <div>
               <label className="mb-1.5 block text-[11px] font-semibold uppercase tracking-[0.15em] text-muted">
                 Full name
