@@ -119,6 +119,36 @@ export default function Hero() {
 
   const slide = SLIDES[index];
 
+  // Pagination dots — reused in the mobile bottom bar and the desktop bottom-left.
+  const dots = (
+    <div className="pointer-events-auto flex items-center gap-2.5">
+      {SLIDES.map((s, i) => (
+        <motion.button
+          key={s.key}
+          type="button"
+          onClick={() => goTo(i)}
+          aria-label={`Go to slide ${i + 1}`}
+          aria-current={i === index}
+          animate={{ width: i === index ? 24 : 8 }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
+          className={`h-2 rounded-full ${i === index ? 'bg-accent' : 'bg-ink/25'}`}
+        />
+      ))}
+    </div>
+  );
+
+  // CTA button — full width (used at the bottom on mobile), auto width on desktop.
+  const ctaButton = (fullWidth: boolean) => (
+    <Link
+      href={slide.href}
+      className={`flex cursor-pointer items-center justify-center rounded-none bg-accent px-9 py-3.5 text-[11px] font-semibold uppercase tracking-[0.18em] text-white shadow-sm transition-colors hover:bg-accent/90 ${
+        fullWidth ? 'w-full' : 'md:inline-flex md:w-auto'
+      }`}
+    >
+      {slide.cta}
+    </Link>
+  );
+
   return (
     <section
       aria-roledescription="carousel"
@@ -144,17 +174,17 @@ export default function Hero() {
             {/* Art direction: portrait on mobile, landscape on desktop. */}
             <picture>
               <source media="(min-width: 768px)" srcSet={slide.landscape} />
-              <img
-                src={slide.portrait}
-                alt=""
-                className="absolute inset-0 h-full w-full object-cover"
-              />
+              <img src={slide.portrait} alt="" className="absolute inset-0 h-full w-full object-cover" />
             </picture>
 
-            {/* Legibility scrim: fades from the TOP on mobile, from the LEFT on desktop. */}
+            {/* Legibility scrims: top band (mobile title), bottom band (mobile CTA), left band (desktop). */}
             <div
               aria-hidden
-              className="absolute inset-x-0 top-0 h-[58%] bg-gradient-to-b from-canvas/90 via-canvas/35 to-transparent md:hidden"
+              className="absolute inset-x-0 top-0 h-[34%] bg-gradient-to-b from-canvas/90 via-canvas/35 to-transparent md:hidden"
+            />
+            <div
+              aria-hidden
+              className="absolute inset-x-0 bottom-0 h-[26%] bg-gradient-to-t from-canvas/85 via-canvas/35 to-transparent md:hidden"
             />
             <div
               aria-hidden
@@ -163,7 +193,7 @@ export default function Hero() {
           </motion.div>
         </AnimatePresence>
 
-        {/* Text overlay — TOP on mobile, LEFT-centered on desktop. */}
+        {/* Text overlay — title TOP + CTA BOTTOM on mobile; grouped LEFT-centered on desktop. */}
         <AnimatePresence custom={direction}>
           <motion.div
             key={slide.key}
@@ -171,19 +201,18 @@ export default function Hero() {
             initial="enter"
             animate="center"
             exit="exit"
-            className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-start px-6 pt-5 text-center md:items-start md:justify-center md:px-14 md:pt-0 md:text-left lg:px-20"
+            className="pointer-events-none absolute inset-0 z-10 flex flex-col px-6 py-5 text-center md:right-auto md:w-[46%] md:justify-center md:px-14 md:py-0 md:text-left lg:px-20"
           >
-            <div className="flex w-full max-w-md flex-col items-center gap-2.5 md:max-w-[46%] md:items-start md:gap-4">
-              {/* Framed eyebrow label. */}
-              <span className="self-center border border-ink/25 px-3 py-1 text-[10px] uppercase tracking-[0.25em] text-ink/70 md:self-start md:py-1.5">
+            {/* Top group: eyebrow + title (+ subtitle & CTA on desktop only). */}
+            <div className="flex flex-col items-center gap-2.5 md:items-start md:gap-4">
+              <span className="border border-ink/25 px-3 py-1 text-[10px] uppercase tracking-[0.25em] text-ink/70 md:py-1.5">
                 {slide.eyebrow}
               </span>
 
-              {/* Title — smaller on mobile so the text clears the product. */}
               <h1
                 className="font-serif font-semibold text-ink"
                 style={{
-                  fontSize: 'clamp(1.4rem, 4.6vw, 3.35rem)',
+                  fontSize: 'clamp(1.45rem, 4.6vw, 3.35rem)',
                   lineHeight: 1.12,
                   letterSpacing: '-0.01em',
                 }}
@@ -191,27 +220,28 @@ export default function Hero() {
                 {slide.title}
               </h1>
 
-              {/* Subtitle — hidden on mobile (no room above the product), shown on desktop. */}
+              {/* Subtitle + CTA live in the group on desktop; hidden on mobile. */}
               <p
-                className="hidden max-w-sm text-sm leading-7 text-muted md:block md:max-w-xl md:text-base"
+                className="hidden max-w-xl text-base leading-7 text-muted md:block"
                 style={{ fontFamily: 'var(--font-sans)' }}
               >
                 {slide.subtitle}
               </p>
-
-              {/* CTA — full width on mobile, inline on desktop. */}
               <motion.div
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 transition={{ duration: 0.2, ease: 'easeOut' }}
-                className="pointer-events-auto mt-0.5 w-full md:mt-1 md:w-auto"
+                className="pointer-events-auto mt-1 hidden md:block"
               >
-                <Link
-                  href={slide.href}
-                  className="flex w-full cursor-pointer items-center justify-center rounded-none bg-accent px-9 py-3 text-[11px] font-semibold uppercase tracking-[0.18em] text-white shadow-sm transition-colors hover:bg-accent/90 md:inline-flex md:w-auto md:py-4"
-                >
-                  {slide.cta}
-                </Link>
+                {ctaButton(false)}
+              </motion.div>
+            </div>
+
+            {/* Mobile bottom bar: dots + full-width CTA, pinned to the bottom of the image. */}
+            <div className="mt-auto flex w-full flex-col items-center gap-3 md:hidden">
+              {dots}
+              <motion.div whileTap={{ scale: 0.98 }} className="pointer-events-auto w-full">
+                {ctaButton(true)}
               </motion.div>
             </div>
           </motion.div>
@@ -239,24 +269,9 @@ export default function Hero() {
           </svg>
         </button>
 
-        {/* Dots. */}
-        <div className="pointer-events-none absolute bottom-6 left-0 right-0 z-20">
-          <div className="mx-auto flex max-w-7xl justify-center px-6 md:justify-start md:px-14 lg:px-20">
-            <div className="pointer-events-auto flex items-center gap-2.5">
-              {SLIDES.map((s, i) => (
-                <motion.button
-                  key={s.key}
-                  type="button"
-                  onClick={() => goTo(i)}
-                  aria-label={`Go to slide ${i + 1}`}
-                  aria-current={i === index}
-                  animate={{ width: i === index ? 24 : 8 }}
-                  transition={{ duration: 0.3, ease: 'easeOut' }}
-                  className={`h-2 rounded-full ${i === index ? 'bg-accent' : 'bg-ink/25'}`}
-                />
-              ))}
-            </div>
-          </div>
+        {/* Desktop dots — bottom-left (mobile dots live in the bottom bar above). */}
+        <div className="pointer-events-none absolute bottom-6 left-0 right-0 z-20 hidden md:block">
+          <div className="mx-auto flex max-w-7xl px-14 lg:px-20">{dots}</div>
         </div>
       </div>
     </section>
