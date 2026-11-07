@@ -122,7 +122,7 @@ const details = [
     body: (
       <>
         Follow your order status any time from your{' '}
-        <Link href="/account" className="text-accent underline-offset-2 hover:underline">
+        <Link href="/account/login" className="text-accent underline-offset-2 hover:underline">
           account
         </Link>
         . We’ll also reach out by email or WhatsApp if we need anything to complete your delivery.

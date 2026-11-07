@@ -17,9 +17,9 @@ export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const token_hash = searchParams.get('token_hash');
   const type = searchParams.get('type') as EmailOtpType | null;
-  const rawNext = searchParams.get('next') || '/account';
+  const rawNext = searchParams.get('next') || '/';
   // Only same-site relative paths (no open redirect).
-  const next = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/account';
+  const next = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/';
 
   if (token_hash && type) {
     const cookieStore = cookies();

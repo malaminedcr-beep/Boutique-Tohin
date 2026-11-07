@@ -161,7 +161,7 @@ export default async function OrderConfirmationPage({
                   Continue shopping
                 </Link>
                 <Link
-                  href="/account"
+                  href="/account/login"
                   className="inline-flex items-center justify-center rounded-full border border-charcoal/10 bg-white px-8 py-3 text-sm font-semibold text-black transition hover:border-black hover:bg-cream"
                 >
                   View my orders

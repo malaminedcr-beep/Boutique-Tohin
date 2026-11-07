@@ -3,7 +3,7 @@ import { CATEGORIES, categoryHref } from '../../lib/categories';
 import { getAllBrands } from '../../lib/supabase/products';
 
 const HELP_LINKS = [
-  { label: 'Track Order', href: '/account' },
+  { label: 'Track Order', href: '/account/login' },
   { label: 'Shipping Info', href: '/shipping' },
   { label: 'Returns', href: '/legal/returns' },
   { label: 'Contact', href: '/about#contact' },

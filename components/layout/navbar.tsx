@@ -2,9 +2,10 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useCart } from '../../lib/cart-context';
 import { CATEGORIES, categoryHref } from '../../lib/categories';
+import { getBrowserSupabase } from '../../lib/supabase/client';
 
 const navCategories = CATEGORIES.map((c) => ({
   label: c.label,
@@ -15,7 +16,25 @@ export default function Navbar() {
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchVal, setSearchVal] = useState('');
+  const [loggedIn, setLoggedIn] = useState(false);
   const { state } = useCart();
+
+  // Track auth state so the account icon becomes a sign-in link or a sign-out action.
+  useEffect(() => {
+    const sb = getBrowserSupabase();
+    sb.auth.getUser().then(({ data }) => setLoggedIn(!!data.user));
+    const {
+      data: { subscription },
+    } = sb.auth.onAuthStateChange((_event, session) => setLoggedIn(!!session?.user));
+    return () => subscription.unsubscribe();
+  }, []);
+
+  async function handleLogout() {
+    await getBrowserSupabase().auth.signOut();
+    setLoggedIn(false);
+    router.push('/');
+    router.refresh();
+  }
 
   function submitSearch(e: React.FormEvent) {
     e.preventDefault();
@@ -69,15 +88,29 @@ export default function Navbar() {
             </button>
           </form>
 
-          <Link
-            href="/account"
-            className="flex h-8 w-8 cursor-pointer sm:h-9 sm:w-9 items-center justify-center border border-hairline text-muted transition-colors hover:border-accent hover:text-accent"
-            aria-label="Account"
-          >
-            <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-          </Link>
+          {loggedIn ? (
+            <button
+              onClick={handleLogout}
+              className="flex h-8 w-8 cursor-pointer items-center justify-center border border-hairline text-muted transition-colors hover:border-accent hover:text-accent sm:h-9 sm:w-9"
+              aria-label="Sign out"
+              title="Sign out"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+              </svg>
+            </button>
+          ) : (
+            <Link
+              href="/account/login"
+              className="flex h-8 w-8 cursor-pointer items-center justify-center border border-hairline text-muted transition-colors hover:border-accent hover:text-accent sm:h-9 sm:w-9"
+              aria-label="Sign in"
+              title="Sign in"
+            >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </Link>
+          )}
 
           <Link
             href="/cart"

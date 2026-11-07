@@ -34,7 +34,7 @@ export default function LoginPage() {
       setLoading(false);
       return;
     }
-    router.push('/account');
+    router.push('/');
     router.refresh();
   };
 

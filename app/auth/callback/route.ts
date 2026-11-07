@@ -13,9 +13,9 @@ export const dynamic = 'force-dynamic';
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
-  const rawNext = searchParams.get('next') || '/account';
+  const rawNext = searchParams.get('next') || '/';
   // Only allow same-site relative paths (no open redirect).
-  const next = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/account';
+  const next = rawNext.startsWith('/') && !rawNext.startsWith('//') ? rawNext : '/';
 
   if (code) {
     const cookieStore = cookies();

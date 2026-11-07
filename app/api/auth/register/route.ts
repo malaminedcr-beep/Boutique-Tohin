@@ -79,7 +79,7 @@ export async function POST(request: Request) {
     password,
     options: {
       data: { full_name: fullName },
-      emailRedirectTo: `${origin}/auth/callback?next=/account`,
+      emailRedirectTo: `${origin}/auth/confirm?next=/`,
     },
   });
 
