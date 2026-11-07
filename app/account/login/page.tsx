@@ -18,11 +18,19 @@ export default function LoginPage() {
     setError(null);
 
     const { error: signInError } = await getBrowserSupabase().auth.signInWithPassword({
-      email,
+      email: email.trim().toLowerCase(),
       password,
     });
     if (signInError) {
-      setError(signInError.message || 'Invalid email or password.');
+      const raw = signInError.message || '';
+      const code = (signInError as { code?: string }).code;
+      let msg = raw || 'Sign-in failed. Please try again.';
+      if (code === 'invalid_credentials' || /invalid login credentials/i.test(raw)) {
+        msg = 'Incorrect email or password. If you just signed up, use the same details.';
+      } else if (code === 'email_not_confirmed' || /not confirmed/i.test(raw)) {
+        msg = 'This account is not verified yet. Please contact us so we can activate it.';
+      }
+      setError(msg);
       setLoading(false);
       return;
     }
