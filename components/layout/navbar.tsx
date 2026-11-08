@@ -89,16 +89,28 @@ export default function Navbar() {
           </form>
 
           {loggedIn ? (
-            <button
-              onClick={handleLogout}
-              className="flex h-8 w-8 cursor-pointer items-center justify-center border border-hairline text-muted transition-colors hover:border-accent hover:text-accent sm:h-9 sm:w-9"
-              aria-label="Sign out"
-              title="Sign out"
-            >
-              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-              </svg>
-            </button>
+            <>
+              <Link
+                href="/account"
+                className="flex h-8 w-8 cursor-pointer items-center justify-center border border-hairline text-muted transition-colors hover:border-accent hover:text-accent sm:h-9 sm:w-9"
+                aria-label="My account"
+                title="My account"
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="hidden h-8 w-8 cursor-pointer items-center justify-center border border-hairline text-muted transition-colors hover:border-accent hover:text-accent sm:flex sm:h-9 sm:w-9"
+                aria-label="Sign out"
+                title="Sign out"
+              >
+                <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                </svg>
+              </button>
+            </>
           ) : (
             <Link
               href="/account/login"
@@ -170,6 +182,23 @@ export default function Navbar() {
               </Link>
             ))}
           </div>
+          {loggedIn && (
+            <div className="mt-4 space-y-1 border-t border-hairline pt-4">
+              <Link
+                href="/account"
+                onClick={() => setMobileOpen(false)}
+                className="block py-2 text-[11px] uppercase tracking-[0.2em] text-muted transition-colors hover:text-ink"
+              >
+                My account
+              </Link>
+              <button
+                onClick={() => { setMobileOpen(false); handleLogout(); }}
+                className="block py-2 text-[11px] uppercase tracking-[0.2em] text-muted transition-colors hover:text-ink"
+              >
+                Sign out
+              </button>
+            </div>
+          )}
         </div>
       )}
     </header>

@@ -3,7 +3,8 @@
 import Header from '../../components/Header';
 import Link from 'next/link';
 import { useCart } from '../../lib/cart-context';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { getBrowserSupabase } from '../../lib/supabase/client';
 import { formatBdt as fmt } from '../../lib/format';
 import PaymentPopup from '../../components/checkout/PaymentPopup';
 import { PAYMENT_METHOD_LABEL, type PaymentMethod } from '../../lib/bkash';
@@ -27,6 +28,34 @@ export default function CheckoutPage() {
     orderNumber: string;
     total: number;
   } | null>(null);
+
+  // Prefill from the signed-in customer's default address (RLS-scoped) + email.
+  useEffect(() => {
+    const sb = getBrowserSupabase();
+    (async () => {
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) return;
+      const { data: addr } = await sb
+        .from('addresses')
+        .select('full_name, phone, district, zone, address_line')
+        .eq('is_default', true)
+        .maybeSingle();
+      setFormData((prev) => {
+        if (prev.firstName || prev.address) return prev; // never overwrite typed input
+        const parts = (addr?.full_name ?? '').trim().split(/\s+/).filter(Boolean);
+        const firstName = parts.shift() ?? '';
+        const lastName = parts.join(' ');
+        const full = addr ? [addr.address_line, addr.zone, addr.district].filter(Boolean).join(', ') : '';
+        return {
+          firstName: firstName || prev.firstName,
+          lastName: lastName || prev.lastName,
+          email: user.email ?? prev.email,
+          phone: (addr?.phone as string) ?? prev.phone,
+          address: full || prev.address,
+        };
+      });
+    })();
+  }, []);
 
   if (state.items.length === 0) {
     return (
