@@ -18,9 +18,9 @@ export default async function AccountPage() {
   }
 
   const [orders, addresses, profile] = await Promise.all([
-    getMyOrders(),
-    getMyAddresses(),
-    getMyProfile(),
+    getMyOrders(user.id),
+    getMyAddresses(user.id),
+    getMyProfile(user.id),
   ]);
 
   return (

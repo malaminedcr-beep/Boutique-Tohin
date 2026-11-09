@@ -2,10 +2,10 @@ import { getServerSupabase } from './server';
 
 /**
  * Customer-facing account reads. SERVER-ONLY. Uses the per-request user session
- * client, so Row Level Security scopes everything to the signed-in user:
- *  - orders: policy orders_select_owner_or_admin (user_id = auth.uid())
- *  - order_items: readable only if the parent order is readable
- *  - addresses: policy addresses_select_own (user_id = auth.uid())
+ * client (RLS applies). Every query ALSO filters explicitly on the signed-in
+ * user's id — this matters because the orders/profiles RLS policies grant admins
+ * `OR is_admin()`, which would otherwise surface every customer's rows in the
+ * admin's own account view. Admins get the full list from /admin/orders instead.
  * No service-role here → a user can never see another customer's data.
  */
 
@@ -88,21 +88,23 @@ function mapOrder(rec: any): AccountOrder {
   };
 }
 
-export async function getMyOrders(): Promise<AccountOrder[]> {
+export async function getMyOrders(userId: string): Promise<AccountOrder[]> {
   const supabase = getServerSupabase();
   const { data, error } = await supabase
     .from('orders')
     .select(ORDER_SELECT)
+    .eq('user_id', userId)
     .order('created_at', { ascending: false });
   if (error) return [];
   return (data ?? []).map(mapOrder);
 }
 
-export async function getMyAddresses(): Promise<AccountAddress[]> {
+export async function getMyAddresses(userId: string): Promise<AccountAddress[]> {
   const supabase = getServerSupabase();
   const { data, error } = await supabase
     .from('addresses')
     .select('id, full_name, phone, district, zone, address_line, is_default')
+    .eq('user_id', userId)
     .order('is_default', { ascending: false })
     .order('created_at', { ascending: true });
   if (error) return [];
@@ -117,8 +119,12 @@ export async function getMyAddresses(): Promise<AccountAddress[]> {
   }));
 }
 
-export async function getMyProfile(): Promise<{ fullName: string; phone: string }> {
+export async function getMyProfile(userId: string): Promise<{ fullName: string; phone: string }> {
   const supabase = getServerSupabase();
-  const { data } = await supabase.from('profiles').select('full_name, phone').maybeSingle();
+  const { data } = await supabase
+    .from('profiles')
+    .select('full_name, phone')
+    .eq('id', userId)
+    .maybeSingle();
   return { fullName: data?.full_name ?? '', phone: data?.phone ?? '' };
 }
