@@ -27,6 +27,7 @@ export default async function AccountPage() {
     <AccountClient
       userId={user.id}
       email={user.email ?? ''}
+      isAdmin={profile.role === 'admin'}
       profile={{
         fullName: profile.fullName || (user.user_metadata?.full_name as string) || '',
         phone: profile.phone || '',

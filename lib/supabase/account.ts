@@ -119,12 +119,12 @@ export async function getMyAddresses(userId: string): Promise<AccountAddress[]> 
   }));
 }
 
-export async function getMyProfile(userId: string): Promise<{ fullName: string; phone: string }> {
+export async function getMyProfile(userId: string): Promise<{ fullName: string; phone: string; role: string }> {
   const supabase = getServerSupabase();
   const { data } = await supabase
     .from('profiles')
-    .select('full_name, phone')
+    .select('full_name, phone, role')
     .eq('id', userId)
     .maybeSingle();
-  return { fullName: data?.full_name ?? '', phone: data?.phone ?? '' };
+  return { fullName: data?.full_name ?? '', phone: data?.phone ?? '', role: data?.role ?? 'user' };
 }
