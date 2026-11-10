@@ -121,7 +121,11 @@ export default function CheckoutPage() {
     isProcessing ? 'Processing…' : `Pay with ${PAYMENT_METHOD_LABEL[paymentMethod]} — ${fmt(state.total)}`;
 
   const btnClass = () =>
-    isProcessing ? 'bg-gray-400 cursor-not-allowed' : 'bg-pink-600 hover:bg-pink-700';
+    isProcessing
+      ? 'bg-gray-400 cursor-not-allowed'
+      : paymentMethod === 'nagad'
+        ? 'bg-[#F7941D] hover:bg-[#E07D0A]'
+        : 'bg-pink-600 hover:bg-pink-700';
 
   return (
     <main className="min-h-screen bg-background text-text">

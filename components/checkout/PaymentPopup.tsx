@@ -203,7 +203,7 @@ export default function PaymentPopup({
           {/* Numbered instructions */}
           <ol className="space-y-2 rounded-2xl border border-hairline bg-surface px-4 py-4 text-sm text-ink">
             {[
-              <>Open the <span className="font-semibold">{label}</span> app and choose <span className="font-semibold">“Send Money”</span> ({PAYMENT_ACCOUNT_TYPE}).</>,
+              <>Open the <span className="font-semibold">bKash</span> or <span className="font-semibold">Nagad</span> app and choose <span className="font-semibold">“Send Money”</span> ({PAYMENT_ACCOUNT_TYPE}).</>,
               <>Send exactly <span className="font-semibold text-accent">{formatBdt(totalBdt)}</span> to the number above.</>,
               <>Take a <span className="font-semibold">screenshot</span> of the bKash confirmation.</>,
               <>Upload that screenshot below, then submit.</>,

@@ -18,8 +18,8 @@ export function isPaymentMethod(v: unknown): v is PaymentMethod {
 }
 
 /** Shared "Send Money" receiver — identical for bKash and Nagad. */
-export const PAYMENT_RECEIVER_NUMBER = '01764267322';
-export const PAYMENT_RECEIVER_NAME = 'MD. SHOZIB';
+export const PAYMENT_RECEIVER_NUMBER = '01821890966';
+export const PAYMENT_RECEIVER_NAME = 'NK DIPU';
 
 /** Account type to use on the customer side (Send Money to a personal wallet). */
 export const PAYMENT_ACCOUNT_TYPE = 'Personal';
