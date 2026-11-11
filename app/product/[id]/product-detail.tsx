@@ -5,7 +5,7 @@ import Link from 'next/link';
 import type { Product, ProductVariant } from '../../../lib/commerce/types';
 import { useCart } from '../../../lib/cart-context';
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { formatBdt } from '../../../lib/format';
+import PriceTag from '../../../components/promo/price-tag';
 import { categoryLabel } from '../../../lib/categories';
 import {
   PRODUCT_CATEGORY_DESCRIPTIONS,
@@ -345,7 +345,12 @@ export default function ProductDetail({
                       {isDraft ? (
                         <p className="text-xl font-semibold text-charcoal/70">Price coming soon</p>
                       ) : (
-                        <p className="text-3xl font-semibold text-black">{formatBdt(currentPrice)}</p>
+                        <PriceTag
+                          original={currentPrice}
+                          priceClassName="text-3xl font-semibold text-black"
+                          strikeClassName="text-lg"
+                          className="gap-x-3"
+                        />
                       )}
                     </div>
                     <div className="space-y-3">

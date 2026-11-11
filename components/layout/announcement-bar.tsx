@@ -1,3 +1,5 @@
+import { PROMO_ACTIVE, PROMO_PERCENT } from '../../lib/promo';
+
 export default function AnnouncementBar() {
   return (
     <div
@@ -8,11 +10,23 @@ export default function AnnouncementBar() {
       }}
     >
       <p className="px-4 py-2.5 text-center text-[10.5px] font-light uppercase tracking-[0.28em] text-white/95">
-        Authentic French Cosmetics
-        <span className="mx-2.5 text-white/45">·</span>
-        Free Delivery Nationwide
-        <span className="mx-2.5 text-white/45">·</span>
-        bKash Accepted
+        {PROMO_ACTIVE ? (
+          <>
+            <span className="font-semibold tracking-[0.2em]">
+              Launch offer — {PROMO_PERCENT}% off everything
+            </span>
+            <span className="mx-2.5 text-white/45">·</span>
+            Free Delivery Nationwide
+          </>
+        ) : (
+          <>
+            Authentic French Cosmetics
+            <span className="mx-2.5 text-white/45">·</span>
+            Free Delivery Nationwide
+            <span className="mx-2.5 text-white/45">·</span>
+            bKash Accepted
+          </>
+        )}
       </p>
     </div>
   );

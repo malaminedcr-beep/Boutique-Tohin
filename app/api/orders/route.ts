@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { createAdminSupabase } from '../../../lib/supabase/admin';
 import { getVerifiedUser } from '../../../lib/supabase/server';
 import { PAYMENT_RECEIVER_NUMBER, isPaymentMethod } from '../../../lib/bkash';
+import { discountedBdt } from '../../../lib/promo';
 
 export const dynamic = 'force-dynamic';
 
@@ -90,10 +91,13 @@ export async function POST(request: Request) {
     }
   }
 
+  // Launch promo: discount is applied PER UNIT (rounded to whole taka) here, on
+  // the authoritative catalogue price, so the stored unit price + total match
+  // exactly what the customer was shown and what the bKash/Nagad modal asks for.
   let total = 0;
   const lineItems = requested.map((r) => {
     const product = bySlug.get(r.slug)!;
-    const unitPrice = Number(product.price_bdt);
+    const unitPrice = discountedBdt(Number(product.price_bdt));
     total += unitPrice * r.quantity;
     return { product_id: product.id as string, quantity: r.quantity, unit_price_bdt: unitPrice };
   });

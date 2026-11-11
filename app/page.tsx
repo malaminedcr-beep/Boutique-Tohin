@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import Hero from '../components/home/hero';
+import LaunchHero from '../components/promo/launch-hero';
 import CategoryArches from '../components/home/category-arches';
 import PromoBanner from '../components/home/promo-banner';
 import ProductCard from '../components/product/product-card';
@@ -14,6 +15,9 @@ export default async function Home() {
 
   return (
     <main className="bg-canvas text-ink">
+      {/* Section 0 — Launch offer hero (promo switch) */}
+      <LaunchHero />
+
       {/* Section 1 — Hero */}
       <Hero />
 

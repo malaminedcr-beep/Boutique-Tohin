@@ -3,10 +3,13 @@
 import Header from '../../components/Header';
 import Link from 'next/link';
 import { useCart } from '../../lib/cart-context';
-import { formatBdt as formatPrice } from '../../lib/format';
+import PriceTag from '../../components/promo/price-tag';
+import { discountedBdt } from '../../lib/promo';
 
 export default function CartPage() {
   const { state, removeItem, updateQuantity, clearCart } = useCart();
+  // Discount is applied per unit then summed — same formula the server uses.
+  const promoTotal = state.items.reduce((sum, i) => sum + discountedBdt(i.priceBdt) * i.quantity, 0);
 
   if (state.items.length === 0) {
     return (
@@ -84,9 +87,22 @@ export default function CartPage() {
                               +
                             </button>
                           </div>
-                          <span className="text-sm text-charcoal/70">× {formatPrice(item.priceBdt)}</span>
+                          <span className="flex items-baseline gap-1 text-sm text-charcoal/70">
+                            ×{' '}
+                            <PriceTag
+                              original={item.priceBdt}
+                              badge={false}
+                              priceClassName="text-charcoal/70"
+                              strikeClassName="text-[11px]"
+                            />
+                          </span>
                         </div>
-                        <span className="font-semibold text-black">{formatPrice(item.priceBdt * item.quantity)}</span>
+                        <PriceTag
+                          original={item.priceBdt * item.quantity}
+                          price={discountedBdt(item.priceBdt) * item.quantity}
+                          priceClassName="font-semibold text-black"
+                          strikeClassName="text-xs"
+                        />
                       </div>
                     </div>
                   </div>
@@ -101,7 +117,13 @@ export default function CartPage() {
                 <div className="space-y-3">
                   <div className="flex justify-between text-sm">
                     <span className="text-charcoal/70">Subtotal ({state.itemCount} item{state.itemCount > 1 ? 's' : ''})</span>
-                    <span className="font-medium text-black">{formatPrice(state.total)}</span>
+                    <PriceTag
+                      original={state.total}
+                      price={promoTotal}
+                      badge={false}
+                      priceClassName="font-medium text-black"
+                      strikeClassName="text-xs"
+                    />
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-charcoal/70">Delivery</span>
@@ -110,7 +132,12 @@ export default function CartPage() {
                   <div className="border-t border-charcoal/10 pt-3">
                     <div className="flex justify-between text-lg font-semibold">
                       <span className="text-black">Total</span>
-                      <span className="text-black">{formatPrice(state.total)}</span>
+                      <PriceTag
+                        original={state.total}
+                        price={promoTotal}
+                        priceClassName="text-black"
+                        strikeClassName="text-sm"
+                      />
                     </div>
                   </div>
                 </div>

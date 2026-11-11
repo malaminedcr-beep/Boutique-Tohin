@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { formatBdt } from '../../lib/format';
+import { PromoBadge } from '../promo/price-tag';
 import {
   PAYMENT_ACCOUNT_TYPE,
   PAYMENT_RECEIVER_NAME,
@@ -17,6 +18,8 @@ type Props = {
   orderId: string;
   orderNumber: string;
   totalBdt: number;
+  /** Full price before the launch discount, to show struck through (optional). */
+  originalBdt?: number;
   onClose: () => void;
   onSuccess: () => void;
 };
@@ -71,6 +74,7 @@ export default function PaymentPopup({
   orderId,
   orderNumber,
   totalBdt,
+  originalBdt,
   onClose,
   onSuccess,
 }: Props) {
@@ -191,6 +195,12 @@ export default function PaymentPopup({
           <div className="rounded-2xl border border-accent/20 bg-highlight px-4 py-4 text-center">
             <p className="text-[11px] uppercase tracking-wider text-muted">Exact amount to send</p>
             <p className="mt-1 font-serif text-3xl font-semibold text-accent">{formatBdt(totalBdt)}</p>
+            {typeof originalBdt === 'number' && originalBdt > totalBdt && (
+              <p className="mt-1 flex items-center justify-center gap-2 text-xs text-muted">
+                <span className="line-through">{formatBdt(originalBdt)}</span>
+                <PromoBadge />
+              </p>
+            )}
           </div>
 
           {/* Info to copy */}

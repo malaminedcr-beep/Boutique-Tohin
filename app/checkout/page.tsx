@@ -6,11 +6,15 @@ import { useCart } from '../../lib/cart-context';
 import { useState, useEffect } from 'react';
 import { getBrowserSupabase } from '../../lib/supabase/client';
 import { formatBdt as fmt } from '../../lib/format';
+import PriceTag from '../../components/promo/price-tag';
+import { discountedBdt } from '../../lib/promo';
 import PaymentPopup from '../../components/checkout/PaymentPopup';
 import { PAYMENT_METHOD_LABEL, type PaymentMethod } from '../../lib/bkash';
 
 export default function CheckoutPage() {
   const { state, clearCart } = useCart();
+  // Promo total: discount applied per unit then summed — matches the server recompute.
+  const promoTotal = state.items.reduce((sum, i) => sum + discountedBdt(i.priceBdt) * i.quantity, 0);
   const [formData, setFormData] = useState({
     firstName: '',
     lastName: '',
@@ -108,7 +112,7 @@ export default function CheckoutPage() {
       setBkashOrder({
         orderId: result.orderId,
         orderNumber: result.orderNumber,
-        total: result.total ?? state.total,
+        total: result.total ?? promoTotal,
       });
       setIsProcessing(false);
     } catch (err) {
@@ -118,7 +122,7 @@ export default function CheckoutPage() {
   };
 
   const btnLabel = () =>
-    isProcessing ? 'Processing…' : `Pay with ${PAYMENT_METHOD_LABEL[paymentMethod]} — ${fmt(state.total)}`;
+    isProcessing ? 'Processing…' : `Pay with ${PAYMENT_METHOD_LABEL[paymentMethod]} — ${fmt(promoTotal)}`;
 
   const btnClass = () =>
     isProcessing
@@ -215,16 +219,28 @@ export default function CheckoutPage() {
                 <h2 className="text-lg font-semibold text-black mb-4">Order Summary</h2>
                 <div className="space-y-3 mb-4">
                   {state.items.map((item) => (
-                    <div key={item.id} className="flex justify-between text-sm">
+                    <div key={item.id} className="flex justify-between gap-3 text-sm">
                       <span className="text-charcoal/70">{item.name} × {item.quantity}</span>
-                      <span className="font-medium text-black">{fmt(item.priceBdt * item.quantity)}</span>
+                      <PriceTag
+                        original={item.priceBdt * item.quantity}
+                        price={discountedBdt(item.priceBdt) * item.quantity}
+                        badge={false}
+                        priceClassName="font-medium text-black"
+                        strikeClassName="text-xs"
+                      />
                     </div>
                   ))}
                 </div>
                 <div className="border-t border-charcoal/10 pt-3 space-y-2">
                   <div className="flex justify-between text-sm">
                     <span className="text-charcoal/70">Subtotal</span>
-                    <span className="font-medium text-black">{fmt(state.total)}</span>
+                    <PriceTag
+                      original={state.total}
+                      price={promoTotal}
+                      badge={false}
+                      priceClassName="font-medium text-black"
+                      strikeClassName="text-xs"
+                    />
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-charcoal/70">Delivery</span>
@@ -232,7 +248,12 @@ export default function CheckoutPage() {
                   </div>
                   <div className="border-t border-charcoal/10 pt-2 flex justify-between text-lg font-semibold">
                     <span className="text-black">Total</span>
-                    <span className="text-black">{fmt(state.total)}</span>
+                    <PriceTag
+                      original={state.total}
+                      price={promoTotal}
+                      priceClassName="text-black"
+                      strikeClassName="text-sm"
+                    />
                   </div>
                 </div>
               </div>
@@ -268,6 +289,7 @@ export default function CheckoutPage() {
           orderId={bkashOrder.orderId}
           orderNumber={bkashOrder.orderNumber}
           totalBdt={bkashOrder.total}
+          originalBdt={state.total}
           onClose={() => setBkashOrder(null)}
           onSuccess={() => {
             const id = bkashOrder.orderId;

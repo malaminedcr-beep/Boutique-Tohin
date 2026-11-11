@@ -5,7 +5,7 @@ import Image from 'next/image';
 import { useState } from 'react';
 import { useCart } from '../../lib/cart-context';
 import { categoryLabel } from '../../lib/categories';
-import { formatBdt } from '../../lib/format';
+import PriceTag from '../promo/price-tag';
 
 type Product = {
   id: number;
@@ -117,9 +117,17 @@ export default function ProductCard({ product }: { product: Product }) {
           </Link>
         </div>
 
-        <p className="text-[13px] font-semibold" style={{ color: '#C9513A' }}>
-          {isDraft ? 'Price coming soon' : formatBdt(product.priceBdt)}
-        </p>
+        {isDraft ? (
+          <p className="text-[13px] font-semibold" style={{ color: '#C9513A' }}>
+            Price coming soon
+          </p>
+        ) : (
+          <PriceTag
+            original={product.priceBdt}
+            priceClassName="text-[13px] font-semibold text-accent"
+            strikeClassName="text-[11px]"
+          />
+        )}
 
         {isDraft ? (
           <span className="mt-auto w-full rounded border border-hairline py-2 text-center text-[10px] font-semibold uppercase tracking-[0.12em] text-muted">
