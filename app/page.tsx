@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Hero from '../components/home/hero';
 import LaunchHero from '../components/promo/launch-hero';
+import Authenticity from '../components/home/authenticity';
 import CategoryArches from '../components/home/category-arches';
 import PromoBanner from '../components/home/promo-banner';
 import ProductCard from '../components/product/product-card';
@@ -53,6 +54,9 @@ export default async function Home() {
           </div>
         </div>
       </section>
+
+      {/* Section 2b — Authenticity promise */}
+      <Authenticity />
 
       {/* Section 3 — Categories en Arches */}
       <CategoryArches />
