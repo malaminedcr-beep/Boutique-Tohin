@@ -5,7 +5,7 @@ import Footer from '../components/layout/Footer';
 import Navbar from '../components/layout/navbar';
 import AnnouncementBar from '../components/layout/announcement-bar';
 import { CartProvider } from '../lib/cart-context';
-import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, OG_DEFAULT } from '../lib/seo';
+import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, OG_DEFAULT, LOGO_URL } from '../lib/seo';
 
 const serif = Cormorant_Garamond({
   subsets: ['latin'],
@@ -49,7 +49,7 @@ const organizationJsonLd = {
   '@type': 'Organization',
   name: SITE_NAME,
   url: SITE_URL,
-  logo: `${SITE_URL}${OG_DEFAULT}`,
+  logo: `${SITE_URL}${LOGO_URL}`,
   description: SITE_DESCRIPTION,
 };
 

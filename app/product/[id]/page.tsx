@@ -1,11 +1,12 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getProductByRef, getSimilarProducts } from '../../../lib/supabase/products';
-import {
-  PRODUCT_CATEGORY_DESCRIPTIONS,
-  PRODUCT_DESCRIPTION_FALLBACK,
-} from '../../../lib/i18n/strings';
 import { SITE_URL } from '../../../lib/seo';
+import {
+  productJsonLd,
+  productMetaDescription,
+  productSeoTitle,
+} from '../../../lib/product-seo';
 import ProductDetail from './product-detail';
 
 export const dynamic = 'force-dynamic';
@@ -14,9 +15,8 @@ export async function generateMetadata({ params }: { params: { id: string } }): 
   const product = await getProductByRef(Number(params.id));
   if (!product) return { title: 'Product not found' };
 
-  const title = `${product.name} ${product.volume} — ${product.brand}`;
-  const description =
-    PRODUCT_CATEGORY_DESCRIPTIONS[product.category] ?? PRODUCT_DESCRIPTION_FALLBACK;
+  const title = productSeoTitle(product);
+  const description = productMetaDescription(product);
   const path = `/product/${product.id}`;
 
   return {
@@ -45,31 +45,14 @@ export default async function ProductPage({ params }: { params: { id: string } }
 
   const similarProducts = await getSimilarProducts(product.id, product.category);
 
-  const description =
-    PRODUCT_CATEGORY_DESCRIPTIONS[product.category] ?? PRODUCT_DESCRIPTION_FALLBACK;
-
-  const jsonLd = {
-    '@context': 'https://schema.org',
-    '@type': 'Product',
-    name: product.name,
-    brand: { '@type': 'Brand', name: product.brand },
-    sku: product.sku,
-    image: `${SITE_URL}${product.image}`,
-    description,
-    offers: {
-      '@type': 'Offer',
-      price: product.priceBdt,
-      priceCurrency: 'BDT',
-      availability: 'https://schema.org/InStock',
-      url: `${SITE_URL}/product/${product.id}`,
-    },
-  };
-
   return (
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        dangerouslySetInnerHTML={{
+          // "<" is escaped so that no catalogue text can close the <script> tag.
+          __html: JSON.stringify(productJsonLd(product)).replace(/</g, '\\u003c'),
+        }}
       />
       <ProductDetail product={product} similarProducts={similarProducts} />
     </>
