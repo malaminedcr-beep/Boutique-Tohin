@@ -29,7 +29,7 @@ export default async function Footer() {
             FRENCH <span className="text-accent">BEAUTY</span> BD
           </p>
           <p className="max-w-xs text-sm leading-7 text-muted">
-            Authentic French cosmetics, imported from France. Guaranteed authenticity, fast delivery across Bangladesh.
+            Authentic French cosmetics, imported from France. Guaranteed authenticity, delivered across Bangladesh in 2–3 weeks.
           </p>
         </div>
 
