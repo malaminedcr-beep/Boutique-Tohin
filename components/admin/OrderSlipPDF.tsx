@@ -359,10 +359,6 @@ export default function OrderSlipPDF({ order }: { order: Order }) {
               <Text style={s.totalLabel}>Subtotal</Text>
               <Text style={s.totalValue}>{fmt(subtotal)}</Text>
             </View>
-            <View style={s.totalRow}>
-              <Text style={s.totalLabel}>Delivery</Text>
-              <Text style={s.totalValue}>Free</Text>
-            </View>
             <View style={s.totalFinalRow}>
               <Text style={s.totalFinalLabel}>TOTAL</Text>
               <Text style={s.totalFinalValue}>{fmt(order.total_bdt)}</Text>

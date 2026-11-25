@@ -125,10 +125,6 @@ export default function CartPage() {
                       strikeClassName="text-xs"
                     />
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-charcoal/70">Delivery</span>
-                    <span className="font-medium text-black">Free</span>
-                  </div>
                   <div className="border-t border-charcoal/10 pt-3">
                     <div className="flex justify-between text-lg font-semibold">
                       <span className="text-black">Total</span>

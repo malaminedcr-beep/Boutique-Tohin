@@ -75,7 +75,7 @@ export function productSeoTitle(product: Product): string {
  */
 export function productMetaDescription(product: Product): string {
   const tail = hasPublicPrice(product)
-    ? ` Original from France, ${formatBdt(defaultPriceBdt(product))} with free delivery in Bangladesh.`
+    ? ` Original from France, ${formatBdt(defaultPriceBdt(product))}, delivered across Bangladesh.`
     : ' Original from France, delivered across Bangladesh.';
   const room = META_DESCRIPTION_MAX - tail.length;
   return `${clip(productDescriptionText(product), room)}${tail}`;

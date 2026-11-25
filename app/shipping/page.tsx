@@ -5,7 +5,7 @@ import { pageMetadata } from '../../lib/seo';
 export const metadata = pageMetadata({
   title: 'Shipping & Delivery',
   description:
-    'Free nationwide delivery across Bangladesh. Authentic French cosmetics sourced in France and delivered to your door in 2–3 weeks.',
+    'Nationwide delivery across Bangladesh. Authentic French cosmetics sourced in France and delivered to your door in 2–3 weeks.',
   path: '/shipping',
 });
 
@@ -81,7 +81,7 @@ function Glyph({ children }: { children: React.ReactNode }) {
 }
 
 const highlights = [
-  { icon: icons.truck, label: 'Delivery', value: 'Free nationwide' },
+  { icon: icons.truck, label: 'Delivery', value: 'Nationwide' },
   { icon: icons.clock, label: 'Arrives in', value: '2–3 weeks' },
   { icon: icons.wallet, label: 'Payment', value: 'bKash' },
   { icon: icons.sparkle, label: 'Guarantee', value: '100% authentic' },
@@ -109,7 +109,7 @@ const details = [
   {
     icon: icons.pin,
     heading: 'Where we deliver',
-    body: 'We deliver everywhere in Bangladesh — Dhaka, Chittagong and every district nationwide. Delivery is free on every order, with no minimum spend.',
+    body: 'We deliver everywhere in Bangladesh — Dhaka, Chittagong and every district nationwide.',
   },
   {
     icon: icons.clock,
@@ -132,7 +132,7 @@ const details = [
   {
     icon: icons.receipt,
     heading: 'Customs & duties',
-    body: 'The price you see at checkout is the price you pay. There are no hidden customs fees or import duties charged on arrival.',
+    body: 'There are no hidden customs fees or import duties charged on arrival.',
   },
   {
     icon: icons.lock,
@@ -152,7 +152,7 @@ export default function ShippingPage() {
             Shipping &amp; Delivery
           </h1>
           <p className="mt-4 max-w-xl text-sm leading-7 text-muted">
-            Authentic French cosmetics, sourced in France and delivered free to your door —
+            Authentic French cosmetics, sourced in France and delivered to your door —
             anywhere in Bangladesh.
           </p>
         </div>

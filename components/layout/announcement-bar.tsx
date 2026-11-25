@@ -16,13 +16,13 @@ export default function AnnouncementBar() {
               Launch offer — {PROMO_PERCENT}% off everything
             </span>
             <span className="mx-2.5 text-white/45">·</span>
-            Free Delivery Nationwide
+            Delivered Nationwide in 2–3 Weeks
           </>
         ) : (
           <>
             Authentic French Cosmetics
             <span className="mx-2.5 text-white/45">·</span>
-            Free Delivery Nationwide
+            Delivered Nationwide in 2–3 Weeks
             <span className="mx-2.5 text-white/45">·</span>
             bKash Accepted
           </>

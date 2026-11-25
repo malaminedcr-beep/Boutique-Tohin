@@ -204,11 +204,8 @@ export default function SlipPage({ params }: { params: { id: string } }) {
         {/* Total */}
         <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '8pt' }}>
           <div style={{ width: '120pt', fontFamily: 'Arial, sans-serif' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '7.5pt', color: '#7A7068', marginBottom: '2pt' }}>
-              <span>Subtotal</span><span>{fmt(subtotal)}</span>
-            </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '7.5pt', color: '#7A7068', marginBottom: '4pt' }}>
-              <span>Delivery</span><span>Free</span>
+              <span>Subtotal</span><span>{fmt(subtotal)}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', background: '#1A1614', color: 'white', padding: '5pt 8pt', borderRadius: '3pt' }}>
               <span style={{ fontWeight: 700, fontSize: '9pt' }}>TOTAL</span>

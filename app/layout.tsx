@@ -5,7 +5,14 @@ import Footer from '../components/layout/Footer';
 import Navbar from '../components/layout/navbar';
 import AnnouncementBar from '../components/layout/announcement-bar';
 import { CartProvider } from '../lib/cart-context';
-import { SITE_URL, SITE_NAME, SITE_DESCRIPTION, OG_DEFAULT, LOGO_URL } from '../lib/seo';
+import {
+  SITE_URL,
+  SITE_NAME,
+  SITE_DESCRIPTION,
+  OG_DEFAULT,
+  OG_DEFAULT_SIZE,
+  LOGO_URL,
+} from '../lib/seo';
 
 const serif = Cormorant_Garamond({
   subsets: ['latin'],
@@ -34,7 +41,7 @@ export const metadata: Metadata = {
     url: SITE_URL,
     title: 'French Beauty BD — Authentic French Cosmetics in Bangladesh',
     description: SITE_DESCRIPTION,
-    images: [{ url: OG_DEFAULT }],
+    images: [{ url: OG_DEFAULT, ...OG_DEFAULT_SIZE }],
   },
   twitter: {
     card: 'summary_large_image',
